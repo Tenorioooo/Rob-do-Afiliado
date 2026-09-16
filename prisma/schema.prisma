@@ -1,0 +1,824 @@
+// Prisma Schema for Affiliate AI
+// Configured with SQLite for zero-setup local dev & easily switchable to PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  avatar       String?
+  role         String   @default("USER") // USER, ADMIN, SUPERADMIN
+  status       String   @default("TRIAL") // ACTIVE, TRIAL, PENDING, EXPIRED, SUSPENDED, CANCELED
+  phone        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  sessions        Session[]
+  subscriptions   Subscription[]
+  integrations    Integration[]
+  channels        Channel[]
+  affiliateLinks  AffiliateLink[]
+  offers          Offer[]
+  offerQueueItems OfferQueueItem[]
+  publications    Publication[]
+  automationRules AutomationRule[]
+  robotConfig     RobotConfig?
+  robotEvents     RobotEvent[]
+  robotScans      RobotScan[]
+  opportunities   Opportunity[]
+  analytics       AnalyticsMetric[]
+  notifications   Notification[]
+  auditLogs       AuditLog[]
+  autopilotConfig AutopilotConfig?
+  autopilotRuns   AutopilotRun[]
+  analyticsEvents AnalyticsEvent[]
+  conversions     Conversion[]
+  commissions     Commission[]
+  experiments     Experiment[]
+  learningSignals LearningSignal[]
+  integrationConnections IntegrationConnection[]
+  integrationEvents      IntegrationEvent[]
+  integrationAuditLogs   IntegrationAuditLog[]
+  integrationVerifications IntegrationVerification[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Plan {
+  id            String         @id @default(cuid())
+  name          String
+  code          String         @unique
+  description   String
+  price         Float
+  billingPeriod String         @default("monthly") // monthly, yearly
+  active        Boolean        @default(true)
+  features      String         // JSON string with array of features
+  limits        String         // JSON string with scanLimits, channelLimits, etc.
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id        String    @id @default(cuid())
+  userId    String
+  planId    String
+  status    String    @default("TRIAL") // ACTIVE, TRIAL, EXPIRED, CANCELED
+  startedAt DateTime  @default(now())
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan Plan @relation(fields: [planId], references: [id])
+
+  @@map("subscriptions")
+}
+
+model Integration {
+  id          String    @id @default(cuid())
+  userId      String
+  platform    String    // SHOPEE, MERCADO_LIVRE, AMAZON, MAGALU, ALIEXPRESS, CUSTOM
+  status      String    @default("DISCONNECTED") // CONNECTED, DISCONNECTED, ERROR, PENDING
+  credentials String?   // JSON string
+  config      String?   // JSON string
+  lastSyncAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@map("integrations")
+}
+
+model Channel {
+  id            String    @id @default(cuid())
+  userId        String
+  type          String    // TELEGRAM, WHATSAPP, DISCORD, WEBHOOK
+  name          String
+  identifier    String    // Chat ID or Phone Number or Webhook
+  status        String    @default("DISCONNECTED") // CONNECTED, DISCONNECTED, ERROR, DISABLED
+  provider      String    @default("mock") // mock, real
+  destination   String?   // formatted destination target
+  config        String?   // JSON string with credentials
+  active        Boolean   @default(true)
+  lastTestedAt  DateTime?
+  testResult    String?   // JSON string with last connection test result
+  lastMessageAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  offers       Offer[]
+  publications Publication[]
+  analyticsEvents AnalyticsEvent[]
+  conversions     Conversion[]
+
+  @@index([userId, status])
+  @@index([userId, type])
+  @@map("channels")
+}
+
+model Product {
+  id               String   @id @default(cuid())
+  externalId       String
+  platform         String   // SHOPEE, MERCADO_LIVRE, AMAZON, etc.
+  title            String
+  description      String?
+  category         String
+  subcategory      String?
+  brand            String?
+  imageUrl         String
+  originalPrice    Float
+  currentPrice     Float
+  currency         String   @default("BRL")
+  discountPercent  Float
+  commissionRate   Float    // e.g. 0.08 for 8%
+  commissionAmount Float
+  rating           Float?
+  reviewCount      Int?
+  salesCount       Int      @default(0)
+  trendScore       Int?     // null if unavailable from provider
+  opportunityScore Int      @default(80)
+  url              String
+  inStock          Boolean  @default(true)
+  dataSource       String   @default("mock") // mock, api, official
+  sourceMetadata   String?  // JSON string preserving raw metadata
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  snapshots      ProductSnapshot[]
+  opportunities  Opportunity[]
+  affiliateLinks AffiliateLink[]
+  offers         Offer[]
+
+  @@unique([platform, externalId])
+  @@map("products")
+}
+
+model ProductSnapshot {
+  id               String   @id @default(cuid())
+  productId        String
+  currentPrice     Float
+  originalPrice    Float
+  discountPercent  Float
+  rating           Float?
+  reviewCount      Int?
+  commissionRate   Float
+  commissionAmount Float
+  observedAt       DateTime @default(now())
+  metadata         String?  // JSON string
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_snapshots")
+}
+
+model Opportunity {
+  id               String   @id @default(cuid())
+  userId           String
+  productId        String
+  score            Int      // 0 - 100
+  scoreBreakdown   String   // JSON string with trend, discount, commission, rating, price, freshness
+  reasons          String   // JSON array of explainable reasons
+  status           String   @default("QUALIFIED") // DISCOVERED, ANALYZING, QUALIFIED, REJECTED, ARCHIVED
+  confidence       String   @default("ALTA") // ALTA, MEDIA, BAIXA
+  dataCompleteness Float    @default(1.0) // 0.0 to 1.0
+  detectedAt       DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  affiliateLinks AffiliateLink[]
+  offers         Offer[]
+
+  @@unique([userId, productId])
+  @@map("opportunities")
+}
+
+model RobotScan {
+  id              String    @id @default(cuid())
+  userId          String
+  status          String    @default("PENDING") // PENDING, RUNNING, COMPLETED, FAILED
+  startedAt       DateTime  @default(now())
+  finishedAt      DateTime?
+  platforms       String    // JSON array of scanned platforms
+  categories      String    // JSON array of scanned categories
+  minScore        Int       @default(80)
+  minCommission   Float?
+  maxPrice        Float?
+  maxResults      Int       @default(50)
+  totalDiscovered Int       @default(0)
+  totalAnalyzed   Int       @default(0)
+  totalQualified  Int       @default(0)
+  totalRejected   Int       @default(0)
+  errorMessage    String?
+  createdAt       DateTime  @default(now())
+
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events RobotEvent[]
+
+  @@map("robot_scans")
+}
+
+model RobotConfig {
+  id                  String    @id @default(cuid())
+  userId              String    @unique
+  active              Boolean   @default(true)
+  scanIntervalMinutes Int       @default(30)
+  minOpportunityScore Int       @default(80)
+  minDiscount         Float     @default(15.0)
+  minCommission       Float     @default(5.0)
+  targetCategories    String    @default("[\"Eletrônicos\", \"Casa e Cozinha\", \"Moda\", \"Beleza\"]")
+  targetPlatforms     String    @default("[\"SHOPEE\", \"MERCADO_LIVRE\", \"AMAZON\"]")
+  autoGenerateOffers  Boolean   @default(true)
+  autoPublish         Boolean   @default(false)
+  workingHoursStart   String    @default("08:00")
+  workingHoursEnd     String    @default("22:00")
+  lastRunAt           DateTime?
+  nextRunAt           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("robot_configs")
+}
+
+model RobotEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  scanId      String?
+  eventType   String   // SCAN_STARTED, PRODUCTS_DISCOVERED, PRODUCT_ANALYZED, OPPORTUNITY_QUALIFIED, etc.
+  title       String
+  description String
+  metadata    String?  // JSON string
+  status      String   @default("SUCCESS") // SUCCESS, WARNING, ERROR, INFO
+  createdAt   DateTime @default(now())
+
+  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scan RobotScan? @relation(fields: [scanId], references: [id], onDelete: SetNull)
+
+  @@map("robot_events")
+}
+
+model AffiliateLink {
+  id                String    @id @default(cuid())
+  userId            String
+  productId         String?
+  opportunityId     String?
+  platform          String    @default("SHOPEE") // SHOPEE, MERCADO_LIVRE, AMAZON, etc.
+  externalProductId String?
+  originalUrl       String
+  affiliateUrl      String
+  shortCode         String    @unique
+  status            String    @default("GENERATED") // PENDING, GENERATING, GENERATED, FAILED, EXPIRED
+  source            String    @default("mock") // mock, official_api
+  utmSource         String?
+  utmMedium         String?
+  utmCampaign       String?
+  utmContent        String?
+  clicks            Int       @default(0)
+  conversions       Int       @default(0)
+  estimatedEarnings Float     @default(0.0)
+  active            Boolean   @default(true)
+  generatedAt       DateTime  @default(now())
+  expiresAt         DateTime?
+  errorMessage      String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product?     @relation(fields: [productId], references: [id], onDelete: SetNull)
+  opportunity Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  offers      Offer[]
+  analyticsEvents   AnalyticsEvent[]
+  conversionRecords Conversion[]
+
+  @@index([userId, platform])
+  @@index([userId, productId])
+  @@map("affiliate_links")
+}
+
+model Offer {
+  id                String    @id @default(cuid())
+  userId            String
+  productId         String
+  opportunityId     String?
+  affiliateLinkId   String?
+  channelId         String?
+  title             String    // headline / title
+  body              String    // generated copy body
+  cta               String    // call to action
+  headline          String?   // legacy compatibility
+  generatedCopy     String?   // legacy compatibility
+  callToAction      String?   // legacy compatibility
+  style             String    @default("DIRETO") // DIRETO, DESCONTO, URGENCIA, PREMIUM, CURTO
+  status            String    @default("DRAFT") // DRAFT, READY, APPROVED, SCHEDULED, PUBLISHED, FAILED, CANCELLED
+  aiSource          String    @default("mock") // mock, openai, gemini, anthropic
+  validationStatus  String    @default("VALID") // VALID, WARNING, REJECTED
+  validationMessage String?
+  reasons           String?   // JSON array of verified reasons
+  scheduledFor      DateTime?
+  approvedAt        DateTime?
+  publishedAt       DateTime?
+  generatedAt       DateTime  @default(now())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product       Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  opportunity   Opportunity?     @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  affiliateLink AffiliateLink?   @relation(fields: [affiliateLinkId], references: [id], onDelete: SetNull)
+  channel       Channel?         @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  queueItems    OfferQueueItem[]
+  publications  Publication[]
+  analyticsEvents AnalyticsEvent[]
+  conversions     Conversion[]
+  experimentVariants ExperimentVariant[]
+
+  @@index([userId, status])
+  @@index([userId, opportunityId])
+  @@map("offers")
+}
+
+model OfferQueueItem {
+  id           String    @id @default(cuid())
+  offerId      String
+  userId       String
+  channelId    String?
+  status       String    @default("QUEUED") // QUEUED, PROCESSING, READY, SCHEDULED, PUBLISHED, FAILED, CANCELLED
+  priority     String    @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  scheduledAt  DateTime?
+  approvedAt   DateTime?
+  publishedAt  DateTime?
+  failedAt     DateTime?
+  errorMessage String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  offer        Offer         @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  publications Publication[]
+
+  @@index([userId, status])
+  @@index([status, priority, createdAt])
+  @@map("offer_queue_items")
+}
+
+model Publication {
+  id                String    @id @default(cuid())
+  userId            String
+  offerId           String
+  channelId         String
+  queueItemId       String?
+  status            String    @default("QUEUED") // QUEUED, PROCESSING, PUBLISHED, FAILED, RETRYING, CANCELLED
+  provider          String    @default("mock") // mock, telegram, whatsapp, discord
+  source            String    @default("mock") // mock, real
+  providerMessageId String?
+  payload           String?   // JSON string of formatted message
+  scheduledAt       DateTime?
+  startedAt         DateTime?
+  publishedAt       DateTime?
+  failedAt          DateTime?
+  errorCode         String?
+  errorMessage      String?
+  retryCount        Int       @default(0)
+  idempotencyKey    String    @unique
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  offer     Offer           @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  channel   Channel         @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  queueItem OfferQueueItem? @relation(fields: [queueItemId], references: [id], onDelete: SetNull)
+  analyticsEvents AnalyticsEvent[]
+  conversions     Conversion[]
+
+  @@index([userId, status])
+  @@index([channelId, status])
+  @@index([offerId])
+  @@map("publications")
+}
+
+model AutomationRule {
+  id                     String    @id @default(cuid())
+  userId                 String
+  name                   String
+  active                 Boolean   @default(true)
+  minOpportunityScore    Int       @default(80)
+  platforms              String    @default("[\"SHOPEE\", \"MERCADO_LIVRE\", \"AMAZON\"]") // JSON array
+  categories             String    @default("[]") // JSON array
+  minCommission          Float     @default(5.0)
+  minDiscount            Float     @default(15.0)
+  maxPrice               Float?
+  maxOffersPerDay        Int       @default(20)
+  minIntervalMinutes     Int       @default(15)
+  allowedStartTime       String    @default("08:00")
+  allowedEndTime         String    @default("22:00")
+  allowedWeekdays        String    @default("[0,1,2,3,4,5,6]") // JSON array (0=Dom, 1=Seg...)
+  channelIds             String    @default("[]") // JSON array
+  offerStyle             String    @default("DESCONTO") // DIRETO, DESCONTO, URGENCIA, PREMIUM, CURTO
+  duplicateCooldownHours Int       @default(24)
+  autoApprove            Boolean   @default(false)
+  autoSchedule           Boolean   @default(false)
+  lastTriggeredAt        DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, active])
+  @@map("automation_rules")
+}
+
+model AnalyticsMetric {
+  id          String   @id @default(cuid())
+  userId      String
+  date        DateTime
+  clicks      Int      @default(0)
+  conversions Int      @default(0)
+  revenue     Float    @default(0.0)
+  commission  Float    @default(0.0)
+  impressions Int      @default(0)
+  topPlatform String?
+  topCategory String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("analytics_metrics")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, SUCCESS, WARNING, OPPORTUNITY, SYSTEM
+  read      Boolean  @default(false)
+  linkUrl   String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  resource  String
+  details   String?  // JSON string
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
+
+model AutopilotConfig {
+  id                       String    @id @default(cuid())
+  userId                   String    @unique
+  enabled                  Boolean   @default(true)
+  automationMode           String    @default("MANUAL") // MANUAL, ASSISTED, AUTOPILOT
+  scanIntervalMinutes      Int       @default(30)
+  minOpportunityScore      Int       @default(80)
+  minCommission            Float     @default(5.0)
+  minDiscount              Float     @default(10.0)
+  maxPrice                 Float?    @default(500.0)
+  maxOffersPerDay          Int       @default(20)
+  maxOpportunitiesPerCycle Int       @default(10)
+  maxProductsPerCycle      Int       @default(50)
+  minPublicationInterval   Int       @default(15)
+  autoGenerateOffers       Boolean   @default(true)
+  autoApproveOffers        Boolean   @default(false)
+  autoPublish              Boolean   @default(false)
+  duplicateCooldownHours   Int       @default(24)
+  preferredPlatforms       String    @default("[\"SHOPEE\", \"MERCADO_LIVRE\", \"AMAZON\"]") // JSON array
+  preferredCategories      String    @default("[\"Eletrônicos\", \"Casa e Cozinha\", \"Moda\", \"Beleza\"]") // JSON array
+  preferredOfferStyles     String    @default("[\"DESCONTO\", \"URGENCIA\", \"DIRETO\"]") // JSON array
+  channelBalancingStrategy String    @default("ALL") // ALL, ROUND_ROBIN, PRIORITY
+  isLocked                 Boolean   @default(false)
+  lockedAt                 DateTime?
+  lastRunAt                DateTime?
+  nextRunAt                DateTime?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("autopilot_configs")
+}
+
+model AutopilotRun {
+  id                     String    @id @default(cuid())
+  userId                 String
+  status                 String    @default("RUNNING") // RUNNING, COMPLETED, PARTIAL, FAILED
+  triggerType            String    @default("MANUAL") // MANUAL, SCHEDULED
+  startedAt              DateTime  @default(now())
+  finishedAt             DateTime?
+  productsDiscovered     Int       @default(0)
+  productsAnalyzed       Int       @default(0)
+  opportunitiesCreated   Int       @default(0)
+  opportunitiesQualified Int       @default(0)
+  opportunitiesRejected  Int       @default(0)
+  offersGenerated        Int       @default(0)
+  offersApproved         Int       @default(0)
+  publicationsQueued     Int       @default(0)
+  publicationsPublished  Int       @default(0)
+  errors                 String?   // JSON array of errors
+  decisions              String?   // JSON string with decisions and audit summary
+  createdAt              DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([userId, createdAt])
+  @@map("autopilot_runs")
+}
+
+model AnalyticsEvent {
+  id              String   @id @default(cuid())
+  userId          String
+  eventType       String   // CLICK, CONVERSION, COMMISSION, REFUND, CANCELLATION, PUBLICATION
+  affiliateLinkId String?
+  offerId         String?
+  opportunityId   String?
+  publicationId   String?
+  channelId       String?
+  productId       String?
+  platform        String?  // SHOPEE, MERCADO_LIVRE, AMAZON, etc.
+  source          String   @default("mock") // mock, real
+  ipHash          String?
+  userAgent       String?
+  metadata        String?  // JSON string
+  createdAt       DateTime @default(now())
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  affiliateLink AffiliateLink? @relation(fields: [affiliateLinkId], references: [id], onDelete: SetNull)
+  offer         Offer?         @relation(fields: [offerId], references: [id], onDelete: SetNull)
+  publication   Publication?   @relation(fields: [publicationId], references: [id], onDelete: SetNull)
+  channel       Channel?       @relation(fields: [channelId], references: [id], onDelete: SetNull)
+
+  @@index([userId, eventType])
+  @@index([userId, createdAt])
+  @@index([affiliateLinkId])
+  @@index([offerId])
+  @@index([publicationId])
+  @@map("analytics_events")
+}
+
+model Conversion {
+  id              String    @id @default(cuid())
+  userId          String
+  affiliateLinkId String?
+  offerId         String?
+  opportunityId   String?
+  publicationId   String?
+  channelId       String?
+  platform        String    // SHOPEE, MERCADO_LIVRE, AMAZON, etc.
+  externalOrderId String?
+  orderValue      Float     @default(0.0)
+  commissionValue Float     @default(0.0)
+  currency        String    @default("BRL")
+  status          String    @default("PENDING") // PENDING, APPROVED, CANCELLED, REFUNDED
+  source          String    @default("mock") // mock, real
+  occurredAt      DateTime  @default(now())
+  metadata        String?   // JSON string
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  affiliateLink AffiliateLink? @relation(fields: [affiliateLinkId], references: [id], onDelete: SetNull)
+  offer         Offer?         @relation(fields: [offerId], references: [id], onDelete: SetNull)
+  publication   Publication?   @relation(fields: [publicationId], references: [id], onDelete: SetNull)
+  channel       Channel?       @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  commissions   Commission[]
+
+  @@unique([userId, platform, externalOrderId])
+  @@index([userId, status])
+  @@index([userId, occurredAt])
+  @@index([affiliateLinkId])
+  @@index([offerId])
+  @@map("conversions")
+}
+
+model Commission {
+  id           String    @id @default(cuid())
+  userId       String
+  conversionId String?
+  amount       Float     @default(0.0)
+  status       String    @default("ESTIMATED") // ESTIMATED, CONFIRMED, CANCELLED
+  platform     String    // SHOPEE, MERCADO_LIVRE, AMAZON, etc.
+  payoutDate   DateTime?
+  source       String    @default("mock") // mock, real
+  metadata     String?   // JSON string
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversion Conversion? @relation(fields: [conversionId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([conversionId])
+  @@map("commissions")
+}
+
+model Experiment {
+  id             String    @id @default(cuid())
+  userId         String
+  name           String
+  description    String?
+  targetMetric   String    @default("CTR") // CTR, CONVERSION_RATE, COMMISSION
+  status         String    @default("RUNNING") // DRAFT, RUNNING, PAUSED, COMPLETED
+  cooldownHours  Int       @default(6)
+  maxExposure    Int       @default(100)
+  startDate      DateTime  @default(now())
+  endDate        DateTime?
+  winningStyle   String?
+  analysisReason String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  variants ExperimentVariant[]
+
+  @@index([userId, status])
+  @@map("experiments")
+}
+
+model ExperimentVariant {
+  id            String   @id @default(cuid())
+  experimentId  String
+  style         String   // DIRETO, DESCONTO, URGENCIA, PREMIUM, CURTO
+  offerId       String?
+  trafficWeight Float    @default(0.2) // 0.0 to 1.0
+  impressions   Int      @default(0)
+  clicks        Int      @default(0)
+  conversions   Int      @default(0)
+  commission    Float    @default(0.0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  experiment Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  offer      Offer?     @relation(fields: [offerId], references: [id], onDelete: SetNull)
+
+  @@index([experimentId])
+  @@map("experiment_variants")
+}
+
+model LearningSignal {
+  id           String   @id @default(cuid())
+  userId       String
+  signalType   String   // BEST_CHANNEL, BEST_COPY_STYLE, BEST_TIME_SLOT, BEST_PLATFORM, BEST_CATEGORY, PRICE_DROP_PERFORMING, HIGH_COMMISSION_PERFORMING
+  targetEntity String   // e.g. "TELEGRAM", "DESCONTO", "20:00", "SHOPEE", "Eletrônicos"
+  score        Float    // 0 to 100
+  confidence   String   @default("WEAK") // WEAK, RELIABLE, STRONG
+  sampleSize   Int      @default(0) // click/conversion count
+  reason       String   // deterministic explanation
+  metadata     String?  // JSON string with detailed breakdown
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, signalType])
+  @@index([userId, active])
+  @@map("learning_signals")
+}
+
+model IntegrationConnection {
+  id                   String    @id @default(cuid())
+  userId               String
+  provider             String    // TELEGRAM, DISCORD, WHATSAPP, MERCADO_LIVRE, SHOPEE, AMAZON, etc.
+  type                 String    // MARKETPLACE, CHANNEL
+  status               String    @default("NOT_CONFIGURED") // NOT_CONFIGURED, CONNECTING, CONNECTED, DEGRADED, ERROR, DISCONNECTED, MOCK, UNAVAILABLE
+  authType             String    // BOT_TOKEN, WEBHOOK_URL, OAUTH2, API_KEY, BEARER_TOKEN
+  encryptedCredentials String?   // AES-256-GCM encrypted JSON payload
+  externalAccountId    String?   // Bot ID, Account ID, WABA ID, etc.
+  externalAccountName  String?   // Bot Username, Store Name, Phone Number, etc.
+  capabilities         String    @default("[]") // JSON array of supported capabilities
+  metadata             String?   // JSON string with extra provider data
+  lastValidatedAt      DateTime?
+  lastSyncAt           DateTime?
+  lastWebhookAt        DateTime?
+  lastErrorCode        String?
+  lastErrorMessage     String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  user          User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events        IntegrationEvent[]
+  auditLogs     IntegrationAuditLog[]
+  verifications IntegrationVerification[]
+
+  @@unique([userId, provider])
+  @@index([userId, status])
+  @@index([userId, type])
+  @@map("integration_connections")
+}
+
+model IntegrationEvent {
+  id                String    @id @default(cuid())
+  userId            String
+  connectionId      String?
+  provider          String    // TELEGRAM, DISCORD, WHATSAPP, MERCADO_LIVRE, SHOPEE, AMAZON, etc.
+  externalEventId   String    // Provider event ID (e.g. update_id, wamid, notification id)
+  eventType         String    // MESSAGE_RECEIVED, ORDER_CREATED, CONVERSION, ITEM_UPDATED, etc.
+  payload           String    // Raw JSON string
+  normalizedPayload String?   // Normalized JSON string
+  status            String    @default("RECEIVED") // RECEIVED, PROCESSING, PROCESSED, FAILED, DEAD_LETTER
+  retryCount        Int       @default(0)
+  errorMessage      String?
+  receivedAt        DateTime  @default(now())
+  processedAt       DateTime?
+
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connection IntegrationConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, externalEventId])
+  @@index([userId, status])
+  @@index([connectionId, eventType])
+  @@index([receivedAt])
+  @@map("integration_events")
+}
+
+model IntegrationAuditLog {
+  id           String   @id @default(cuid())
+  userId       String
+  connectionId String?
+  provider     String
+  action       String   // CONNECT, DISCONNECT, VALIDATE, TOKEN_REFRESH, WEBHOOK_RECEIVED, WEBHOOK_PROCESSED, WEBHOOK_FAILED, API_REQUEST, API_ERROR, CREDENTIAL_ROTATED, REPLAY_REQUESTED
+  details      String?  // JSON string
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connection IntegrationConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+
+  @@index([userId, action])
+  @@index([connectionId])
+  @@index([createdAt])
+  @@map("integration_audit_logs")
+}
+
+model IntegrationVerification {
+  id                String   @id @default(cuid())
+  userId            String
+  connectionId      String
+  provider          String   // TELEGRAM, DISCORD, WHATSAPP, MERCADO_LIVRE, SHOPEE, AMAZON, etc.
+  capability        String   // BOT_MESSAGES, HEALTH_CHECK, WEBHOOK, OAUTH2, PRODUCT_SEARCH, etc.
+  step              String   // CONFIGURE, PREFLIGHT, HEALTH_CHECK, TEST_SEND, WEBHOOK, PROMOTE_TO_VERIFIED_REAL
+  status            String   // PASSED, FAILED, SKIPPED, REQUIRES_APPROVAL
+  requestId         String?
+  externalReference String?  // e.g. botId, messageId, webhookUrl, orderId
+  responseSummary   String?  // JSON string with non-sensitive parsed details
+  errorCode         String?
+  performedBy       String   @default("SYSTEM") // USER, SYSTEM, TEST_RUNNER
+  source            String   @default("REAL")   // REAL, MOCK
+  createdAt         DateTime @default(now())
+
+  user       User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connection IntegrationConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, connectionId])
+  @@index([provider, step])
+  @@index([status])
+  @@index([createdAt])
+  @@map("integration_verifications")
+}
+
+

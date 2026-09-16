@@ -1,0 +1,41 @@
+{
+  "name": "affiliate-ai",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "tsx --test --test-concurrency=1 src/tests/domain.test.ts src/tests/phase3.test.ts src/tests/phase4.test.ts src/tests/phase5.test.ts src/tests/phase6.test.ts src/tests/phase7.test.ts src/tests/phase7.1.test.ts src/tests/phase7.2.test.ts src/tests/phase7.3.test.ts src/tests/phase7.3.1.test.ts src/tests/phase8.test.ts src/tests/phase9a.test.ts",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.21.1",
+    "bcryptjs": "^2.4.3",
+    "clsx": "^2.1.1",
+    "jose": "^5.9.6",
+    "lucide-react": "^0.453.0",
+    "next": "14.2.15",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20.17.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "14.2.15",
+    "postcss": "^8.4.47",
+    "prisma": "^5.21.1",
+    "tailwindcss": "^3.4.14",
+    "tsx": "^4.23.13",
+    "typescript": "^5.6.3"
+  }
+}
