@@ -22,7 +22,6 @@ import {
   ShieldAlert,
   User as UserIcon,
 } from "lucide-react";
-import { MOCK_USER, MOCK_ADMIN_USER } from "@/lib/mock";
 import { useToast } from "@/components/ui/toast";
 
 const ICON_MAP = {
@@ -50,6 +49,24 @@ export function Sidebar({ onItemClick, isAdmin = false }: SidebarProps) {
   const router = useRouter();
   const { toast } = useToast();
 
+  const [sessionUser, setSessionUser] = React.useState<{
+    name: string;
+    email: string;
+    role: string;
+    status: string;
+  } | null>(null);
+
+  React.useEffect(() => {
+    fetch("/api/auth/session")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.user) {
+          setSessionUser(data.user);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
@@ -65,7 +82,8 @@ export function Sidebar({ onItemClick, isAdmin = false }: SidebarProps) {
     }
   };
 
-  const user = isAdmin ? MOCK_ADMIN_USER : MOCK_USER;
+  const displayName = sessionUser?.name || (isAdmin ? "Admin Master" : "Afiliado");
+  const displayRole = sessionUser?.role || (isAdmin ? "ADMIN" : "PRO");
 
   return (
     <aside className="w-64 flex flex-col justify-between border-r border-slate-800/80 bg-slate-950 text-slate-300 h-full select-none">
@@ -155,11 +173,11 @@ export function Sidebar({ onItemClick, isAdmin = false }: SidebarProps) {
         <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/60 border border-slate-800">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center text-primary-300 shrink-0 font-bold text-xs">
-              {user.name.charAt(0)}
+              {displayName.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-white truncate">{user.name}</p>
-              <p className="text-[10px] text-emerald-400 font-medium">Plano {user.plan}</p>
+              <p className="text-xs font-semibold text-white truncate">{displayName}</p>
+              <p className="text-[10px] text-emerald-400 font-medium">{displayRole}</p>
             </div>
           </div>
 

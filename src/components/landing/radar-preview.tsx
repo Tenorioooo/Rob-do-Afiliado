@@ -1,20 +1,58 @@
 "use client";
 
 import React, { useState } from "react";
-import { MOCK_PRODUCTS } from "@/lib/mock";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { Flame, Star, ArrowUpRight, Check, Filter } from "lucide-react";
 import Link from "next/link";
 
+const FEATURED_SHOWCASE_PRODUCTS = [
+  {
+    id: "feat-ml-01",
+    title: "Smartwatch Amazfit GTS 4 Mini Alexa 120+ Modos Esportivos",
+    platform: "MERCADO_LIVRE",
+    originalPrice: 699.0,
+    currentPrice: 429.9,
+    discountPercent: 38,
+    commissionRate: 0.08,
+    commissionAmount: 34.39,
+    opportunityScore: 94,
+    opportunityReasons: ["Desconto de 38% com selo Full", "Alta taxa de conversão no nicho de tecnologia"],
+  },
+  {
+    id: "feat-shopee-01",
+    title: "Fone de Ouvido Bluetooth TWS Cancelamento de Ruído Ativo",
+    platform: "SHOPEE",
+    originalPrice: 199.9,
+    currentPrice: 89.9,
+    discountPercent: 55,
+    commissionRate: 0.14,
+    commissionAmount: 12.58,
+    opportunityScore: 91,
+    opportunityReasons: ["Cupom oficial acumulativo", "Mais de 10.000 avaliações 5 estrelas"],
+  },
+  {
+    id: "feat-amz-01",
+    title: "Fritadeira Sem Óleo Air Fryer Digital 4L Antiaderente",
+    platform: "AMAZON",
+    originalPrice: 459.9,
+    currentPrice: 289.0,
+    discountPercent: 37,
+    commissionRate: 0.09,
+    commissionAmount: 26.01,
+    opportunityScore: 96,
+    opportunityReasons: ["Frete Grátis Prime com entrega em 24h", "Preço mais baixo dos últimos 90 dias"],
+  },
+];
+
 export function RadarPreviewSection() {
   const [activePlatform, setActivePlatform] = useState<string>("ALL");
 
   const filtered =
     activePlatform === "ALL"
-      ? MOCK_PRODUCTS.slice(0, 3)
-      : MOCK_PRODUCTS.filter((p) => p.platform === activePlatform).slice(0, 3);
+      ? FEATURED_SHOWCASE_PRODUCTS
+      : FEATURED_SHOWCASE_PRODUCTS.filter((p) => p.platform === activePlatform);
 
   return (
     <section id="radar-demo" className="py-24 relative overflow-hidden">

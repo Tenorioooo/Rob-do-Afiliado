@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { registerSchema } from "@/lib/validations/auth";
 import { setSessionCookie } from "@/lib/auth/session";
+import { prisma } from "@/lib/db/prisma";
+import bcrypt from "bcryptjs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,24 +16,67 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, email } = result.data;
+    const { name, email, password } = result.data;
+    const normalizedEmail = email.toLowerCase().trim();
 
-    const newUser = {
-      userId: `usr-${Date.now()}`,
-      email: email.toLowerCase(),
-      name,
-      role: "USER" as const,
-      status: "TRIAL",
-      avatar: null,
+    // 1. Check if email is already in use
+    const existing = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    if (existing) {
+      return NextResponse.json(
+        { error: "Este e-mail já está cadastrado. Faça login para continuar." },
+        { status: 409 }
+      );
+    }
+
+    // 2. Hash password with bcrypt
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // 3. Create user in database
+    const user = await prisma.user.create({
+      data: {
+        name: name.trim(),
+        email: normalizedEmail,
+        passwordHash,
+        role: "USER",
+        status: "TRIAL",
+      },
+    });
+
+    // 4. Initialize default AutopilotConfig for the new user
+    await prisma.autopilotConfig.create({
+      data: {
+        userId: user.id,
+        enabled: false,
+        automationMode: "MANUAL",
+        scanIntervalMinutes: 30,
+        minOpportunityScore: 70,
+        minDiscount: 15,
+        maxOffersPerDay: 20,
+        maxOpportunitiesPerCycle: 5,
+        maxProductsPerCycle: 10,
+        minPublicationInterval: 60,
+      },
+    }).catch(() => {});
+
+    const newUserPayload = {
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role as "USER" | "ADMIN" | "SUPERADMIN",
+      status: user.status,
+      avatar: user.avatar,
     };
 
-    // Auto log-in after registration
-    await setSessionCookie(newUser, false);
+    // 5. Auto log-in after registration
+    await setSessionCookie(newUserPayload, false);
 
     return NextResponse.json({
       success: true,
       message: "Conta criada com sucesso!",
-      user: newUser,
+      user: newUserPayload,
       redirectTo: "/onboarding",
     });
   } catch (error) {

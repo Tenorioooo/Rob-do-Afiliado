@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { MOCK_USER, MOCK_INTEGRATIONS } from "@/lib/mock";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,8 @@ import {
   LogOut,
   CheckCircle2,
   Lock,
+  Loader2,
+  ExternalLink,
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -26,28 +28,79 @@ export default function SettingsPage() {
   >("profile");
 
   // Profile Form State
-  const [name, setName] = useState(MOCK_USER.name);
-  const [email, setEmail] = useState(MOCK_USER.email);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [connections, setConnections] = useState<any[]>([]);
 
   // Security Form State
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
-  const handleSaveProfile = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      toast({
-        title: "Perfil Atualizado!",
-        message: "Suas informações cadastrais foram salvas com sucesso.",
-        type: "success",
-      });
-    }, 800);
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch("/api/user/profile");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.user) {
+          setName(data.user.name || "");
+          setEmail(data.user.email || "");
+          setPhone(data.user.phone || "");
+        }
+        if (data.connections) {
+          setConnections(data.connections);
+        }
+      }
+    } catch (err) {
+      console.error("Erro ao carregar perfil:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleUpdatePassword = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, phone }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast({
+          title: "Perfil Atualizado!",
+          message: "Suas informações foram salvas com sucesso no banco de dados.",
+          type: "success",
+        });
+      } else {
+        toast({
+          title: "Erro ao salvar",
+          message: data.error || "Não foi possível atualizar o perfil.",
+          type: "error",
+        });
+      }
+    } catch {
+      toast({
+        title: "Erro de rede",
+        message: "Falha na comunicação com o servidor.",
+        type: "error",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPassword || newPassword.length < 6) {
       toast({
@@ -57,13 +110,39 @@ export default function SettingsPage() {
       });
       return;
     }
-    toast({
-      title: "Senha atualizada com sucesso!",
-      message: "Utilize sua nova senha no próximo login.",
-      type: "success",
-    });
-    setCurrentPassword("");
-    setNewPassword("");
+
+    setIsUpdatingPassword(true);
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast({
+          title: "Senha atualizada!",
+          message: "Sua nova senha foi gravada com sucesso.",
+          type: "success",
+        });
+        setCurrentPassword("");
+        setNewPassword("");
+      } else {
+        toast({
+          title: "Erro ao alterar senha",
+          message: data.error || "Senha atual incorreta.",
+          type: "error",
+        });
+      }
+    } catch {
+      toast({
+        title: "Erro de conexão",
+        message: "Não foi possível conectar ao servidor.",
+        type: "error",
+      });
+    } finally {
+      setIsUpdatingPassword(false);
+    }
   };
 
   return (
@@ -285,40 +364,55 @@ export default function SettingsPage() {
       {/* TAB CONTENT: INTEGRATIONS */}
       {activeTab === "integrations" && (
         <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 backdrop-blur-xl max-w-3xl space-y-4">
-          <h3 className="text-base font-bold text-white mb-1">Contratos de Marketplaces</h3>
-          <p className="text-xs text-slate-400 mb-6">Status dos adaptadores conectados à sua conta.</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-bold text-white mb-1">Canais & Marketplaces Conectados</h3>
+              <p className="text-xs text-slate-400">Status das conexões reais cadastradas no banco de dados.</p>
+            </div>
+            <Link href="/integrations">
+              <Button variant="glow" size="sm" className="gap-1 text-xs font-semibold">
+                Central de Integrações
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Button>
+            </Link>
+          </div>
 
-          <div className="space-y-3">
-            {MOCK_INTEGRATIONS.map((int, i) => (
-              <div
-                key={i}
-                className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 flex items-center justify-between"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-white text-sm">{int.name}</span>
-                    <Badge variant={int.status === "CONNECTED" ? "success" : "outline"}>
-                      {int.status === "CONNECTED" ? "Conectado" : "Não conectado"}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-slate-400 mt-1">{int.description}</p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    toast({
-                      title: int.name,
-                      message: "Configuração do adapter acessível.",
-                      type: "info",
-                    })
-                  }
-                  className="text-xs"
-                >
-                  Configurar
-                </Button>
+          <div className="space-y-3 pt-2">
+            {connections.length === 0 ? (
+              <div className="p-6 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
+                <p className="text-xs text-slate-400 mb-3">Nenhum canal ou marketplace conectado ainda.</p>
+                <Link href="/integrations">
+                  <Button variant="outline" size="sm" className="text-xs">
+                    Conectar Novo Canal ou Marketplace
+                  </Button>
+                </Link>
               </div>
-            ))}
+            ) : (
+              connections.map((conn, i) => (
+                <div
+                  key={i}
+                  className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 flex items-center justify-between"
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-white text-sm">{conn.provider.replace("_", " ")}</span>
+                      <Badge variant={conn.status === "CONNECTED" ? "success" : "outline"}>
+                        {conn.status === "CONNECTED" ? "Conectado" : conn.status}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1">
+                      {conn.externalAccountName ? `Conta: ${conn.externalAccountName}` : `Tipo: ${conn.type}`}
+                      {conn.lastValidatedAt && ` • Verificado em: ${new Date(conn.lastValidatedAt).toLocaleDateString()}`}
+                    </p>
+                  </div>
+                  <Link href="/integrations">
+                    <Button variant="outline" size="sm" className="text-xs">
+                      Gerenciar
+                    </Button>
+                  </Link>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}

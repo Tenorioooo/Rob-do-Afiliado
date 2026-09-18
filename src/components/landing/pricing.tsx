@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { MOCK_PLANS } from "@/lib/mock";
+import { OFFICIAL_PLANS } from "@/lib/constants/plans";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Sparkles, ArrowRight } from "lucide-react";
@@ -22,7 +22,7 @@ export function PricingSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch max-w-6xl mx-auto">
-          {MOCK_PLANS.map((plan) => (
+          {OFFICIAL_PLANS.map((plan) => (
             <div
               key={plan.id}
               className={`relative rounded-3xl p-8 flex flex-col justify-between transition-all duration-200 ${

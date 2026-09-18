@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { MOCK_PLANS, MOCK_USER } from "@/lib/mock";
+import { OFFICIAL_PLANS } from "@/lib/constants/plans";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast";
@@ -144,7 +144,7 @@ export default function PlanPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {MOCK_PLANS.map((plan) => (
+          {OFFICIAL_PLANS.map((plan) => (
             <div
               key={plan.id}
               className={`rounded-3xl p-6 border flex flex-col justify-between ${
