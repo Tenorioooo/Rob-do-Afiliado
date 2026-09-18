@@ -36,9 +36,10 @@ export class DiscoveryService {
       try {
         scannedPlatforms.push("MERCADO_LIVRE");
         const items = await this.mlAdapter.getRawItems({
+          categories: params?.categories,
           category: params?.categories?.[0],
           query: params?.query,
-          limit: params?.maxPerPlatform || 50,
+          limit: params?.maxPerPlatform || 60,
         });
         allRawItems.push(...items);
       } catch (err: unknown) {

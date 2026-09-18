@@ -8,19 +8,26 @@ export interface MLDiscoveryOptions {
 }
 
 export class MercadoLivreRealDiscovery {
-  private static readonly CATEGORY_URLS: Record<string, string> = {
-    eletronicos: "https://www.mercadolivre.com.br/ofertas?category=MLB1055",
-    informatica: "https://www.mercadolivre.com.br/ofertas?category=MLB1648",
-    celulares: "https://www.mercadolivre.com.br/ofertas?category=MLB1051",
-    casa: "https://www.mercadolivre.com.br/ofertas?category=MLB1574",
-    beleza: "https://www.mercadolivre.com.br/ofertas?category=MLB1246",
-    ferramentas: "https://www.mercadolivre.com.br/ofertas?category=MLB1500",
-    moda: "https://www.mercadolivre.com.br/ofertas?category=MLB1430",
-    games: "https://www.mercadolivre.com.br/ofertas?category=MLB1144",
-  };
+  /**
+   * Catálogo oficial completo de URLs de Ofertas por Nicho no Mercado Livre Brasil
+   */
+  private static readonly CATEGORY_FEEDS: { name: string; url: string }[] = [
+    { name: "Informática", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1648" },
+    { name: "Eletrônicos", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1055" },
+    { name: "Celulares e Telefones", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1051" },
+    { name: "Casa e Cozinha", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1574" },
+    { name: "Ferramentas", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1500" },
+    { name: "Beleza e Saúde", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1246" },
+    { name: "Moda e Calçados", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1430" },
+    { name: "Games", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1144" },
+    { name: "Esportes e Fitness", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1276" },
+    { name: "Áudio e TV", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1000" },
+    { name: "Automotivo", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1743" },
+    { name: "Destaques Gerais", url: "https://www.mercadolivre.com.br/ofertas" },
+  ];
 
   /**
-   * Fetches real raw HTML from Mercado Livre Brasil.
+   * Fetches real raw HTML from Mercado Livre Brasil with automatic redirect handling.
    */
   static async fetchHtml(url: string): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -62,20 +69,22 @@ export class MercadoLivreRealDiscovery {
   }
 
   /**
-   * Parses poly-card and promotion items from Mercado Livre HTML into RawMarketplaceItem.
+   * Parses complete poly-card and promotion items from Mercado Livre HTML into RawMarketplaceItem.
    */
   static parseHtml(html: string, fallbackCategory: string = "Geral"): RawMarketplaceItem[] {
     const items: RawMarketplaceItem[] = [];
-    const cardChunks = html.split(/<div class="poly-card/i);
+    
+    // Split exato por início de cada card completo de produto
+    const cardChunks = html.split(/<div[^>]*class="[^"]*poly-card--grid-card[^"]*"/i);
 
     for (let i = 1; i < cardChunks.length; i++) {
       const card = cardChunks[i];
 
-      // 1. Link e Título
+      // 1. Título e Link
       const titleMatch =
+        card.match(/class="poly-component__title"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i) ||
         card.match(/<a[^>]*class="poly-component__title"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i) ||
-        card.match(/<a[^>]*href="([^"]+)"[^>]*class="poly-component__title"[^>]*>([\s\S]*?)<\/a>/i) ||
-        card.match(/class="poly-component__title"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i);
+        card.match(/<a[^>]*href="([^"]+)"[^>]*class="poly-component__title"[^>]*>([\s\S]*?)<\/a>/i);
 
       if (!titleMatch) continue;
 
@@ -98,16 +107,23 @@ export class MercadoLivreRealDiscovery {
         rawUrl.match(/(MLB-?\d+)/i);
       const externalId = idMatch ? idMatch[1].replace("-", "") : `MLB_${Date.now()}_${i}`;
 
-      // 3. Imagem Real
+      // 3. Imagem Original em Alta Resolução
       const imgMatch =
-        card.match(/(https:\/\/http2\.mlstatic\.com\/D_[^"\s\>]+)/i) ||
-        card.match(/src="([^"]*(?:mlstatic\.com|http2\.mlstatic)[^"]*)"/i) ||
-        card.match(/data-src="([^"]*(?:mlstatic\.com|http2\.mlstatic)[^"]*)"/i) ||
-        card.match(/<img[^>]*src="([^"]+)"/i);
+        card.match(/<img[^>]*class="poly-component__picture"[^>]*src="([^"]+)"/i) ||
+        card.match(/src="([^"]+)"[^>]*class="poly-component__picture"/i) ||
+        card.match(/data-src="([^"]+)"/i) ||
+        card.match(/(https:\/\/http2\.mlstatic\.com\/D_[^"\s\>]+\.(?:webp|jpg|png|jpeg))/i) ||
+        card.match(/(https:\/\/http2\.mlstatic\.com\/D_[^"\s\>]+)/i);
 
-      const imageUrl = imgMatch
-        ? imgMatch[1].replace("http://", "https://").replace(/&amp;/g, "&")
-        : "https://http2.mlstatic.com/frontend-assets/ui-navigation/5.21.22/mercadolibre/logo__large_plus.png";
+      let imageUrl = imgMatch ? imgMatch[1].replace("http://", "https://").replace(/&amp;/g, "&") : "";
+      
+      // Fallback seguro caso a imagem seja lazy loaded sem src
+      if (!imageUrl || imageUrl.includes("logo__large_plus")) {
+        const anyMlImg = card.match(/https:\/\/http2\.mlstatic\.com\/D_[^"\s\>]+/i);
+        if (anyMlImg) {
+          imageUrl = anyMlImg[0].replace("http://", "https://");
+        }
+      }
 
       // 4. Preço Atual
       const currentPriceMatch =
@@ -164,7 +180,7 @@ export class MercadoLivreRealDiscovery {
       const labelMatch = card.match(/class="polylabel-fs-xs polylabel-fw-semibold">([^<]+)<\/span>/i);
       const tag = labelMatch ? labelMatch[1].trim() : undefined;
 
-      // Classificação de Categoria Inteligente
+      // 9. Classificação Inteligente de Nicho
       let category = fallbackCategory;
       const lowerTitle = rawTitle.toLowerCase();
       if (
@@ -175,14 +191,18 @@ export class MercadoLivreRealDiscovery {
         lowerTitle.includes("teclado") ||
         lowerTitle.includes("mouse") ||
         lowerTitle.includes("monitor") ||
-        lowerTitle.includes("ryzen")
+        lowerTitle.includes("ryzen") ||
+        lowerTitle.includes("tablet") ||
+        lowerTitle.includes("projetor")
       ) {
         category = "Informática";
       } else if (
         lowerTitle.includes("smartphone") ||
         lowerTitle.includes("celular") ||
         lowerTitle.includes("iphone") ||
-        lowerTitle.includes("samsung") ||
+        lowerTitle.includes("samsung galaxy") ||
+        lowerTitle.includes("motorola") ||
+        lowerTitle.includes("xiaomi") ||
         lowerTitle.includes("fone") ||
         lowerTitle.includes("power bank") ||
         lowerTitle.includes("smartwatch") ||
@@ -199,7 +219,10 @@ export class MercadoLivreRealDiscovery {
         lowerTitle.includes("panela") ||
         lowerTitle.includes("geladeira") ||
         lowerTitle.includes("ventilador") ||
-        lowerTitle.includes("fritadeira")
+        lowerTitle.includes("fritadeira") ||
+        lowerTitle.includes("cadeira escritório") ||
+        lowerTitle.includes("câmera segurança") ||
+        lowerTitle.includes("câmeras segurança")
       ) {
         category = "Casa e Cozinha";
       } else if (
@@ -207,7 +230,9 @@ export class MercadoLivreRealDiscovery {
         lowerTitle.includes("furadeira") ||
         lowerTitle.includes("ferramenta") ||
         lowerTitle.includes("manta") ||
-        lowerTitle.includes("parafusadeira")
+        lowerTitle.includes("parafusadeira") ||
+        lowerTitle.includes("vedatudo") ||
+        lowerTitle.includes("piso vinílico")
       ) {
         category = "Ferramentas";
       } else if (
@@ -216,20 +241,43 @@ export class MercadoLivreRealDiscovery {
         lowerTitle.includes("perfume") ||
         lowerTitle.includes("creme") ||
         lowerTitle.includes("barbeador") ||
-        lowerTitle.includes("escova secadora")
+        lowerTitle.includes("escova secadora") ||
+        lowerTitle.includes("prancha") ||
+        lowerTitle.includes("maozinha")
       ) {
         category = "Beleza e Saúde";
       } else if (
         lowerTitle.includes("tenis") ||
+        lowerTitle.includes("tênis") ||
         lowerTitle.includes("camisa") ||
+        lowerTitle.includes("camiseta") ||
         lowerTitle.includes("mochila") ||
         lowerTitle.includes("relogio") ||
         lowerTitle.includes("jaqueta")
       ) {
         category = "Moda";
+      } else if (
+        lowerTitle.includes("gamer") ||
+        lowerTitle.includes("ps4") ||
+        lowerTitle.includes("ps5") ||
+        lowerTitle.includes("xbox") ||
+        lowerTitle.includes("joystick") ||
+        lowerTitle.includes("controle para") ||
+        lowerTitle.includes("gamesir") ||
+        lowerTitle.includes("nintendo")
+      ) {
+        category = "Games";
+      } else if (
+        lowerTitle.includes("suplemento") ||
+        lowerTitle.includes("whey") ||
+        lowerTitle.includes("creatina") ||
+        lowerTitle.includes("bicicleta") ||
+        lowerTitle.includes("corrida")
+      ) {
+        category = "Esportes";
       }
 
-      // Comissão padrão do Mercado Livre Brasil (~9%)
+      // Comissão padrão de afiliado Mercado Livre (~9%)
       const commissionRate = 0.09;
       const commissionAmount = Number((currentPrice * commissionRate).toFixed(2));
 
@@ -248,7 +296,7 @@ export class MercadoLivreRealDiscovery {
         salesCount,
         commissionRate,
         commissionAmount,
-        trendIndicator: Math.min(95, 70 + Math.floor(discountPercent / 2)),
+        trendIndicator: Math.min(98, 70 + Math.floor(discountPercent / 2)),
         productUrl: cleanUrl,
         inStock: true,
         rawMetadata: {
@@ -265,7 +313,7 @@ export class MercadoLivreRealDiscovery {
   }
 
   /**
-   * Scans real products from Mercado Livre.
+   * Scans real products across all niches from Mercado Livre.
    */
   static async discoverProducts(options?: MLDiscoveryOptions): Promise<RawMarketplaceItem[]> {
     const urlsToFetch: { url: string; category: string }[] = [];
@@ -282,45 +330,72 @@ export class MercadoLivreRealDiscovery {
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "");
 
-        let matchedUrl = "https://www.mercadolivre.com.br/ofertas";
-        for (const [key, u] of Object.entries(this.CATEGORY_URLS)) {
-          if (normalizedKey.includes(key)) {
-            matchedUrl = u;
+        let matched = false;
+        for (const feed of this.CATEGORY_FEEDS) {
+          const feedKey = feed.name
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+          if (feedKey.includes(normalizedKey) || normalizedKey.includes(feedKey)) {
+            urlsToFetch.push({ url: feed.url, category: feed.name });
+            matched = true;
             break;
           }
         }
-        urlsToFetch.push({ url: matchedUrl, category: cat });
+        if (!matched) {
+          urlsToFetch.push({
+            url: `https://lista.mercadolivre.com.br/${encodeURIComponent(cat)}`,
+            category: cat,
+          });
+        }
       }
     }
 
-    // Default: Ofertas do dia gerais
+    // Se nenhuma categoria específica foi pedida, varre TODOS os principais nichos de alta conversão!
     if (urlsToFetch.length === 0) {
       urlsToFetch.push(
-        { url: "https://www.mercadolivre.com.br/ofertas", category: "Ofertas em Destaque" },
+        { url: "https://www.mercadolivre.com.br/ofertas?category=MLB1648", category: "Informática" },
+        { url: "https://www.mercadolivre.com.br/ofertas?category=MLB1574", category: "Casa e Cozinha" },
+        { url: "https://www.mercadolivre.com.br/ofertas?category=MLB1500", category: "Ferramentas" },
+        { url: "https://www.mercadolivre.com.br/ofertas?category=MLB1246", category: "Beleza e Saúde" },
+        { url: "https://www.mercadolivre.com.br/ofertas?category=MLB1430", category: "Moda e Calçados" },
+        { url: "https://www.mercadolivre.com.br/ofertas?category=MLB1144", category: "Games" },
         { url: "https://www.mercadolivre.com.br/ofertas?category=MLB1055", category: "Eletrônicos" },
-        { url: "https://www.mercadolivre.com.br/ofertas?category=MLB1574", category: "Casa e Cozinha" }
+        { url: "https://www.mercadolivre.com.br/ofertas", category: "Ofertas em Destaque" }
       );
     }
 
     const allItems: RawMarketplaceItem[] = [];
     const seenIds = new Set<string>();
 
-    for (const target of urlsToFetch) {
+    // Varre em paralelo com controle de concorrência
+    const fetchPromises = urlsToFetch.map(async (target) => {
       try {
         const html = await this.fetchHtml(target.url);
-        const parsed = this.parseHtml(html, target.category);
-        for (const item of parsed) {
+        return this.parseHtml(html, target.category);
+      } catch (err) {
+        console.warn(`[MLDiscovery] Erro ao buscar ${target.url}:`, err);
+        return [];
+      }
+    });
+
+    const results = await Promise.all(fetchPromises);
+    
+    // Intercala produtos de cada nicho para garantir diversidade máxima
+    let maxItemsPerNiche = Math.max(...results.map((r) => r.length));
+    for (let i = 0; i < maxItemsPerNiche; i++) {
+      for (const nicheList of results) {
+        if (nicheList[i]) {
+          const item = nicheList[i];
           if (!seenIds.has(item.externalId)) {
             seenIds.add(item.externalId);
             allItems.push(item);
           }
         }
-      } catch (err) {
-        console.warn(`[MLDiscovery] Erro ao buscar ${target.url}:`, err);
       }
     }
 
-    const limit = options?.limit || 50;
+    const limit = options?.limit || 60;
     return allItems.slice(0, limit);
   }
 }

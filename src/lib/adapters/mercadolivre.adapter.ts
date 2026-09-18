@@ -50,12 +50,16 @@ export class MercadoLivreAdapter implements MarketplaceAdapter {
       return items;
     }
 
-    // 2. Executar descoberta REAL no Mercado Livre Brasil
+    // 2. Executar descoberta REAL no Mercado Livre Brasil (Multi-Nicho)
     try {
+      const targetCategories = params?.categories && params.categories.length > 0
+        ? params.categories
+        : (params?.category && params.category !== "ALL" ? [params.category] : undefined);
+
       const realItems = await MercadoLivreRealDiscovery.discoverProducts({
-        categories: params?.category && params.category !== "ALL" ? [params.category] : undefined,
+        categories: targetCategories,
         query: params?.query,
-        limit: params?.limit || 50,
+        limit: params?.limit || 60,
       });
 
       if (realItems.length > 0) {

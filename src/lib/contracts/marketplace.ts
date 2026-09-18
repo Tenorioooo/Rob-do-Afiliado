@@ -48,6 +48,7 @@ export interface ConnectionResult {
 export interface ProductSearchParams {
   query?: string;
   category?: string;
+  categories?: string[];
   minPrice?: number;
   maxPrice?: number;
   minDiscount?: number;
