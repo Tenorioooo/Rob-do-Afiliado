@@ -3,6 +3,8 @@ import { getSession, setSessionCookie } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import bcrypt from "bcryptjs";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const session = await getSession();

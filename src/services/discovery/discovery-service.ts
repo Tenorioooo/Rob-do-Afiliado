@@ -82,9 +82,13 @@ export class DiscoveryService {
     let filteredRaw = allRawItems;
     if (params?.categories && params.categories.length > 0) {
       const allowedCategories = params.categories.map((c) => c.toLowerCase());
-      const matches = allRawItems.filter(
-        (item) => item.category && allowedCategories.some((ac) => item.category?.toLowerCase().includes(ac) || ac.includes(item.category?.toLowerCase()))
-      );
+      const matches = allRawItems.filter((item) => {
+        if (!item.category) return false;
+        const itemCat = item.category.toLowerCase();
+        return allowedCategories.some(
+          (ac) => itemCat.includes(ac) || ac.includes(itemCat)
+        );
+      });
       if (matches.length > 0) {
         filteredRaw = matches;
       }
