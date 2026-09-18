@@ -104,7 +104,10 @@ export class MercadoLivreMarketplaceAdapter {
 
       const res = await ExternalRequestClient.request(url, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "application/json",
+        },
         body: new URLSearchParams(bodyParams).toString(),
         timeoutMs: 8000,
       });
@@ -118,12 +121,19 @@ export class MercadoLivreMarketplaceAdapter {
         };
       }
 
+      const rawError =
+        res.data?.error_description ||
+        res.data?.message ||
+        res.data?.error ||
+        (Array.isArray(res.data?.cause) && res.data.cause[0]?.message) ||
+        (typeof res.data === "string" ? res.data : null);
+
       return {
         accessToken: "",
         refreshToken: "",
         expiresIn: 0,
         userId: 0,
-        errorMessage: res.data?.message || `Falha na autenticação OAuth (HTTP ${res.status})`,
+        errorMessage: rawError || `Falha na autenticação OAuth (HTTP ${res.status})`,
       };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Erro na troca de código OAuth Mercado Livre";

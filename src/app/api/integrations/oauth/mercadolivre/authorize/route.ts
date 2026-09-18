@@ -10,13 +10,12 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
+    const baseUrl = (process.env.NEXTAUTH_URL || "http://localhost:3000").replace(/\/+$/, "");
     const clientId = searchParams.get("client_id") || searchParams.get("app_id") || process.env.MERCADOLIVRE_CLIENT_ID;
-    const redirectUri = searchParams.get("redirect_uri") || `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/integrations/oauth/mercadolivre/callback`;
+    const redirectUri = searchParams.get("redirect_uri") || process.env.MERCADOLIVRE_REDIRECT_URI || `${baseUrl}/api/integrations/oauth/mercadolivre/callback`;
     const format = searchParams.get("format");
     const codeChallenge = searchParams.get("code_challenge") || undefined;
     const codeChallengeMethod = (searchParams.get("code_challenge_method") as "S256" | "plain") || (codeChallenge ? "S256" : undefined);
-
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
     if (!clientId) {
       const errorMsg = "MERCADOLIVRE_CLIENT_ID não configurado";

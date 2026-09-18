@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     const error = searchParams.get("error");
     const errorDescription = searchParams.get("error_description");
 
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+    const baseUrl = (process.env.NEXTAUTH_URL || "http://localhost:3000").replace(/\/+$/, "");
 
     if (error) {
       return NextResponse.redirect(
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const redirectUri = `${baseUrl}/api/integrations/oauth/mercadolivre/callback`;
+    const redirectUri = process.env.MERCADOLIVRE_REDIRECT_URI || `${baseUrl}/api/integrations/oauth/mercadolivre/callback`;
     const clientSecret = process.env.MERCADOLIVRE_CLIENT_SECRET || "";
     const clientId = process.env.MERCADOLIVRE_CLIENT_ID || "";
 
