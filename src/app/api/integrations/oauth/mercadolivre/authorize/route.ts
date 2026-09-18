@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const { url, state } = OAuthService.generateAuthUrl({
+    const { url, state, codeVerifier } = OAuthService.generateAuthUrl({
       provider: "MERCADO_LIVRE",
       clientId,
       redirectUri,
@@ -43,10 +43,30 @@ export async function GET(req: NextRequest) {
     });
 
     if (format === "json") {
-      return NextResponse.json({ url, state });
+      const response = NextResponse.json({ url, state });
+      if (codeVerifier) {
+        response.cookies.set("ml_pkce_verifier", codeVerifier, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/",
+          maxAge: 900,
+        });
+      }
+      return response;
     }
 
-    return NextResponse.redirect(url);
+    const response = NextResponse.redirect(url);
+    if (codeVerifier) {
+      response.cookies.set("ml_pkce_verifier", codeVerifier, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 900,
+      });
+    }
+    return response;
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

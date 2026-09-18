@@ -5,6 +5,15 @@ import crypto from "crypto";
 
 export class OAuthService {
   /**
+   * Generates PKCE code_verifier and S256 code_challenge.
+   */
+  static generatePKCE(): { codeVerifier: string; codeChallenge: string } {
+    const codeVerifier = crypto.randomBytes(32).toString("base64url");
+    const codeChallenge = crypto.createHash("sha256").update(codeVerifier).digest("base64url");
+    return { codeVerifier, codeChallenge };
+  }
+
+  /**
    * Generates authorization URL with secure state token.
    * Treats Client ID as the official Mercado Livre App ID.
    */
@@ -16,17 +25,30 @@ export class OAuthService {
     userId: string;
     codeChallenge?: string;
     codeChallengeMethod?: "S256" | "plain";
-  }): { url: string; state: string } {
+    codeVerifier?: string;
+  }): { url: string; state: string; codeVerifier: string } {
     const effectiveClientId = params.clientId || params.appId || "";
     const state = `ml_${params.userId}_${crypto.randomBytes(8).toString("hex")}`;
+
+    let codeVerifier = params.codeVerifier || "";
+    let codeChallenge = params.codeChallenge;
+    let codeChallengeMethod = params.codeChallengeMethod;
+
+    if (!codeChallenge) {
+      const pkce = this.generatePKCE();
+      codeVerifier = pkce.codeVerifier;
+      codeChallenge = pkce.codeChallenge;
+      codeChallengeMethod = "S256";
+    }
+
     const url = MercadoLivreMarketplaceAdapter.getAuthorizationUrl({
       clientId: effectiveClientId,
       redirectUri: params.redirectUri,
       state,
-      codeChallenge: params.codeChallenge,
-      codeChallengeMethod: params.codeChallengeMethod,
+      codeChallenge,
+      codeChallengeMethod,
     });
-    return { url, state };
+    return { url, state, codeVerifier };
   }
 
   /**
@@ -73,6 +95,7 @@ export class OAuthService {
     redirectUri: string;
     clientId?: string;
     clientSecret?: string;
+    codeVerifier?: string;
   }): Promise<{ success: boolean; connectionId?: string; error?: string }> {
     try {
       const conn = await prisma.integrationConnection.findUnique({
@@ -94,6 +117,7 @@ export class OAuthService {
         clientSecret,
         code: params.code,
         redirectUri: params.redirectUri,
+        codeVerifier: params.codeVerifier,
       });
 
       if (!tokenRes.accessToken) {

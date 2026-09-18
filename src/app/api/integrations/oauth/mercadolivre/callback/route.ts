@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
     const redirectUri = process.env.MERCADOLIVRE_REDIRECT_URI || `${baseUrl}/api/integrations/oauth/mercadolivre/callback`;
     const clientSecret = process.env.MERCADOLIVRE_CLIENT_SECRET || "";
     const clientId = process.env.MERCADOLIVRE_CLIENT_ID || "";
+    const codeVerifier = req.cookies.get("ml_pkce_verifier")?.value;
 
     const result = await OAuthService.handleMercadoLivreCallback({
       userId: stateValidation.userId!,
@@ -41,17 +42,22 @@ export async function GET(req: NextRequest) {
       clientId,
       clientSecret,
       redirectUri,
+      codeVerifier,
     });
 
     if (!result.success) {
-      return NextResponse.redirect(
+      const res = NextResponse.redirect(
         `${baseUrl}/integrations?error=${encodeURIComponent(result.error || "oauth_failed")}`
       );
+      res.cookies.delete("ml_pkce_verifier");
+      return res;
     }
 
-    return NextResponse.redirect(
+    const res = NextResponse.redirect(
       `${baseUrl}/integrations?success=mercadolivre&connectionId=${result.connectionId}`
     );
+    res.cookies.delete("ml_pkce_verifier");
+    return res;
   } catch (error: any) {
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
     return NextResponse.redirect(
