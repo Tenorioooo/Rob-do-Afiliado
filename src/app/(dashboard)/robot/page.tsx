@@ -246,9 +246,9 @@ export default function RobotPage() {
       {/* Monitored Sources */}
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-bold text-white">Fontes Monitoradas (Mock Providers)</h3>
+          <h3 className="text-lg font-bold text-white">Fontes Monitoradas (Marketplaces Ativos)</h3>
           <p className="text-xs text-slate-400">
-            Adaptadores em operação com dados de demonstração da Fase 2.
+            Adaptadores em operação com consulta contínua aos marketplaces conectados.
           </p>
         </div>
 

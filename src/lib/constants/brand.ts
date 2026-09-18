@@ -42,13 +42,13 @@ export const NAVIGATION_ITEMS = [
     title: "Autopiloto",
     href: "/autopilot",
     icon: "Cpu",
-    badge: "Fase 5",
+    badge: "24h",
   },
   {
     title: "Meu Robô",
     href: "/robot",
     icon: "Bot",
-    badge: "24h",
+    badge: "IA",
   },
   {
     title: "Radar",
@@ -72,7 +72,7 @@ export const NAVIGATION_ITEMS = [
     title: "Integrações",
     href: "/integrations",
     icon: "Layers",
-    badge: "Fase 7",
+    badge: null,
   },
   {
     title: "Automação",

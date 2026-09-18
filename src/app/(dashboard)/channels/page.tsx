@@ -275,10 +275,10 @@ export default function ChannelsPage() {
         <div>
           <div className="flex items-center gap-2.5">
             <h2 className="text-2xl font-extrabold text-white tracking-tight">Canais de Distribuição</h2>
-            <Badge variant="purple" size="md">Phase 4 Engine</Badge>
+            <Badge variant="purple" size="md">Disparo Ativo</Badge>
           </div>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Conecte grupos e canais (Telegram, WhatsApp e Discord) com simulação realista e segurança de credenciais.
+            Conecte seus canais e grupos de envio (Telegram, WhatsApp e Discord) com validação e segurança criptografada.
           </p>
         </div>
 

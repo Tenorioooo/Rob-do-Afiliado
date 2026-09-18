@@ -498,7 +498,7 @@ export default function ConnectionDetailPage() {
             </div>
             <div className="space-y-2">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                Assistente de Homologação Telegram Bot API (Fase 7.3)
+                Assistente de Homologação Telegram Bot API
               </h3>
               <p className="text-xs text-slate-300 leading-relaxed">
                 Siga os passos guiados abaixo para validar seu bot oficial no Telegram. O processo conecta diretamente à API oficial <code className="bg-slate-950 px-1.5 py-0.5 rounded text-sky-300">https://api.telegram.org</code> com armazenamento imutável de evidências de verificação.

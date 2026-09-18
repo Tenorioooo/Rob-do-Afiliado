@@ -295,15 +295,15 @@ export default function AutopilotPage() {
         </div>
       </div>
 
-      {/* Demo Mock Environment Alert */}
-      <div className="flex items-center justify-between p-3.5 rounded-2xl bg-indigo-950/40 border border-indigo-800/60 text-xs">
+      {/* Autonomous Operational Environment Status */}
+      <div className="flex items-center justify-between p-3.5 rounded-2xl bg-indigo-950/30 border border-indigo-800/40 text-xs">
         <div className="flex items-center gap-2 text-indigo-300">
           <Info className="w-4 h-4 text-indigo-400 shrink-0" />
           <span>
-            <strong>Modo Demonstração:</strong> Conectado a provedores de catálogo simulados (Shopee, Mercado Livre, Amazon) e canais mock deterministicamente seguros.
+            <strong>Operação 24h:</strong> Monitoramento contínuo de oportunidades, links afiliados e canais de distribuição com execução segura.
           </span>
         </div>
-        <Badge variant="purple" size="sm">Fase 5 Ready</Badge>
+        <Badge variant="purple" size="sm">Piloto Ativo</Badge>
       </div>
 
       {/* Three Autonomous Modes Selector */}
