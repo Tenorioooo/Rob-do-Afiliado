@@ -7,6 +7,7 @@ import { NormalizedProduct, RawMarketplaceItem, MarketplacePlatform } from "@/do
 export interface DiscoveryParams {
   platforms?: MarketplacePlatform[];
   categories?: string[];
+  query?: string;
   maxPerPlatform?: number;
 }
 
@@ -30,23 +31,15 @@ export class DiscoveryService {
     const errors: { platform: string; error: string }[] = [];
     const scannedPlatforms: string[] = [];
 
-    // 1. Shopee
-    if (targetPlatforms.includes("SHOPEE")) {
-      try {
-        scannedPlatforms.push("SHOPEE");
-        const items = await this.shopeeAdapter.getRawItems();
-        allRawItems.push(...items);
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : "Erro desconhecido na Shopee";
-        errors.push({ platform: "SHOPEE", error: msg });
-      }
-    }
-
-    // 2. Mercado Livre
+    // 1. Mercado Livre Real
     if (targetPlatforms.includes("MERCADO_LIVRE")) {
       try {
         scannedPlatforms.push("MERCADO_LIVRE");
-        const items = await this.mlAdapter.getRawItems();
+        const items = await this.mlAdapter.getRawItems({
+          category: params?.categories?.[0],
+          query: params?.query,
+          limit: params?.maxPerPlatform || 50,
+        });
         allRawItems.push(...items);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Erro desconhecido no Mercado Livre";
@@ -54,11 +47,29 @@ export class DiscoveryService {
       }
     }
 
+    // 2. Shopee
+    if (targetPlatforms.includes("SHOPEE")) {
+      try {
+        scannedPlatforms.push("SHOPEE");
+        const items = await this.shopeeAdapter.getRawItems({
+          category: params?.categories?.[0],
+          query: params?.query,
+        });
+        allRawItems.push(...items);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "Erro desconhecido na Shopee";
+        errors.push({ platform: "SHOPEE", error: msg });
+      }
+    }
+
     // 3. Amazon
     if (targetPlatforms.includes("AMAZON")) {
       try {
         scannedPlatforms.push("AMAZON");
-        const items = await this.amazonAdapter.getRawItems();
+        const items = await this.amazonAdapter.getRawItems({
+          category: params?.categories?.[0],
+          query: params?.query,
+        });
         allRawItems.push(...items);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Erro desconhecido na Amazon";
@@ -70,12 +81,11 @@ export class DiscoveryService {
     let filteredRaw = allRawItems;
     if (params?.categories && params.categories.length > 0) {
       const allowedCategories = params.categories.map((c) => c.toLowerCase());
-      filteredRaw = allRawItems.filter(
-        (item) => item.category && allowedCategories.includes(item.category.toLowerCase())
+      const matches = allRawItems.filter(
+        (item) => item.category && allowedCategories.some((ac) => item.category?.toLowerCase().includes(ac) || ac.includes(item.category?.toLowerCase()))
       );
-      // Fallback if none matched
-      if (filteredRaw.length === 0) {
-        filteredRaw = allRawItems;
+      if (matches.length > 0) {
+        filteredRaw = matches;
       }
     }
 

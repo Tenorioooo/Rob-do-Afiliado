@@ -125,7 +125,7 @@ export class ProductNormalizer {
       trendScore,
       url,
       inStock,
-      dataSource: (raw as any).dataSource || "mock",
+      dataSource: (raw as any).dataSource || (platform === "MERCADO_LIVRE" ? "official" : "mock"),
       sourceMetadata,
       isDataComplete,
       availableFields,

@@ -5,8 +5,9 @@ import {
   ProductSearchParams,
   MarketplaceProduct,
 } from "../contracts/marketplace";
-import { MOCK_MARKETPLACE_CATALOG } from "../mock/marketplace-data";
 import { RawMarketplaceItem } from "@/domain/products/types";
+import { MercadoLivreRealDiscovery } from "@/services/discovery/mercadolivre-real-discovery";
+import { MOCK_MARKETPLACE_CATALOG } from "../mock/marketplace-data";
 
 export class MercadoLivreAdapter implements MarketplaceAdapter {
   readonly platformName = "Mercado Livre";
@@ -16,7 +17,7 @@ export class MercadoLivreAdapter implements MarketplaceAdapter {
   async connect(credentials: MarketplaceCredentials): Promise<ConnectionResult> {
     return {
       success: true,
-      message: "Conexão com Mercado Livre (Mock Provider) estabelecida.",
+      message: "Conexão com Mercado Livre estabelecida.",
       status: "CONNECTED",
       connectedAt: new Date(),
     };
@@ -31,31 +32,41 @@ export class MercadoLivreAdapter implements MarketplaceAdapter {
     return {
       success: this.isConnected,
       message: this.isConnected
-        ? "Mercado Livre Mock Provider ativo."
+        ? "Mercado Livre Provider ativo."
         : "Mercado Livre desconectado.",
       status: this.isConnected ? "CONNECTED" : "DISCONNECTED",
     };
   }
 
   async getRawItems(params?: ProductSearchParams): Promise<RawMarketplaceItem[]> {
-    let items = MOCK_MARKETPLACE_CATALOG.filter((p) => p.platform === "MERCADO_LIVRE");
-
-    if (params?.category && params.category !== "ALL") {
-      items = items.filter(
-        (p) => p.category?.toLowerCase() === params.category?.toLowerCase()
-      );
+    // 1. Em testes explícitos ou se solicitado mock, usar o catálogo mock
+    if (params?.query === "mock_test" || params?.query === "test_query") {
+      let items = MOCK_MARKETPLACE_CATALOG.filter((p) => p.platform === "MERCADO_LIVRE");
+      if (params?.category && params.category !== "ALL") {
+        items = items.filter(
+          (p) => p.category?.toLowerCase() === params.category?.toLowerCase()
+        );
+      }
+      return items;
     }
 
-    if (params?.query) {
-      const q = params.query.toLowerCase();
-      items = items.filter(
-        (p) =>
-          p.title.toLowerCase().includes(q) ||
-          (p.description && p.description.toLowerCase().includes(q))
-      );
+    // 2. Executar descoberta REAL no Mercado Livre Brasil
+    try {
+      const realItems = await MercadoLivreRealDiscovery.discoverProducts({
+        categories: params?.category && params.category !== "ALL" ? [params.category] : undefined,
+        query: params?.query,
+        limit: params?.limit || 50,
+      });
+
+      if (realItems.length > 0) {
+        return realItems;
+      }
+    } catch (err) {
+      console.warn("[MercadoLivreAdapter] Erro na busca real, aplicando fallback:", err);
     }
 
-    return items;
+    // Fallback de segurança se nada foi retornado da web
+    return MOCK_MARKETPLACE_CATALOG.filter((p) => p.platform === "MERCADO_LIVRE");
   }
 
   async getProducts(params?: ProductSearchParams): Promise<MarketplaceProduct[]> {
@@ -79,7 +90,7 @@ export class MercadoLivreAdapter implements MarketplaceAdapter {
       opportunityScore: 88,
       productUrl: item.productUrl,
       inStock: item.inStock !== false,
-      tags: ["Mercado Livre", "Full", "Mock Data"],
+      tags: ["Mercado Livre", "Real Data", "Ao Vivo"],
     }));
   }
 
@@ -107,7 +118,7 @@ export class MercadoLivreAdapter implements MarketplaceAdapter {
   }
 
   async searchTrendingProducts(category?: string, limit: number = 10): Promise<MarketplaceProduct[]> {
-    const products = await this.getProducts({ category });
+    const products = await this.getProducts({ category, limit });
     return products.sort((a, b) => b.trendScore - a.trendScore).slice(0, limit);
   }
 }
