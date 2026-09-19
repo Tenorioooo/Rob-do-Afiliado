@@ -68,6 +68,9 @@ export default function ProductDetailPage() {
         const json = await res.json();
         if (res.ok) {
           setData(json.opportunity);
+          if (json.affiliateLink) {
+            setAffiliateLink(json.affiliateLink);
+          }
         }
       } catch (err) {
         console.error("Error loading opportunity details:", err);
@@ -126,7 +129,7 @@ export default function ProductDetailPage() {
       setAffiliateLink(json.link);
       toast({
         title: "Link de Afiliado Gerado!",
-        message: `Link encurtado e tagueado com UTMs gerado com sucesso (${json.link.source.toUpperCase()}).`,
+        message: `Link encurtado e tagueado com UTMs gerado com sucesso!`,
         type: "success",
       });
     } catch (err: unknown) {
@@ -250,7 +253,7 @@ export default function ProductDetailPage() {
   return (
     <div className="space-y-8">
       {/* Top Bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <Link
           href="/radar"
           className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
@@ -260,6 +263,18 @@ export default function ProductDetailPage() {
         </Link>
 
         <div className="flex items-center gap-2">
+          {p.url && (
+            <a
+              href={p.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" size="sm" className="text-xs gap-1.5 font-medium border-slate-800 hover:border-slate-700 text-slate-300">
+                <ExternalLink className="w-3.5 h-3.5 text-primary-400" />
+                <span>Ver Link Original</span>
+              </Button>
+            </a>
+          )}
           <Badge
             variant={
               p.platform === "SHOPEE"
@@ -302,37 +317,107 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Action Buttons Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <Button
-                variant={affiliateLink ? "outline" : "glow"}
-                size="sm"
-                onClick={affiliateLink ? handleCopyAffiliateLink : handleGenerateLink}
-                isLoading={isGeneratingLink}
-                className="text-xs gap-1.5 font-semibold"
-              >
-                {affiliateLink ? (
-                  <>
-                    {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    {copiedLink ? "Link Copiado!" : "Copiar Link Afiliado"}
-                  </>
-                ) : (
-                  <>
-                    <Link2 className="w-3.5 h-3.5" />
-                    Gerar Link Afiliado
-                  </>
+            <div className="space-y-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <Button
+                  variant={affiliateLink ? "emerald" : "glow"}
+                  size="sm"
+                  onClick={affiliateLink ? handleCopyAffiliateLink : handleGenerateLink}
+                  isLoading={isGeneratingLink}
+                  className="text-xs gap-1.5 font-semibold"
+                >
+                  {affiliateLink ? (
+                    <>
+                      {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedLink ? "Link Copiado!" : "Copiar Link Afiliado"}
+                    </>
+                  ) : (
+                    <>
+                      <Link2 className="w-3.5 h-3.5" />
+                      Gerar Link Afiliado
+                    </>
+                  )}
+                </Button>
+
+                {p.url && (
+                  <a
+                    href={p.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full"
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-xs gap-1.5 font-semibold border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-200"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5 text-primary-400" />
+                      Ver Link Original
+                    </Button>
+                  </a>
                 )}
-              </Button>
+              </div>
 
               <Button
                 variant="glow"
                 size="sm"
                 onClick={handleOpenOfferGenerator}
-                className="text-xs gap-1.5 font-semibold"
+                className="w-full text-xs gap-1.5 font-semibold"
               >
                 <Sparkles className="w-3.5 h-3.5 text-primary-200" />
-                Gerar Oferta com IA
+                Gerar Oferta com IA & Validador
               </Button>
             </div>
+
+            {/* If affiliateLink exists, show dedicated affiliate card */}
+            {affiliateLink && (
+              <div className="p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-emerald-400 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Link de Afiliado Ativo
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleGenerateLink}
+                    disabled={isGeneratingLink}
+                    className="text-[10px] text-slate-400 hover:text-emerald-300 underline transition-colors cursor-pointer"
+                  >
+                    Regerar Link
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={affiliateLink.affiliateUrl}
+                    className="w-full bg-slate-950/90 border border-slate-800 text-[11px] text-slate-300 rounded-lg px-2.5 py-1.5 font-mono select-all focus:outline-none"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCopyAffiliateLink}
+                    className="shrink-0 h-8 px-2.5 text-xs"
+                    title="Copiar Link"
+                  >
+                    {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  </Button>
+                  <a
+                    href={affiliateLink.affiliateUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="shrink-0 h-8 px-2 text-xs text-slate-400 hover:text-white"
+                      title="Abrir Link de Afiliado"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </Button>
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Product Info & Analysis */}
@@ -487,26 +572,70 @@ export default function ProductDetailPage() {
             <h3 className="text-base font-bold text-white">Ações de Automação</h3>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1.5">
+              <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2">
                 <div className="flex justify-between text-slate-400">
                   <span>Plataforma:</span>
                   <span className="text-white font-semibold">{p.platform.replace("_", " ")}</span>
                 </div>
                 <div className="flex justify-between text-slate-400">
-                  <span>Completude:</span>
+                  <span>Completude dos Dados:</span>
                   <span className="text-emerald-400 font-bold">
                     {(data.dataCompleteness * 100).toFixed(0)}%
                   </span>
                 </div>
-                <div className="flex justify-between text-slate-400">
-                  <span>Link de Afiliado:</span>
+                <div className="flex justify-between text-slate-400 items-center">
+                  <span>Link Original:</span>
+                  {p.url ? (
+                    <a
+                      href={p.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline flex items-center gap-1 font-semibold"
+                    >
+                      Abrir Loja <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <span className="text-slate-500">Indisponível</span>
+                  )}
+                </div>
+                <div className="flex justify-between text-slate-400 items-center">
+                  <span>Status do Link:</span>
                   <span className={affiliateLink ? "text-emerald-400 font-semibold" : "text-slate-500"}>
-                    {affiliateLink ? affiliateLink.shortCode : "Não gerado ainda"}
+                    {affiliateLink ? "✅ Ativo (" + affiliateLink.shortCode + ")" : "Não gerado ainda"}
                   </span>
                 </div>
               </div>
 
               <div className="space-y-2 pt-2">
+                <Button
+                  variant={affiliateLink ? "emerald" : "glow"}
+                  size="md"
+                  onClick={affiliateLink ? handleCopyAffiliateLink : handleGenerateLink}
+                  isLoading={isGeneratingLink}
+                  className="w-full justify-center gap-2 text-xs font-semibold"
+                >
+                  {affiliateLink ? (
+                    <>
+                      {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                      {copiedLink ? "Link de Afiliado Copiado!" : "Copiar Link de Afiliado"}
+                    </>
+                  ) : (
+                    <>
+                      <Link2 className="w-4 h-4" />
+                      Gerar Link de Afiliado
+                    </>
+                  )}
+                </Button>
+
+                {p.url && (
+                  <a href={p.url} target="_blank" rel="noopener noreferrer" className="block w-full">
+                    <Button variant="outline" size="md" className="w-full justify-center gap-2 text-xs font-semibold border-slate-800 hover:border-slate-700">
+                      <ExternalLink className="w-4 h-4 text-primary-400" />
+                      Ver Link Original do Produto
+                    </Button>
+                  </a>
+                )}
+
                 <Button
                   variant="glow"
                   size="md"
@@ -518,7 +647,7 @@ export default function ProductDetailPage() {
                 </Button>
 
                 <Link href="/offers" className="block w-full">
-                  <Button variant="outline" size="md" className="w-full justify-center gap-2 text-xs">
+                  <Button variant="ghost" size="md" className="w-full justify-center gap-2 text-xs text-slate-400 hover:text-white">
                     Ver Todas as Minhas Ofertas
                   </Button>
                 </Link>

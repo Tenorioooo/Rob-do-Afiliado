@@ -15,10 +15,12 @@ export class ShopeeAffiliateAdapter implements IAffiliateLinkAdapter {
     externalProductId: string,
     tracking: UtmTrackingConfig
   ): Promise<GeneratedAffiliateLinkResult> {
-    const shortCode = generateDeterministicShortCode("shopee", externalProductId);
-    const mockBaseUrl = `https://mock.shopee.com.br/aff/l/${shortCode}`;
+    const shortCode = generateDeterministicShortCode("shopee", externalProductId || "prod");
+    const baseUrl = originalUrl && originalUrl.startsWith("http")
+      ? originalUrl
+      : `https://shopee.com.br/product/${externalProductId}`;
 
-    const finalUrl = buildAffiliateTrackingUrl(mockBaseUrl, {
+    const finalUrl = buildAffiliateTrackingUrl(baseUrl, {
       ...tracking,
       utmSource: tracking.utmSource || "shopee_affiliate",
       utmMedium: tracking.utmMedium || "affiliate_ai_robot",
@@ -35,7 +37,7 @@ export class ShopeeAffiliateAdapter implements IAffiliateLinkAdapter {
       shortCode,
       platform: this.platform,
       externalProductId,
-      source: "mock",
+      source: "real",
       generatedAt: new Date(),
       tracking,
     };
@@ -50,10 +52,12 @@ export class MercadoLivreAffiliateAdapter implements IAffiliateLinkAdapter {
     externalProductId: string,
     tracking: UtmTrackingConfig
   ): Promise<GeneratedAffiliateLinkResult> {
-    const shortCode = generateDeterministicShortCode("ml", externalProductId);
-    const mockBaseUrl = `https://mock.mercadolivre.com.br/sec/aff/${shortCode}`;
+    const shortCode = generateDeterministicShortCode("ml", externalProductId || "prod");
+    const baseUrl = originalUrl && originalUrl.startsWith("http")
+      ? originalUrl
+      : `https://www.mercadolivre.com.br/p/${externalProductId}`;
 
-    const finalUrl = buildAffiliateTrackingUrl(mockBaseUrl, {
+    const finalUrl = buildAffiliateTrackingUrl(baseUrl, {
       ...tracking,
       utmSource: tracking.utmSource || "mercadolivre_affiliate",
       utmMedium: tracking.utmMedium || "affiliate_ai_robot",
@@ -70,7 +74,7 @@ export class MercadoLivreAffiliateAdapter implements IAffiliateLinkAdapter {
       shortCode,
       platform: this.platform,
       externalProductId,
-      source: "mock",
+      source: "real",
       generatedAt: new Date(),
       tracking,
     };
@@ -85,10 +89,12 @@ export class AmazonAffiliateAdapter implements IAffiliateLinkAdapter {
     externalProductId: string,
     tracking: UtmTrackingConfig
   ): Promise<GeneratedAffiliateLinkResult> {
-    const shortCode = generateDeterministicShortCode("amz", externalProductId);
-    const mockBaseUrl = `https://mock.amazon.com.br/dp/aff/${shortCode}`;
+    const shortCode = generateDeterministicShortCode("amz", externalProductId || "prod");
+    const baseUrl = originalUrl && originalUrl.startsWith("http")
+      ? originalUrl
+      : `https://www.amazon.com.br/dp/${externalProductId}`;
 
-    const finalUrl = buildAffiliateTrackingUrl(mockBaseUrl, {
+    const finalUrl = buildAffiliateTrackingUrl(baseUrl, {
       ...tracking,
       utmSource: tracking.utmSource || "amazon_associates",
       utmMedium: tracking.utmMedium || "affiliate_ai_robot",
@@ -106,7 +112,7 @@ export class AmazonAffiliateAdapter implements IAffiliateLinkAdapter {
       shortCode,
       platform: this.platform,
       externalProductId,
-      source: "mock",
+      source: "real",
       generatedAt: new Date(),
       tracking,
     };
@@ -122,9 +128,11 @@ export class GenericAffiliateAdapter implements IAffiliateLinkAdapter {
     tracking: UtmTrackingConfig
   ): Promise<GeneratedAffiliateLinkResult> {
     const shortCode = generateDeterministicShortCode("aff", externalProductId || "prod");
-    const mockBaseUrl = `https://affiliateai.app/l/${shortCode}`;
+    const baseUrl = originalUrl && originalUrl.startsWith("http")
+      ? originalUrl
+      : `https://affiliateai.app/l/${shortCode}`;
 
-    const finalUrl = buildAffiliateTrackingUrl(mockBaseUrl, {
+    const finalUrl = buildAffiliateTrackingUrl(baseUrl, {
       ...tracking,
       utmSource: tracking.utmSource || "affiliate_ai",
       utmMedium: tracking.utmMedium || "generic_link",
@@ -137,7 +145,7 @@ export class GenericAffiliateAdapter implements IAffiliateLinkAdapter {
       shortCode,
       platform: this.platform,
       externalProductId: externalProductId || "generic",
-      source: "mock",
+      source: "real",
       generatedAt: new Date(),
       tracking,
     };

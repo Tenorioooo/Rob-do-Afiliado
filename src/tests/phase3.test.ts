@@ -46,22 +46,22 @@ describe("Phase 3: Affiliate Links & Anti-Fabrication AI Offers", () => {
     assert.equal(parsed.searchParams.get("aff_opp"), "opp_456");
   });
 
-  it("2. generates deterministic mock affiliate links for Shopee, Mercado Livre, and Amazon", async () => {
+  it("2. generates deterministic affiliate links for Shopee, Mercado Livre, and Amazon", async () => {
     const shopeeAdapter = new ShopeeAffiliateAdapter();
     const mlAdapter = new MercadoLivreAffiliateAdapter();
     const amzAdapter = new AmazonAffiliateAdapter();
 
     const shopeeRes = await shopeeAdapter.generateLink("https://shopee.com.br/item", "shopee-12345", { utmSource: "test" });
-    const mlRes = await mlAdapter.generateLink("https://ml.com.br/item", "ml-67890", { utmSource: "test" });
-    const amzRes = await amzAdapter.generateLink("https://amazon.com.br/item", "amz-11223", { utmSource: "test" });
+    const mlRes = await mlAdapter.generateLink("https://www.mercadolivre.com.br/item", "ml-67890", { utmSource: "test" });
+    const amzRes = await amzAdapter.generateLink("https://www.amazon.com.br/item", "amz-11223", { utmSource: "test" });
 
-    assert.equal(shopeeRes.source, "mock");
-    assert.equal(mlRes.source, "mock");
-    assert.equal(amzRes.source, "mock");
+    assert.equal(shopeeRes.source, "real");
+    assert.equal(mlRes.source, "real");
+    assert.equal(amzRes.source, "real");
 
-    assert.ok(shopeeRes.url?.includes("mock.shopee.com.br"));
-    assert.ok(mlRes.url?.includes("mock.mercadolivre.com.br"));
-    assert.ok(amzRes.url?.includes("mock.amazon.com.br"));
+    assert.ok(shopeeRes.url?.includes("shopee.com.br"));
+    assert.ok(mlRes.url?.includes("mercadolivre.com.br"));
+    assert.ok(amzRes.url?.includes("amazon.com.br"));
   });
 
   it("3. generates all 5 copy styles (DIRETO, DESCONTO, URGENCIA, PREMIUM, CURTO) with valid data", async () => {

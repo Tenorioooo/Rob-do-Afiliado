@@ -50,6 +50,15 @@ export async function GET(
         return NextResponse.json({ error: "Oportunidade não encontrada" }, { status: 404 });
       }
 
+      const affiliateLink = await prisma.affiliateLink.findFirst({
+        where: {
+          userId: session.userId,
+          productId: product.id,
+          active: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
       return NextResponse.json({
         opportunity: {
           id: `preview-${product.id}`,
@@ -74,8 +83,18 @@ export async function GET(
           },
           product,
         },
+        affiliateLink: affiliateLink || null,
       });
     }
+
+    const affiliateLink = await prisma.affiliateLink.findFirst({
+      where: {
+        userId: session.userId,
+        productId: opportunity.productId,
+        active: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
 
     return NextResponse.json({
       opportunity: {
@@ -90,6 +109,7 @@ export async function GET(
         scoreBreakdown: JSON.parse(opportunity.scoreBreakdown || "{}"),
         product: opportunity.product,
       },
+      affiliateLink: affiliateLink || null,
     });
   } catch (error: unknown) {
     console.error("[API:Radar:GetSingle:Error]", error);

@@ -21,6 +21,7 @@ import {
   Info,
   ShieldCheck,
   Check,
+  ExternalLink,
 } from "lucide-react";
 
 interface OpportunityItem {
@@ -351,8 +352,22 @@ export default function RadarPage() {
                 </div>
 
                 {/* Card Action */}
-                <div className="pt-2">
-                  <Link href={`/radar/${opp.id}`}>
+                <div className="pt-2 flex items-center gap-2">
+                  {p.url && (
+                    <a
+                      href={p.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0"
+                      title="Ver Link Original"
+                    >
+                      <Button variant="outline" size="sm" className="px-3 text-xs gap-1.5 border-slate-800 hover:border-slate-700 text-slate-300">
+                        <ExternalLink className="w-3.5 h-3.5 text-primary-400" />
+                        <span className="hidden sm:inline">Original</span>
+                      </Button>
+                    </a>
+                  )}
+                  <Link href={`/radar/${opp.id}`} className="flex-1">
                     <Button variant="glow" size="sm" className="w-full justify-center gap-1.5 text-xs font-semibold">
                       <span>Ver Raio-X & Breakdown</span>
                       <ArrowUpRight className="w-3.5 h-3.5" />
