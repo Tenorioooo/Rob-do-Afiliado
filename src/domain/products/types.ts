@@ -41,6 +41,7 @@ export interface RawMarketplaceItem {
   trendIndicator?: number | null;
   productUrl: string;
   inStock?: boolean;
+  dataSource?: string;
   rawMetadata?: Record<string, unknown>;
 }
 

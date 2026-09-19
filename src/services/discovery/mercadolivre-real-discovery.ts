@@ -299,12 +299,14 @@ export class MercadoLivreRealDiscovery {
         trendIndicator: Math.min(98, 70 + Math.floor(discountPercent / 2)),
         productUrl: cleanUrl,
         inStock: true,
+        dataSource: "official",
         rawMetadata: {
           isFull,
           freeShipping,
           tag,
           source: "mercadolivre_live_offers",
           capturedAt: new Date().toISOString(),
+          dataSource: "official",
         },
       });
     }

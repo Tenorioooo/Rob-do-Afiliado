@@ -269,10 +269,11 @@ export default function ProductDetailPage() {
                 : "amazon"
             }
           >
-            {p.platform.replace("_", " ")}
+            {p.platform === "MERCADO_LIVRE" ? "Mercado Livre" : p.platform.replace("_", " ")}
           </Badge>
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-900 border border-slate-700 text-slate-300">
-            Fonte: {p.dataSource || "mock"}
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            Produto Real
           </span>
         </div>
       </div>
