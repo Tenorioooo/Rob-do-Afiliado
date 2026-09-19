@@ -77,12 +77,15 @@ export class AffiliateLinkService {
 
     // 4. Generate link via platform adapter (checking for active real connection first)
     const platformKey = (input.platform || product.platform).toLowerCase();
+    const trackingExtraParams: Record<string, string> = {};
+
     const trackingConfig = {
       utmSource: input.customSource || `${platformKey}_affiliate`,
       utmMedium: input.customMedium || "affiliate_ai_robot",
       utmCampaign: input.customCampaign || "promo_radar",
       userId: input.userId,
       opportunityId: opportunityId,
+      extraParams: trackingExtraParams,
     };
 
     let generatedResult: GeneratedAffiliateLinkResult | null = null;
@@ -91,43 +94,72 @@ export class AffiliateLinkService {
       const activeConnection = await prisma.integrationConnection.findFirst({
         where: {
           userId: input.userId,
-          provider: platformKey,
-          status: "ACTIVE",
+          provider: {
+            in: [
+              platformKey,
+              platformKey.replace("_", ""),
+              platformKey.toUpperCase(),
+              platformKey.replace("_", " "),
+            ],
+          },
+          status: { in: ["ACTIVE", "CONNECTED", "VERIFIED_REAL"] },
         },
       });
 
-      if (activeConnection && platformKey === "shopee") {
+      if (activeConnection) {
         const { ConnectionService } = await import("@/services/integrations/connection-service");
-        const { ShopeeMarketplaceAdapter } = await import("@/integrations/marketplaces/shopee.adapter");
         const creds = await ConnectionService.getDecryptedCredentials(activeConnection.id);
 
-        const secretKey = creds.secretKey || creds.secret || creds.secret_key;
-        const appId = creds.appId || creds.app_id;
+        // 4.1. SHOPEE Real Link Generation
+        if (platformKey === "shopee" || platformKey === "shp") {
+          const { ShopeeMarketplaceAdapter } = await import("@/integrations/marketplaces/shopee.adapter");
+          const secretKey = creds.secretKey || creds.secret || creds.secret_key;
+          const appId = creds.appId || creds.app_id;
+          const subIdPrefix = creds.subIdPrefix || creds.sub_id || "robo";
 
-        if (appId && secretKey) {
-          const shopeeResult = await ShopeeMarketplaceAdapter.generateAffiliateLink({
-            appId,
-            secretKey,
-            originUrl: input.originalUrl || product.url,
-            subIds: [input.userId.slice(0, 10), (opportunityId || "").slice(0, 10)],
-          });
+          if (appId && secretKey) {
+            const shopeeResult = await ShopeeMarketplaceAdapter.generateAffiliateLink({
+              appId,
+              secretKey,
+              originUrl: input.originalUrl || product.url,
+              subIds: [subIdPrefix, input.userId.slice(0, 10), (opportunityId || "").slice(0, 10)],
+            });
 
-          if (shopeeResult.success && shopeeResult.shortLink) {
-            generatedResult = {
-              success: true,
-              url: shopeeResult.shortLink,
-              shortCode: `shp_${Date.now().toString(36)}`,
-              platform: "SHOPEE",
-              externalProductId: input.externalProductId || product.externalId,
-              source: "real",
-              generatedAt: new Date(),
-              tracking: trackingConfig,
-            };
+            if (shopeeResult.success && shopeeResult.shortLink) {
+              generatedResult = {
+                success: true,
+                url: shopeeResult.shortLink,
+                shortCode: `shp_${Date.now().toString(36)}`,
+                platform: "SHOPEE",
+                externalProductId: input.externalProductId || product.externalId,
+                source: "real",
+                generatedAt: new Date(),
+                tracking: trackingConfig,
+              };
+            }
+          }
+        }
+
+        // 4.2. MERCADO LIVRE Real Affiliate Tag Injection
+        if (platformKey === "mercado_livre" || platformKey === "mercadolivre" || platformKey === "ml") {
+          const affiliateTag = creds.affiliateTag || creds.matt_tool || creds.tagId || creds.tag || creds.partnerId;
+          if (affiliateTag) {
+            trackingExtraParams["matt_tool"] = affiliateTag;
+            trackingExtraParams["matt_word"] = affiliateTag;
+            trackingExtraParams["aff_id"] = affiliateTag;
+          }
+        }
+
+        // 4.3. AMAZON Associates Tag Injection
+        if (platformKey === "amazon" || platformKey === "amz") {
+          const partnerTag = creds.partnerTag || creds.tag || creds.storeId;
+          if (partnerTag) {
+            trackingExtraParams["tag"] = partnerTag;
           }
         }
       }
-    } catch {
-      // Fallback to adapter
+    } catch (connErr) {
+      console.warn("[AffiliateLinkService] Could not process connected credentials:", connErr);
     }
 
     if (!generatedResult) {

@@ -42,10 +42,10 @@ export function buildAffiliateTrackingUrl(
       parsedUrl.searchParams.set("aff_off", config.offerId);
     }
 
-    // Add extra params without overriding
+    // Add extra params (such as affiliate tags and platform parameters)
     if (config.extraParams) {
       for (const [key, value] of Object.entries(config.extraParams)) {
-        if (value && !parsedUrl.searchParams.has(key)) {
+        if (value) {
           parsedUrl.searchParams.set(key, value);
         }
       }

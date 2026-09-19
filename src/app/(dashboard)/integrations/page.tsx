@@ -32,6 +32,13 @@ import {
   CheckCheck,
 } from "lucide-react";
 
+interface SetupStep {
+  title: string;
+  description: string;
+  linkUrl?: string;
+  linkLabel?: string;
+}
+
 interface ProviderField {
   key: string;
   label: string;
@@ -52,6 +59,7 @@ interface ProviderItem {
   actionButtonLabel: string;
   capabilitiesDisplay: string[];
   documentationUrl: string;
+  setupGuide?: SetupStep[];
   capabilities: string[];
   isOfficiallySupported: boolean;
   requiredFields: ProviderField[];
@@ -179,12 +187,6 @@ export default function IntegrationsPage() {
   };
 
   const handleOpenConnect = (provider: ProviderItem) => {
-    if (provider.id.toUpperCase() === "MERCADO_LIVRE") {
-      // Direct OAuth authorization initiation for Mercado Livre
-      window.location.href = "/api/integrations/oauth/mercadolivre/authorize";
-      return;
-    }
-
     setSelectedProvider(provider);
     const initialForm: Record<string, string> = {};
     provider.requiredFields.forEach((f) => {
@@ -721,11 +723,11 @@ export default function IntegrationsPage() {
 
       {/* Dynamic Connection Configuration Modal */}
       {connectModalOpen && selectedProvider && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in duration-150">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in duration-150 my-8">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center">
+                <div className="w-11 h-11 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0">
                   {getProviderIcon(selectedProvider.id)}
                 </div>
                 <div>
@@ -735,64 +737,135 @@ export default function IntegrationsPage() {
               </div>
               <button
                 onClick={() => setConnectModalOpen(false)}
-                className="text-slate-400 hover:text-white text-xs p-1"
+                className="text-slate-400 hover:text-white text-xs p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
               >
                 ✕
               </button>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Insira as credenciais do seu provedor. Todas as chaves e segredos são armazenados de forma criptografada via <strong className="text-emerald-400">AES-256-GCM</strong> em repouso.
-            </p>
+            {/* Commission & Attribution Notice for Marketplaces */}
+            {selectedProvider.type === "MARKETPLACE" && (
+              <div className="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 text-xs text-emerald-200 flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-emerald-400 block font-semibold mb-0.5">
+                    Comissionamento 100% Direto na sua Conta
+                  </strong>
+                  Ao salvar sua Tag / Credenciais de Afiliado, o robô automaticamente anexará seu código em todos os links e ofertas geradas para que as comissões caiam diretamente no seu saldo do marketplace.
+                </div>
+              </div>
+            )}
+
+            {/* Step-by-Step Setup Guide */}
+            {selectedProvider.setupGuide && selectedProvider.setupGuide.length > 0 && (
+              <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                    <Info className="w-3.5 h-3.5 text-primary-400" />
+                    Passo a Passo para Obter suas Credenciais:
+                  </span>
+                  {selectedProvider.documentationUrl && (
+                    <a
+                      href={selectedProvider.documentationUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-primary-400 hover:underline flex items-center gap-1 font-semibold"
+                    >
+                      Portal Oficial <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+
+                <div className="space-y-2.5 pt-1">
+                  {selectedProvider.setupGuide.map((step, idx) => (
+                    <div key={idx} className="flex items-start gap-2.5 text-xs">
+                      <span className="w-5 h-5 rounded-full bg-primary/20 text-primary-300 font-bold flex items-center justify-center shrink-0 text-[10px] border border-primary/30 mt-0.5">
+                        {idx + 1}
+                      </span>
+                      <div className="space-y-1">
+                        <span className="font-semibold text-slate-200 block">{step.title}</span>
+                        <p className="text-slate-400 leading-relaxed text-[11px]">{step.description}</p>
+                        {step.linkUrl && (
+                          <a
+                            href={step.linkUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[11px] text-cyan-400 hover:underline font-medium mt-0.5"
+                          >
+                            <span>{step.linkLabel || "Abrir Portal"}</span>
+                            <ExternalLink className="w-2.5 h-2.5" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {submitError && (
-              <div className="p-3 rounded-xl bg-red-950/40 border border-red-500/40 text-xs text-red-300 flex items-center gap-2">
+              <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/40 text-xs text-red-300 flex items-center gap-2">
                 <XCircle className="w-4 h-4 text-red-400 shrink-0" />
                 <span>{submitError}</span>
               </div>
             )}
 
+            {/* Form */}
             <form onSubmit={handleSaveConnection} className="space-y-4">
               {selectedProvider.requiredFields.map((field) => (
-                <div key={field.key}>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    {field.label} {field.required && <span className="text-red-400">*</span>}:
-                  </label>
+                <div key={field.key} className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-200">
+                      {field.label} {field.required ? <span className="text-red-400">*</span> : <span className="text-slate-500 font-normal">(Opcional)</span>}:
+                    </label>
+                  </div>
                   <input
                     type={field.type}
                     required={field.required}
                     value={credentialsForm[field.key] || ""}
                     onChange={(e) => setCredentialsForm({ ...credentialsForm, [field.key]: e.target.value })}
                     placeholder={field.placeholder || ""}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-mono"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-mono transition-colors"
                   />
                   {field.helperText && (
-                    <span className="text-[11px] text-slate-500 mt-1 block">{field.helperText}</span>
+                    <span className="text-[11px] text-slate-400 block">{field.helperText}</span>
                   )}
                 </div>
               ))}
 
               <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-400 flex items-center gap-2">
                 <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span>Após salvar, você será direcionado para o assistente de homologação e diagnóstico.</span>
+                <span>Credenciais criptografadas via AES-256-GCM em repouso no banco de dados.</span>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setConnectModalOpen(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 rounded-xl shadow-md transition-all"
-                >
-                  {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
-                  Salvar e Continuar
-                </button>
+              <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+                {selectedProvider.id.toUpperCase() === "MERCADO_LIVRE" ? (
+                  <a
+                    href="/api/integrations/oauth/mercadolivre/authorize"
+                    className="text-[11px] text-indigo-400 hover:underline flex items-center gap-1 font-semibold"
+                  >
+                    <span>Autenticar via OAuth Developers</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                ) : <span />}
+
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setConnectModalOpen(false)}
+                    className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 rounded-xl shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+                  >
+                    {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
+                    Salvar Credenciais
+                  </button>
+                </div>
               </div>
             </form>
           </div>

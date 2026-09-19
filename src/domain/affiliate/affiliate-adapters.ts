@@ -28,6 +28,7 @@ export class ShopeeAffiliateAdapter implements IAffiliateLinkAdapter {
       extraParams: {
         platform: "SHOPEE",
         ext_pid: externalProductId,
+        ...(tracking.extraParams || {}),
       },
     });
 
@@ -65,6 +66,7 @@ export class MercadoLivreAffiliateAdapter implements IAffiliateLinkAdapter {
       extraParams: {
         platform: "MERCADO_LIVRE",
         ext_pid: externalProductId,
+        ...(tracking.extraParams || {}),
       },
     });
 
@@ -100,9 +102,10 @@ export class AmazonAffiliateAdapter implements IAffiliateLinkAdapter {
       utmMedium: tracking.utmMedium || "affiliate_ai_robot",
       utmCampaign: tracking.utmCampaign || "amazon_radar",
       extraParams: {
-        tag: "affiliateai-20",
+        tag: tracking.extraParams?.tag || "affiliateai-20",
         platform: "AMAZON",
         ext_pid: externalProductId,
+        ...(tracking.extraParams || {}),
       },
     });
 

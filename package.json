@@ -7,7 +7,7 @@
     "build": "prisma generate --schema=prisma/schema.prisma && next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "prisma generate --schema=prisma/schema.sqlite.prisma && tsx --test --test-concurrency=1 src/tests/domain.test.ts src/tests/phase3.test.ts src/tests/phase4.test.ts src/tests/phase5.test.ts src/tests/phase6.test.ts src/tests/phase7.test.ts src/tests/phase7.1.test.ts src/tests/phase7.2.test.ts src/tests/phase7.3.test.ts src/tests/phase7.3.1.test.ts src/tests/phase8.test.ts src/tests/phase9a.test.ts && prisma generate --schema=prisma/schema.prisma",
+    "test": "prisma generate --schema=prisma/schema.sqlite.prisma && tsx --test --test-concurrency=1 src/tests/domain.test.ts src/tests/phase3.test.ts src/tests/phase4.test.ts src/tests/phase5.test.ts src/tests/phase6.test.ts src/tests/phase7.test.ts src/tests/phase7.1.test.ts src/tests/phase7.2.test.ts src/tests/phase7.3.test.ts src/tests/phase7.3.1.test.ts src/tests/phase8.test.ts src/tests/phase9a.test.ts src/tests/affiliate-commission.test.ts && prisma generate --schema=prisma/schema.prisma",
     "db:generate": "prisma generate --schema=prisma/schema.prisma",
     "db:migrate:deploy": "prisma migrate deploy --schema=prisma/schema.prisma",
     "db:push": "prisma db push --schema=prisma/schema.prisma",

@@ -1,5 +1,12 @@
 import { IntegrationCapability, IntegrationType, AuthType } from "@/domain/integrations/capabilities";
 
+export interface SetupStep {
+  title: string;
+  description: string;
+  linkUrl?: string;
+  linkLabel?: string;
+}
+
 export interface ProviderDefinition {
   id: string;
   name: string;
@@ -11,6 +18,7 @@ export interface ProviderDefinition {
   actionButtonLabel: string;
   capabilitiesDisplay: string[];
   documentationUrl: string;
+  setupGuide?: SetupStep[];
   capabilities: IntegrationCapability[];
   isOfficiallySupported: boolean;
   requiredFields: {
@@ -43,13 +51,29 @@ export class ProviderRegistry {
       ],
       capabilities: ["SEND_MESSAGE", "SEND_MEDIA", "EDIT_MESSAGE", "DELETE_MESSAGE", "WEBHOOKS"],
       isOfficiallySupported: true,
+      setupGuide: [
+        {
+          title: "1. Crie seu Bot no Telegram",
+          description: "Abra o Telegram, pesquise por @BotFather e envie o comando /newbot. Siga os passos e escolha o nome do seu bot.",
+          linkUrl: "https://t.me/BotFather",
+          linkLabel: "Abrir @BotFather no Telegram",
+        },
+        {
+          title: "2. Copie o Bot Token",
+          description: "O BotFather fornecerá um token no formato 123456789:ABCdefGHIjklMNOpqrSTUvwxYZ. Copie e cole no campo 'Bot Token'.",
+        },
+        {
+          title: "3. Adicione o Bot ao seu Canal",
+          description: "Adicione seu bot recém-criado como Administrador no seu Canal ou Grupo do Telegram e preencha o Chat ID ou @nomedocanal.",
+        },
+      ],
       requiredFields: [
         {
           key: "botToken",
           label: "Bot Token (obtido no @BotFather)",
           type: "password",
           placeholder: "123456789:ABCdefGHIjklMNOpqrSTUvwxYZ",
-          helperText: "Token gerado pelo BotFather no Telegram",
+          helperText: "Token de autenticação gerado pelo @BotFather",
           required: true,
         },
         {
@@ -57,7 +81,7 @@ export class ProviderRegistry {
           label: "Chat ID ou @username do Canal Público",
           type: "text",
           placeholder: "@meucanal_promos ou -1001234567890",
-          helperText: "Identificador do canal público ou ID numérico do grupo (ex: -100123456789)",
+          helperText: "Identificador do canal público (ex: @meucanal) ou ID numérico do grupo",
           required: false,
         },
       ],
@@ -81,13 +105,27 @@ export class ProviderRegistry {
       ],
       capabilities: ["SEND_MESSAGE", "SEND_MEDIA", "EDIT_MESSAGE", "DELETE_MESSAGE", "WEBHOOKS"],
       isOfficiallySupported: true,
+      setupGuide: [
+        {
+          title: "1. Acesse as Configurações do seu Canal",
+          description: "No Discord, clique com o botão direito no canal onde deseja enviar as ofertas e selecione 'Editar Canal'.",
+        },
+        {
+          title: "2. Crie uma Integração Webhook",
+          description: "Vá na aba 'Integrações' > 'Webhooks' e clique em 'Novo Webhook'. Escolha o nome e o avatar para o bot.",
+        },
+        {
+          title: "3. Copie a URL do Webhook",
+          description: "Clique em 'Copiar URL do Webhook' e cole no campo abaixo.",
+        },
+      ],
       requiredFields: [
         {
           key: "webhookUrl",
           label: "URL do Webhook do Canal",
           type: "url",
           placeholder: "https://discord.com/api/webhooks/123456789/abcdef...",
-          helperText: "Criada em Configurações do Canal > Integrações > Webhooks",
+          helperText: "URL do Webhook criada nas configurações do canal no Discord",
           required: true,
         },
       ],
@@ -111,6 +149,18 @@ export class ProviderRegistry {
       ],
       capabilities: ["SEND_MESSAGE", "SEND_MEDIA", "WEBHOOKS"],
       isOfficiallySupported: true,
+      setupGuide: [
+        {
+          title: "1. Acesse o Meta for Developers",
+          description: "Acesse developers.facebook.com e crie ou selecione o aplicativo WhatsApp Business da sua empresa.",
+          linkUrl: "https://developers.facebook.com",
+          linkLabel: "Abrir Meta for Developers",
+        },
+        {
+          title: "2. Obtenha o Phone Number ID e Token",
+          description: "No painel do WhatsApp > Introdução / Configuração da API, copie o 'Identificador do número de telefone' (Phone Number ID) e o Token de Acesso.",
+        },
+      ],
       requiredFields: [
         {
           key: "phoneNumberId",
@@ -145,40 +195,65 @@ export class ProviderRegistry {
       name: "Mercado Livre",
       type: "MARKETPLACE",
       authType: "OAUTH2",
-      initialStatus: "REQUER OAUTH",
+      initialStatus: "PRONTO PARA CONECTAR",
       categoryLabel: "Marketplace de afiliados",
-      actionButtonLabel: "Conectar Mercado Livre",
-      description: "Consulta oficial de produtos, preços, reputação de vendedores e notificações em tempo real.",
-      documentationUrl: "https://developers.mercadolibre.com.br",
+      actionButtonLabel: "Configurar Mercado Livre",
+      description: "Atribuição de comissões de afiliados, rastreamento de links e consulta de produtos e descontos.",
+      documentationUrl: "https://afiliados.mercadolivre.com.br",
       capabilitiesDisplay: [
-        "Busca e consulta de produtos",
+        "Geração de links de afiliado com tag oficial",
+        "Busca e consulta de produtos reais",
         "Preços e estoque atualizados",
-        "Notificações de pedidos via Webhook",
       ],
       capabilities: [
         "READ_PRODUCTS",
+        "GENERATE_AFFILIATE_LINK",
         "READ_PRICES",
         "READ_STOCK",
         "READ_DISCOUNTS",
         "WEBHOOKS",
       ],
       isOfficiallySupported: true,
+      setupGuide: [
+        {
+          title: "1. Acesse o Programa de Afiliados Mercado Livre",
+          description: "Acesse o portal oficial do Mercado Livre Afiliados (ou faça seu login na conta de afiliado).",
+          linkUrl: "https://afiliados.mercadolivre.com.br",
+          linkLabel: "Acessar Portal de Afiliados Mercado Livre",
+        },
+        {
+          title: "2. Localize sua Tag / ID de Afiliado",
+          description: "No seu painel de afiliado ou extensão do Mercado Livre, localize seu identificador de parceiro (ex: MLB-AFF-XXXXX, seu token ou código de campanha matt_tool).",
+        },
+        {
+          title: "3. Salve a Tag no Robô do Afiliado",
+          description: "Insira sua Tag de Afiliado abaixo. Todas as oportunidades garimpadas e links gerados pelo robô levarão sua tag para garantir suas comissões.",
+        },
+      ],
       requiredFields: [
         {
-          key: "clientId",
-          label: "App ID / Client ID",
+          key: "affiliateTag",
+          label: "Tag / ID de Afiliado Mercado Livre",
           type: "text",
-          placeholder: "1234567890123456",
-          helperText: "Client ID da aplicação criada no Mercado Livre Developers",
+          placeholder: "MLB-AFF-12345 ou seu token de afiliado",
+          helperText: "Sua Tag ou identificador de parceiro no Mercado Livre Afiliados",
           required: true,
         },
         {
+          key: "clientId",
+          label: "App ID / Client ID Developers (Opcional)",
+          type: "text",
+          placeholder: "1234567890123456",
+          helperText: "Opcional: Para sincronização avançada via API Developers",
+          required: false,
+        },
+        {
           key: "clientSecret",
-          label: "Client Secret",
+          label: "Client Secret Developers (Opcional)",
           type: "password",
           placeholder: "abcdef123456...",
-          helperText: "Chave secreta gerada no Mercado Livre Developers",
-          required: true,
+          helperText: "Opcional: Chave secreta do Mercado Livre Developers",
+          required: false,
         },
       ],
     },
@@ -189,15 +264,15 @@ export class ProviderRegistry {
       name: "Shopee",
       type: "MARKETPLACE",
       authType: "HMAC_SHA256",
-      initialStatus: "REQUER CREDENCIAIS / APROVAÇÃO",
+      initialStatus: "PRONTO PARA CONECTAR",
       categoryLabel: "Marketplace de afiliados",
       actionButtonLabel: "Configurar Shopee",
-      description: "Geração oficial de short links de afiliados e consulta de comissões via Open Platform.",
+      description: "Geração oficial de short links de afiliados (shp.ee) e consulta de comissões via Open Platform.",
       documentationUrl: "https://open-api.affiliate.shopee.com.br",
       capabilitiesDisplay: [
-        "Geração de short links de afiliado",
-        "Consulta de taxas de comissão",
-        "Relatórios de conversão oficiais",
+        "Geração de short links oficiais shp.ee",
+        "Atribuição direta de comissões na sua conta",
+        "Consulta de taxas de comissão e ofertas",
       ],
       capabilities: [
         "READ_PRODUCTS",
@@ -206,22 +281,46 @@ export class ProviderRegistry {
         "READ_CONVERSIONS",
       ],
       isOfficiallySupported: true,
+      setupGuide: [
+        {
+          title: "1. Acesse o Shopee Affiliate Open Platform",
+          description: "Faça login no portal de desenvolvedores de afiliados da Shopee.",
+          linkUrl: "https://open-api.affiliate.shopee.com.br",
+          linkLabel: "Abrir Shopee Affiliate Open Platform",
+        },
+        {
+          title: "2. Obtenha seu App ID e Secret Key",
+          description: "No menu lateral, vá em 'App Management' (Gerenciamento de Aplicativo) e copie o 'App ID' e o 'Secret Key'.",
+        },
+        {
+          title: "3. Cole as Credenciais",
+          description: "Insira os dados nos campos abaixo para habilitar a geração automática de shortlinks oficiais shp.ee.",
+        },
+      ],
       requiredFields: [
         {
           key: "appId",
-          label: "App ID / Partner ID",
+          label: "App ID / Partner ID Shopee",
           type: "text",
           placeholder: "123456",
-          helperText: "Identificador da conta parceira aprovada na Shopee",
+          helperText: "App ID fornecido no Shopee Affiliate Open Platform",
           required: true,
         },
         {
           key: "secretKey",
-          label: "Secret Key",
+          label: "Secret Key Shopee",
           type: "password",
           placeholder: "shopee_secret_key_...",
-          helperText: "Chave de assinatura HMAC da API de afiliados",
+          helperText: "Chave secreta de assinatura HMAC da API de afiliados",
           required: true,
+        },
+        {
+          key: "subIdPrefix",
+          label: "Prefixo Sub_ID de Rastreamento (Opcional)",
+          type: "text",
+          placeholder: "robo_afiliado",
+          helperText: "Prefixo opcional para identificar vendas geradas no painel da Shopee",
+          required: false,
         },
       ],
     },
@@ -232,15 +331,15 @@ export class ProviderRegistry {
       name: "Amazon Associates",
       type: "MARKETPLACE",
       authType: "AWS_SIGV4",
-      initialStatus: "REQUER APROVAÇÃO",
+      initialStatus: "PRONTO PARA CONECTAR",
       categoryLabel: "Marketplace de afiliados",
       actionButtonLabel: "Configurar Amazon",
-      description: "Busca oficial de produtos, preços atualizados e links de associados via PA-API 5.0.",
-      documentationUrl: "https://webservices.amazon.com/paapi5/documentation/",
+      description: "Links de associados com tag oficial da Amazon e comissionamento em compras qualificadas.",
+      documentationUrl: "https://associados.amazon.com.br",
       capabilitiesDisplay: [
-        "Busca de produtos PA-API 5.0",
-        "Preços, ofertas e disponibilidade",
-        "Links de associados com tag oficial",
+        "Atribuição de comissões com Tag de Associado",
+        "Geração de links parametrizados Amazon",
+        "Compatibilidade com catálogo e promoções",
       ],
       capabilities: [
         "READ_PRODUCTS",
@@ -249,30 +348,46 @@ export class ProviderRegistry {
         "GENERATE_AFFILIATE_LINK",
       ],
       isOfficiallySupported: true,
+      setupGuide: [
+        {
+          title: "1. Acesse o Amazon Associados Brasil",
+          description: "Faça login no portal do programa de afiliados da Amazon.",
+          linkUrl: "https://associados.amazon.com.br",
+          linkLabel: "Abrir Amazon Associados",
+        },
+        {
+          title: "2. Copie seu Store ID / Tag de Associado",
+          description: "No topo direito do painel da Amazon, localize seu ID de Associado (exemplo: sualoja-20).",
+        },
+        {
+          title: "3. Salve no Robô do Afiliado",
+          description: "Cole sua Tag de Associado abaixo. Todos os produtos e ofertas da Amazon terão sua tag anexada.",
+        },
+      ],
       requiredFields: [
         {
+          key: "partnerTag",
+          label: "Store ID / Associate Tag da Amazon",
+          type: "text",
+          placeholder: "meusite-20",
+          helperText: "Sua Tag de Associado cadastrada no Amazon Associados (ex: sualoja-20)",
+          required: true,
+        },
+        {
           key: "accessKey",
-          label: "Access Key ID",
+          label: "Access Key ID PA-API (Opcional)",
           type: "text",
           placeholder: "AKIA...",
-          helperText: "Chave pública gerada no Amazon Associates",
-          required: true,
+          helperText: "Opcional: Chave pública PA-API 5.0 para busca direta",
+          required: false,
         },
         {
           key: "secretKey",
-          label: "Secret Access Key",
+          label: "Secret Access Key (Opcional)",
           type: "password",
           placeholder: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-          helperText: "Chave secreta AWS SigV4",
-          required: true,
-        },
-        {
-          key: "partnerTag",
-          label: "Store ID / Associate Tag",
-          type: "text",
-          placeholder: "meusite-20",
-          helperText: "Tag de associado para atribuição de comissão",
-          required: true,
+          helperText: "Opcional: Chave secreta PA-API 5.0",
+          required: false,
         },
       ],
     },
