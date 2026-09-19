@@ -3,6 +3,8 @@ import { OfferGenerator } from "@/domain/offers/offer-generator";
 import { OfferValidator } from "@/domain/offers/offer-validator";
 import {
   OfferStyle,
+  OfferTone,
+  ChannelPreviewType,
   OfferStructuredInput,
   GeneratedOfferVariant,
 } from "@/domain/offers/types";
@@ -13,6 +15,9 @@ export interface GenerateOfferRequest {
   opportunityId?: string;
   affiliateLinkId?: string;
   preferredStyle?: OfferStyle;
+  tone?: OfferTone;
+  targetChannel?: ChannelPreviewType;
+  customInstructions?: string;
 }
 
 export class OfferService {
@@ -87,6 +92,9 @@ export class OfferService {
       reasons,
       affiliateUrl,
       inStock: product.inStock,
+      tone: req.tone,
+      targetChannel: req.targetChannel,
+      customInstructions: req.customInstructions,
     };
 
     // 4. Generate variants using AI Engine

@@ -24,6 +24,12 @@ export type ValidationStatus = "VALID" | "WARNING" | "REJECTED";
 
 export type ChannelPreviewType = "TELEGRAM" | "WHATSAPP" | "DISCORD" | "GENERIC";
 
+export type OfferTone =
+  | "ENTHUSIASTIC"
+  | "PROFESSIONAL"
+  | "CASUAL"
+  | "BENEFIT";
+
 export interface OfferStructuredInput {
   productId: string;
   opportunityId?: string;
@@ -46,6 +52,9 @@ export interface OfferStructuredInput {
   reasons?: string[];
   affiliateUrl: string;
   inStock?: boolean;
+  tone?: OfferTone;
+  targetChannel?: ChannelPreviewType;
+  customInstructions?: string;
 }
 
 export interface GeneratedOfferVariant {

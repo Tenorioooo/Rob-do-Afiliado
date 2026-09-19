@@ -30,8 +30,19 @@ import {
   RefreshCw,
   MessageSquare,
   AlertCircle,
+  Wand2,
+  Edit3,
+  SlidersHorizontal,
+  Settings2,
+  Smile,
+  Briefcase,
+  Target,
+  Zap,
+  Tag,
+  Crown,
+  FileText,
 } from "lucide-react";
-import { OfferStyle, ChannelPreviewType, OfferQueuePriority } from "@/domain/offers/types";
+import { OfferStyle, OfferTone, ChannelPreviewType, OfferQueuePriority } from "@/domain/offers/types";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -45,15 +56,24 @@ export default function ProductDetailPage() {
   const [affiliateLink, setAffiliateLink] = useState<any | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // AI Offer Generation Modal State
+  // AI Offer Studio State
   const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
   const [isGeneratingOffer, setIsGeneratingOffer] = useState(false);
+  const [isConfigMode, setIsConfigMode] = useState(true);
   const [selectedStyle, setSelectedStyle] = useState<OfferStyle>("DESCONTO");
+  const [selectedTone, setSelectedTone] = useState<OfferTone>("ENTHUSIASTIC");
+  const [customPrompt, setCustomPrompt] = useState("");
   const [generatedVariants, setGeneratedVariants] = useState<any[]>([]);
   const [activeVariant, setActiveVariant] = useState<any | null>(null);
   const [previewChannel, setPreviewChannel] = useState<ChannelPreviewType>("TELEGRAM");
   const [savedOffer, setSavedOffer] = useState<any | null>(null);
   const [copiedOfferText, setCopiedOfferText] = useState(false);
+
+  // Live Inline Edit State
+  const [isEditingCopy, setIsEditingCopy] = useState(false);
+  const [editableTitle, setEditableTitle] = useState("");
+  const [editableBody, setEditableBody] = useState("");
+  const [editableCta, setEditableCta] = useState("");
 
   // Queue Modal State
   const [isQueueModalOpen, setIsQueueModalOpen] = useState(false);
@@ -152,15 +172,20 @@ export default function ProductDetailPage() {
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  // 2. AI Offer Generation Action
-  const handleOpenOfferGenerator = async () => {
+  // 2. AI Offer Studio Actions
+  const handleOpenOfferGenerator = () => {
     setIsOfferModalOpen(true);
     if (generatedVariants.length === 0) {
-      await handleGenerateOffer(selectedStyle);
+      setIsConfigMode(true);
     }
   };
 
-  const handleGenerateOffer = async (style: OfferStyle) => {
+  const handleGenerateOffer = async (
+    style: OfferStyle = selectedStyle,
+    tone: OfferTone = selectedTone,
+    channel: ChannelPreviewType = previewChannel,
+    instructions: string = customPrompt
+  ) => {
     setIsGeneratingOffer(true);
     try {
       const res = await fetch("/api/offers/generate", {
@@ -171,20 +196,36 @@ export default function ProductDetailPage() {
           opportunityId: data.id.startsWith("preview-") ? undefined : data.id,
           affiliateLinkId: affiliateLink?.id,
           preferredStyle: style,
+          tone,
+          targetChannel: channel,
+          customInstructions: instructions.trim() || undefined,
         }),
       });
 
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Falha ao gerar oferta");
 
-      setGeneratedVariants(json.variants || []);
-      setActiveVariant(json.selectedVariant || json.variants[0]);
+      const variants = json.variants || [];
+      const selected = json.selectedVariant || variants[0];
+
+      setGeneratedVariants(variants);
+      setActiveVariant(selected);
       setSavedOffer(json.offer);
       setSelectedStyle(style);
+      setSelectedTone(tone);
+      setPreviewChannel(channel);
+
+      if (selected) {
+        setEditableTitle(selected.title);
+        setEditableBody(selected.body);
+        setEditableCta(selected.cta);
+      }
+      setIsEditingCopy(false);
+      setIsConfigMode(false);
 
       toast({
         title: "Oferta Gerada com Sucesso!",
-        message: "Copy criada com IA e validada contra regras anti-fabricação.",
+        message: "Copy criada com IA no estilo e tom selecionados.",
         type: "success",
       });
     } catch (err: unknown) {
@@ -195,15 +236,44 @@ export default function ProductDetailPage() {
     }
   };
 
+  const handleSelectVariant = (variant: any) => {
+    setActiveVariant(variant);
+    setSelectedStyle(variant.style);
+    setEditableTitle(variant.title);
+    setEditableBody(variant.body);
+    setEditableCta(variant.cta);
+    setIsEditingCopy(false);
+  };
+
+  const handleSaveEdit = () => {
+    if (!activeVariant) return;
+    const updated = {
+      ...activeVariant,
+      title: editableTitle,
+      body: editableBody,
+      cta: editableCta,
+    };
+    setActiveVariant(updated);
+    setIsEditingCopy(false);
+    toast({
+      title: "Copy Atualizada!",
+      message: "Suas alterações manuais foram salvas na pré-visualização.",
+      type: "success",
+    });
+  };
+
   const handleCopyOfferText = () => {
     if (!activeVariant) return;
+    const title = isEditingCopy ? editableTitle : activeVariant.title;
+    const body = isEditingCopy ? editableBody : activeVariant.body;
+    const cta = isEditingCopy ? editableCta : activeVariant.cta;
     const linkUrl = affiliateLink?.affiliateUrl || p.url;
-    const fullText = `${activeVariant.title}\n\n${activeVariant.body}\n\n${activeVariant.cta}\n${linkUrl}`;
+    const fullText = `${title}\n\n${body}\n\n${cta}\n${linkUrl}`;
     navigator.clipboard.writeText(fullText);
     setCopiedOfferText(true);
     toast({
       title: "Oferta Completa Copiada!",
-      message: "Texto formatado com link copiado.",
+      message: "Texto formatado com link oficial copiado.",
       type: "success",
     });
     setTimeout(() => setCopiedOfferText(false), 2000);
@@ -657,52 +727,237 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* AI Offer Generator Modal */}
+      {/* AI Offer Studio Modal */}
       {isOfferModalOpen && (
         <Modal
           isOpen={isOfferModalOpen}
           onClose={() => setIsOfferModalOpen(false)}
-          title="Gerador de Ofertas com IA & Validação Anti-Fabricação"
+          title="Studio de Criação de Ofertas com IA & Validador"
           size="lg"
         >
           <div className="space-y-6">
-            {/* Style Selector */}
-            <div>
-              <label className="text-xs font-semibold text-slate-300 block mb-2">
-                Escolha o Estilo de Copy da Oferta:
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-                {(["DESCONTO", "DIRETO", "URGENCIA", "PREMIUM", "CURTO"] as OfferStyle[]).map((style) => (
+            {/* Studio Navigation / Header */}
+            {generatedVariants.length > 0 && (
+              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/90 border border-slate-800">
+                <div className="flex items-center gap-2">
                   <button
-                    key={style}
                     type="button"
-                    onClick={() => {
-                      setSelectedStyle(style);
-                      const found = generatedVariants.find((v) => v.style === style);
-                      if (found) setActiveVariant(found);
-                      else handleGenerateOffer(style);
-                    }}
-                    className={`py-2 px-2.5 rounded-xl text-xs font-bold border transition-all ${
-                      selectedStyle === style
-                        ? "bg-primary text-white border-primary shadow-lg shadow-primary/25"
-                        : "bg-slate-950 border-slate-800 text-slate-400 hover:text-white"
+                    onClick={() => setIsConfigMode(false)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      !isConfigMode
+                        ? "bg-primary text-white shadow-md shadow-primary/25"
+                        : "text-slate-400 hover:text-white"
                     }`}
                   >
-                    {style}
+                    👁️ Pré-visualização & Edição
                   </button>
-                ))}
+                  <button
+                    type="button"
+                    onClick={() => setIsConfigMode(true)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      isConfigMode
+                        ? "bg-primary text-white shadow-md shadow-primary/25"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    ⚙️ Personalizar Prompt & Estilos
+                  </button>
+                </div>
+                <Badge variant="glow" size="sm">
+                  {generatedVariants.length} Variantes Geradas
+                </Badge>
               </div>
-            </div>
+            )}
 
-            {isGeneratingOffer ? (
-              <div className="py-12 text-center space-y-3">
-                <RefreshCw className="w-8 h-8 text-primary animate-spin mx-auto" />
-                <p className="text-xs text-slate-300 font-semibold">Analisando produto e gerando copy com IA...</p>
-                <p className="text-[11px] text-slate-500">Executando regras anti-fabricação contra dados do banco.</p>
+            {/* Screen 1: Configuration Studio */}
+            {isConfigMode ? (
+              <div className="space-y-5">
+                {/* 1. Copy Style Selector */}
+                <div>
+                  <label className="text-xs font-bold text-slate-200 block mb-2 flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-primary-400" />
+                    1. Escolha o Estilo de Copy da Oferta:
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                    {[
+                      {
+                        id: "DESCONTO",
+                        name: "🔥 Desconto & Promoção",
+                        desc: "Foco na porcentagem OFF, economia de preço de/por e oportunidade.",
+                      },
+                      {
+                        id: "DIRETO",
+                        name: "🎯 Direto & Objetivo",
+                        desc: "Sem rodeios, informações técnicas claras e link imediato.",
+                      },
+                      {
+                        id: "URGENCIA",
+                        name: "⚡ Preço Promocional",
+                        desc: "Gatilho de oportunidade detectada recente sem escassez fraudulenta.",
+                      },
+                      {
+                        id: "PREMIUM",
+                        name: "✨ Destaque & Qualidade",
+                        desc: "Ênfase na relevância da marca, reputação e item selecionado.",
+                      },
+                      {
+                        id: "CURTO",
+                        name: "🚀 Micro-Copy Curto",
+                        desc: "Formato ultra compacto e dinâmico para grupos de alto volume.",
+                      },
+                    ].map((styleItem) => {
+                      const isSelected = selectedStyle === styleItem.id;
+                      return (
+                        <button
+                          key={styleItem.id}
+                          type="button"
+                          onClick={() => setSelectedStyle(styleItem.id as OfferStyle)}
+                          className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-primary/15 border-primary shadow-md shadow-primary/20"
+                              : "bg-slate-950/80 border-slate-800 hover:border-slate-700 text-slate-300"
+                          }`}
+                        >
+                          <div className={`text-xs font-bold mb-1 ${isSelected ? "text-primary-300" : "text-white"}`}>
+                            {styleItem.name}
+                          </div>
+                          <div className="text-[11px] text-slate-400 leading-snug">
+                            {styleItem.desc}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. Tone of Voice */}
+                <div>
+                  <label className="text-xs font-bold text-slate-200 block mb-2 flex items-center gap-1.5">
+                    <Smile className="w-3.5 h-3.5 text-primary-400" />
+                    2. Tom de Voz da Copy:
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { id: "ENTHUSIASTIC", label: "🔥 Entusiasmado", desc: "Animado & Vendedor" },
+                      { id: "PROFESSIONAL", label: "💼 Profissional", desc: "Formal & Elegante" },
+                      { id: "CASUAL", label: "💬 Descontraído", desc: "Dica de Amigo" },
+                      { id: "BENEFIT", label: "🎯 Custo-Benefício", desc: "Inteligência & Valor" },
+                    ].map((tone) => {
+                      const isSelected = selectedTone === tone.id;
+                      return (
+                        <button
+                          key={tone.id}
+                          type="button"
+                          onClick={() => setSelectedTone(tone.id as OfferTone)}
+                          className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-primary/20 border-primary text-white shadow-sm"
+                              : "bg-slate-950 border-slate-800 text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          <div className="text-xs font-bold">{tone.label}</div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">{tone.desc}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 3. Target Channel */}
+                <div>
+                  <label className="text-xs font-bold text-slate-200 block mb-2 flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-primary-400" />
+                    3. Canal Principal de Publicação:
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { id: "TELEGRAM", label: "Telegram", color: "text-cyan-400" },
+                      { id: "WHATSAPP", label: "WhatsApp", color: "text-emerald-400" },
+                      { id: "DISCORD", label: "Discord", color: "text-indigo-400" },
+                      { id: "GENERIC", label: "Texto Geral", color: "text-slate-300" },
+                    ].map((ch) => {
+                      const isSelected = previewChannel === ch.id;
+                      return (
+                        <button
+                          key={ch.id}
+                          type="button"
+                          onClick={() => setPreviewChannel(ch.id as ChannelPreviewType)}
+                          className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-slate-800 border-slate-600 text-white shadow-sm"
+                              : "bg-slate-950 border-slate-800 text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          <span className={ch.color}>●</span> {ch.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 4. Custom Instructions / Prompt */}
+                <div>
+                  <label className="text-xs font-bold text-slate-200 block mb-1.5 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-primary-400" />
+                    4. Instruções Especiais para a IA (Opcional):
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={customPrompt}
+                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    placeholder="Ex: Destacar frete grátis, enfatizar parcelamento sem juros, focar em presente de aniversário..."
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-primary transition-all resize-none"
+                  />
+                </div>
+
+                {/* Action button in Config Mode */}
+                <div className="pt-2">
+                  <Button
+                    variant="glow"
+                    size="lg"
+                    onClick={() => handleGenerateOffer(selectedStyle, selectedTone, previewChannel, customPrompt)}
+                    isLoading={isGeneratingOffer}
+                    className="w-full justify-center gap-2 text-xs font-bold"
+                  >
+                    <Wand2 className="w-4 h-4 text-primary-200" />
+                    {isGeneratingOffer ? "Gerando e Validando Copy com IA..." : "⚡ Gerar Copy com IA & Validador"}
+                  </Button>
+                </div>
               </div>
-            ) : activeVariant ? (
+            ) : (
+              /* Screen 2: Preview, Inline Edit & Anti-Fabrication */
               <div className="space-y-4">
-                {/* Channel Selector */}
+                {/* Variant Switcher Tabs */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {generatedVariants.map((v) => (
+                      <button
+                        key={v.style}
+                        type="button"
+                        onClick={() => handleSelectVariant(v)}
+                        className={`py-1 px-2.5 rounded-lg text-xs font-bold transition-all ${
+                          activeVariant?.style === v.style
+                            ? "bg-primary text-white shadow-md shadow-primary/25"
+                            : "bg-slate-950 border border-slate-800 text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        {v.style}
+                      </button>
+                    ))}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsConfigMode(true)}
+                    className="text-[11px] gap-1.5 border-slate-700 hover:border-slate-500 text-slate-300"
+                  >
+                    <Settings2 className="w-3.5 h-3.5 text-primary-400" />
+                    Ajustar Prompt
+                  </Button>
+                </div>
+
+                {/* Channel Selector for Preview */}
                 <div className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs">
                   <button
                     type="button"
@@ -742,72 +997,152 @@ export default function ProductDetailPage() {
                   </button>
                 </div>
 
-                {/* Simulated Copy Preview Box */}
-                <div
-                  className={`rounded-2xl p-4 border text-xs whitespace-pre-line leading-relaxed ${
-                    previewChannel === "WHATSAPP"
-                      ? "bg-[#0b141a] border-[#222d34] text-[#e9edef]"
-                      : previewChannel === "TELEGRAM"
-                      ? "bg-[#182533] border-[#2b3b4b] text-[#f5f5f5]"
-                      : "bg-slate-950 border-slate-800 text-slate-200"
-                  }`}
-                >
-                  <div className="font-bold text-sm mb-2 text-primary-300">{activeVariant.title}</div>
-                  <div className="mb-3">{activeVariant.body}</div>
-                  <div className="font-semibold text-emerald-400 mb-1">{activeVariant.cta}</div>
-                  <div className="font-mono text-[11px] text-cyan-400 break-all underline">
-                    {affiliateLink?.affiliateUrl || p.url}
+                {/* Simulated Copy Box / Inline Editor */}
+                {isEditingCopy ? (
+                  <div className="space-y-3 p-4 rounded-2xl bg-slate-950 border border-primary/40">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-primary-300 flex items-center gap-1.5">
+                        <Edit3 className="w-3.5 h-3.5" /> Modo de Edição Livre da Copy
+                      </span>
+                      <span className="text-[10px] text-slate-500">Altere o texto conforme desejar</span>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-400 block mb-1">Título / Gancho:</label>
+                      <input
+                        type="text"
+                        value={editableTitle}
+                        onChange={(e) => setEditableTitle(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-primary"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-400 block mb-1">Corpo da Mensagem:</label>
+                      <textarea
+                        rows={4}
+                        value={editableBody}
+                        onChange={(e) => setEditableBody(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-primary"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-400 block mb-1">Chamada para Ação (CTA):</label>
+                      <input
+                        type="text"
+                        value={editableCta}
+                        onChange={(e) => setEditableCta(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-primary"
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsEditingCopy(false)}
+                        className="text-xs"
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="emerald"
+                        size="sm"
+                        onClick={handleSaveEdit}
+                        className="text-xs font-semibold gap-1"
+                      >
+                        <Check className="w-3.5 h-3.5" /> Salvar Alterações
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div
+                    className={`rounded-2xl p-4 border text-xs whitespace-pre-line leading-relaxed relative group ${
+                      previewChannel === "WHATSAPP"
+                        ? "bg-[#0b141a] border-[#222d34] text-[#e9edef]"
+                        : previewChannel === "TELEGRAM"
+                        ? "bg-[#182533] border-[#2b3b4b] text-[#f5f5f5]"
+                        : "bg-slate-950 border-slate-800 text-slate-200"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (activeVariant) {
+                          setEditableTitle(activeVariant.title);
+                          setEditableBody(activeVariant.body);
+                          setEditableCta(activeVariant.cta);
+                        }
+                        setIsEditingCopy(true);
+                      }}
+                      className="absolute top-3 right-3 py-1 px-2.5 rounded-lg bg-slate-800/80 hover:bg-primary text-slate-300 hover:text-white text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer border border-slate-700"
+                      title="Editar Copy Manualmente"
+                    >
+                      <Edit3 className="w-3 h-3" /> Editar
+                    </button>
+
+                    <div className="font-bold text-sm mb-2 text-primary-300 pr-16">{activeVariant?.title}</div>
+                    <div className="mb-3">{activeVariant?.body}</div>
+                    <div className="font-semibold text-emerald-400 mb-1">{activeVariant?.cta}</div>
+                    <div className="font-mono text-[11px] text-cyan-400 break-all underline">
+                      {affiliateLink?.affiliateUrl || p.url}
+                    </div>
+                  </div>
+                )}
 
                 {/* Anti-Fabrication Checklist */}
-                <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      <span>Validador Anti-Fabricação:</span>
-                    </div>
-                    <Badge variant="success" size="sm">
-                      {activeVariant.validationStatus === "VALID" ? "VALIDADO COM SUCESSO" : activeVariant.validationStatus}
-                    </Badge>
-                  </div>
-
-                  <div className="space-y-1">
-                    {activeVariant.claimsVerified?.map((claim: string, idx: number) => (
-                      <div key={idx} className="flex items-center gap-1.5 text-[11px] text-emerald-400">
-                        <Check className="w-3 h-3 shrink-0" />
-                        <span>{claim}</span>
+                {activeVariant && (
+                  <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        <span>Validador Anti-Fabricação:</span>
                       </div>
-                    ))}
+                      <Badge variant="success" size="sm">
+                        {activeVariant.validationStatus === "VALID" ? "VALIDADO COM SUCESSO" : activeVariant.validationStatus}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-1">
+                      {activeVariant.claimsVerified?.map((claim: string, idx: number) => (
+                        <div key={idx} className="flex items-center gap-1.5 text-[11px] text-emerald-400">
+                          <Check className="w-3 h-3 shrink-0" />
+                          <span>{claim}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Modal Actions */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-800">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCopyOfferText}
+                    className="text-xs gap-1.5"
+                  >
+                    {copiedOfferText ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedOfferText ? "Copiado!" : "Copiar Copy Formatada"}
+                  </Button>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="emerald"
+                      size="sm"
+                      onClick={() => setIsQueueModalOpen(true)}
+                      className="text-xs gap-1.5 font-semibold"
+                    >
+                      <Clock className="w-3.5 h-3.5" />
+                      Adicionar à Fila de Ofertas
+                    </Button>
                   </div>
                 </div>
               </div>
-            ) : null}
-
-            {/* Modal Actions */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-800">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCopyOfferText}
-                className="text-xs gap-1.5"
-              >
-                {copiedOfferText ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                {copiedOfferText ? "Copiado!" : "Copiar Copy Formatada"}
-              </Button>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="emerald"
-                  size="sm"
-                  onClick={() => setIsQueueModalOpen(true)}
-                  className="text-xs gap-1.5 font-semibold"
-                >
-                  <Clock className="w-3.5 h-3.5" />
-                  Adicionar à Fila de Ofertas
-                </Button>
-              </div>
-            </div>
+            )}
           </div>
         </Modal>
       )}

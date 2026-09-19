@@ -12,6 +12,13 @@ const generateOfferSchema = z.object({
   preferredStyle: z
     .enum(["DIRETO", "DESCONTO", "URGENCIA", "PREMIUM", "CURTO"])
     .optional(),
+  tone: z
+    .enum(["ENTHUSIASTIC", "PROFESSIONAL", "CASUAL", "BENEFIT"])
+    .optional(),
+  targetChannel: z
+    .enum(["TELEGRAM", "WHATSAPP", "DISCORD", "GENERIC"])
+    .optional(),
+  customInstructions: z.string().max(500).optional(),
 });
 
 export async function POST(request: NextRequest) {
