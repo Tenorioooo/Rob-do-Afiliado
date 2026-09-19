@@ -120,9 +120,9 @@ export default function RadarPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
-            <Info className="w-3.5 h-3.5 text-primary" />
-            <span>Dados de demonstração (mock)</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Radar em Tempo Real</span>
           </div>
 
           <Link href="/robot">

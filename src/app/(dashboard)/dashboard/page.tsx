@@ -83,9 +83,9 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
-          <Info className="w-3.5 h-3.5 text-primary" />
-          <span>Inteligência & Dispatcher Ativos (Mock)</span>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Inteligência & Dispatcher Ativos</span>
         </div>
       </div>
 
