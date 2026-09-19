@@ -17,10 +17,10 @@ export const robotScanConfigSchema = z.object({
 export type RobotScanConfig = z.infer<typeof robotScanConfigSchema>;
 
 export const DEFAULT_SCAN_CONFIG: RobotScanConfig = {
-  platforms: ["SHOPEE", "MERCADO_LIVRE", "AMAZON"],
-  categories: ["Eletrônicos", "Casa e Cozinha", "Moda", "Beleza", "Gamer", "Informática"],
-  minOpportunityScore: 75,
-  minDiscount: 15.0,
+  platforms: ["MERCADO_LIVRE", "SHOPEE", "AMAZON"],
+  categories: ["ALL"],
+  minOpportunityScore: 70,
+  minDiscount: 10.0,
   minCommission: 3.0,
-  maxResults: 50,
+  maxResults: 60,
 };

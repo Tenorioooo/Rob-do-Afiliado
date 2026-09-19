@@ -318,12 +318,21 @@ export class MercadoLivreRealDiscovery {
   static async discoverProducts(options?: MLDiscoveryOptions): Promise<RawMarketplaceItem[]> {
     const urlsToFetch: { url: string; category: string }[] = [];
 
+    const isAllCategories =
+      !options?.categories ||
+      options.categories.length === 0 ||
+      options.categories.some((c) =>
+        ["all", "todas", "geral", "todos", "all products", "todas as categorias"].includes(
+          c.toLowerCase().trim()
+        )
+      );
+
     if (options?.query && options.query.trim().length > 0) {
       urlsToFetch.push({
         url: `https://lista.mercadolivre.com.br/${encodeURIComponent(options.query.trim())}`,
         category: "Geral",
       });
-    } else if (options?.categories && options.categories.length > 0) {
+    } else if (!isAllCategories && options?.categories) {
       for (const cat of options.categories) {
         const normalizedKey = cat
           .toLowerCase()
@@ -351,18 +360,12 @@ export class MercadoLivreRealDiscovery {
       }
     }
 
-    // Se nenhuma categoria específica foi pedida, varre TODOS os principais nichos de alta conversão!
-    if (urlsToFetch.length === 0) {
-      urlsToFetch.push(
-        { url: "https://www.mercadolivre.com.br/ofertas?category=MLB1648", category: "Informática" },
-        { url: "https://www.mercadolivre.com.br/ofertas?category=MLB1574", category: "Casa e Cozinha" },
-        { url: "https://www.mercadolivre.com.br/ofertas?category=MLB1500", category: "Ferramentas" },
-        { url: "https://www.mercadolivre.com.br/ofertas?category=MLB1246", category: "Beleza e Saúde" },
-        { url: "https://www.mercadolivre.com.br/ofertas?category=MLB1430", category: "Moda e Calçados" },
-        { url: "https://www.mercadolivre.com.br/ofertas?category=MLB1144", category: "Games" },
-        { url: "https://www.mercadolivre.com.br/ofertas?category=MLB1055", category: "Eletrônicos" },
-        { url: "https://www.mercadolivre.com.br/ofertas", category: "Ofertas em Destaque" }
-      );
+    // Modo "All Products" (Padrão Ampliado): Varre TODOS os nichos oficiais simultaneamente
+    if (urlsToFetch.length === 0 || isAllCategories) {
+      urlsToFetch.length = 0; // limpa para garantir todos os nichos
+      for (const feed of this.CATEGORY_FEEDS) {
+        urlsToFetch.push({ url: feed.url, category: feed.name });
+      }
     }
 
     const allItems: RawMarketplaceItem[] = [];

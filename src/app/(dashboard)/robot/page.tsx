@@ -89,6 +89,7 @@ export default function RobotPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           minOpportunityScore: 70,
+          categories: ["ALL"],
         }),
       });
 

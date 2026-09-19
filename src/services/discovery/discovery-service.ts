@@ -78,9 +78,18 @@ export class DiscoveryService {
       }
     }
 
-    // Filter by categories if specified
+    // Filter by categories only if specific strict categories are requested and "ALL" is not present
     let filteredRaw = allRawItems;
-    if (params?.categories && params.categories.length > 0) {
+    const isAllCategories =
+      !params?.categories ||
+      params.categories.length === 0 ||
+      params.categories.some((c) =>
+        ["all", "todas", "geral", "todos", "all products", "todas as categorias"].includes(
+          c.toLowerCase().trim()
+        )
+      );
+
+    if (!isAllCategories && params?.categories && params.categories.length > 0) {
       const allowedCategories = params.categories.map((c) => c.toLowerCase());
       const matches = allRawItems.filter((item) => {
         if (!item.category) return false;
