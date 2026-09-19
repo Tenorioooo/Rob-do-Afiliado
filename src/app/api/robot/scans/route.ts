@@ -36,10 +36,32 @@ export async function GET(request: NextRequest) {
       where: { userId: session.userId },
     });
 
+    const marketplaceConnections = await prisma.integrationConnection.findMany({
+      where: {
+        userId: session.userId,
+        type: "MARKETPLACE",
+      },
+      select: {
+        id: true,
+        provider: true,
+        type: true,
+        status: true,
+        authType: true,
+        externalAccountId: true,
+        externalAccountName: true,
+        capabilities: true,
+        lastValidatedAt: true,
+        lastSyncAt: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
     return NextResponse.json({
       scans,
       recentEvents,
       config,
+      marketplaceConnections,
     });
   } catch (error: unknown) {
     console.error("[API:Robot:Scans:Error]", error);

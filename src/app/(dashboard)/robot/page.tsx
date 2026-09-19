@@ -23,7 +23,24 @@ import {
   Layers,
   Flame,
   ArrowRight,
+  ArrowUpRight,
+  ShoppingBag,
+  ExternalLink,
 } from "lucide-react";
+
+interface MarketplaceConnection {
+  id: string;
+  provider: string;
+  type: string;
+  status: string;
+  authType: string;
+  externalAccountId: string | null;
+  externalAccountName: string | null;
+  capabilities: string[];
+  lastValidatedAt: string | null;
+  lastSyncAt: string | null;
+  createdAt: string;
+}
 
 interface ScanRecord {
   id: string;
@@ -56,6 +73,7 @@ export default function RobotPage() {
   const [scanStep, setScanStep] = useState<number>(0);
   const [scans, setScans] = useState<ScanRecord[]>([]);
   const [events, setEvents] = useState<RobotEventRecord[]>([]);
+  const [marketplaceConnections, setMarketplaceConnections] = useState<MarketplaceConnection[]>([]);
   const [scanResultModal, setScanResultModal] = useState<any | null>(null);
 
   const fetchScanHistory = useCallback(async () => {
@@ -65,6 +83,7 @@ export default function RobotPage() {
       if (res.ok) {
         setScans(data.scans || []);
         setEvents(data.recentEvents || []);
+        setMarketplaceConnections(data.marketplaceConnections || []);
       }
     } catch (err) {
       console.error("Error fetching robot scan history:", err);
@@ -246,37 +265,100 @@ export default function RobotPage() {
 
       {/* Monitored Sources */}
       <div className="space-y-4">
-        <div>
-          <h3 className="text-lg font-bold text-white">Fontes Monitoradas (Marketplaces Ativos)</h3>
-          <p className="text-xs text-slate-400">
-            Adaptadores em operação com consulta contínua aos marketplaces conectados.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="text-lg font-bold text-white">Fontes Monitoradas (Marketplaces Ativos)</h3>
+            <p className="text-xs text-slate-400">
+              Plataformas conectadas e adaptadores oficiais em operação contínua.
+            </p>
+          </div>
+          <Link href="/integrations">
+            <Button variant="ghost" size="sm" className="text-xs gap-1 text-primary hover:text-primary-300">
+              <span>Central de Integrações</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {[
-            { name: "Shopee Afiliados", plat: "SHOPEE", desc: "Varredura no catálogo de eletrônicos, moda e beleza.", status: "Conectado" },
-            { name: "Mercado Livre Full", plat: "MERCADO_LIVRE", desc: "Varredura em eletrodomésticos, casa e tecnologia.", status: "Conectado" },
-            { name: "Amazon Associados", plat: "AMAZON", desc: "Varredura em eletrônicos, Kindles e smart devices.", status: "Conectado" },
-          ].map((int, i) => (
-            <div
-              key={i}
-              className="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-bold text-white">{int.name}</span>
-                  <Badge variant="success">Mock Ativo</Badge>
-                </div>
-                <p className="text-xs text-slate-400 mb-4">{int.desc}</p>
-              </div>
+          {(() => {
+            const mlConn = marketplaceConnections.find((c) => c.provider === "MERCADO_LIVRE");
+            const shopeeConn = marketplaceConnections.find((c) => c.provider === "SHOPEE");
+            const amazonConn = marketplaceConnections.find((c) => c.provider === "AMAZON");
 
-              <div className="pt-3 border-t border-slate-800 text-[11px] text-slate-500 flex justify-between">
-                <span>Adapter: MarketplaceAdapter</span>
-                <span className="text-emerald-400 font-medium">100% Operacional</span>
+            const isMlOAuth = !!mlConn && (mlConn.status === "CONNECTED" || mlConn.status === "VERIFIED_REAL");
+            const isShopeeConnected = !!shopeeConn && (shopeeConn.status === "CONNECTED" || shopeeConn.status === "VERIFIED_REAL");
+            const isAmazonConnected = !!amazonConn && (amazonConn.status === "CONNECTED" || amazonConn.status === "VERIFIED_REAL");
+
+            return [
+              {
+                name: "Mercado Livre",
+                plat: "MERCADO_LIVRE",
+                badgeText: isMlOAuth ? "OAuth Conectado" : "Catálogo & Fotos Reais",
+                badgeVariant: isMlOAuth ? ("success" as const) : ("mercadolivre" as const),
+                statusText: isMlOAuth ? "100% Operacional (OAuth 2.0)" : "Motor Multi-Nicho Ativo",
+                statusColor: "text-emerald-400",
+                desc: isMlOAuth
+                  ? `Conta oficial vinculada (${mlConn?.externalAccountName || "Autorizada"}). Varredura multi-nicho e monitoramento em tempo real.`
+                  : "Varredura ativa em 12 categorias com fotos originais em alta resolução e detecção de descontos.",
+                connected: true,
+                actionHref: isMlOAuth ? `/integrations/${mlConn?.id}` : "/integrations",
+                actionLabel: isMlOAuth ? "Gerenciar Conexão" : "Vincular OAuth Oficial",
+              },
+              {
+                name: "Shopee Afiliados",
+                plat: "SHOPEE",
+                badgeText: isShopeeConnected ? "Conectada" : "Aguardando Credenciais",
+                badgeVariant: isShopeeConnected ? ("success" as const) : ("outline" as const),
+                statusText: isShopeeConnected ? "100% Operacional (Open API)" : "Não Conectada",
+                statusColor: isShopeeConnected ? "text-emerald-400" : "text-slate-500",
+                desc: isShopeeConnected
+                  ? "Credenciais da Shopee Open Platform ativas com geração automática de short links."
+                  : "Conecte seu App ID e Secret da Shopee para sincronizar short links oficiais e comissões.",
+                connected: isShopeeConnected,
+                actionHref: isShopeeConnected ? `/integrations/${shopeeConn?.id}` : "/integrations",
+                actionLabel: isShopeeConnected ? "Gerenciar Conexão" : "Conectar Shopee",
+              },
+              {
+                name: "Amazon Associados",
+                plat: "AMAZON",
+                badgeText: isAmazonConnected ? "Conectada" : "Aguardando Credenciais",
+                badgeVariant: isAmazonConnected ? ("success" as const) : ("outline" as const),
+                statusText: isAmazonConnected ? "100% Operacional (PA-API)" : "Não Conectada",
+                statusColor: isAmazonConnected ? "text-emerald-400" : "text-slate-500",
+                desc: isAmazonConnected
+                  ? "PA-API 5.0 conectada com Store ID ativa para busca oficial e geração de links de associado."
+                  : "Conecte suas chaves de API da Amazon para monetizar ofertas com sua tag de associado.",
+                connected: isAmazonConnected,
+                actionHref: isAmazonConnected ? `/integrations/${amazonConn?.id}` : "/integrations",
+                actionLabel: isAmazonConnected ? "Gerenciar Conexão" : "Conectar Amazon",
+              },
+            ].map((int, i) => (
+              <div
+                key={i}
+                className="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-white">{int.name}</span>
+                    <Badge variant={int.badgeVariant}>
+                      {int.connected && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
+                      {int.badgeText}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-slate-400 mb-4">{int.desc}</p>
+                </div>
+
+                <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-[11px]">
+                  <span className={int.statusColor}>{int.statusText}</span>
+                  <Link href={int.actionHref} className="text-primary hover:text-primary-300 font-medium flex items-center gap-1">
+                    <span>{int.actionLabel}</span>
+                    <ArrowUpRight className="w-3 h-3" />
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
+            ));
+          })()}
         </div>
       </div>
 
