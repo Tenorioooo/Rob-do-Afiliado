@@ -140,8 +140,8 @@ export default function IntegrationsPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [urlNotification, setUrlNotification] = useState<{ type: "error" | "success"; message: string } | null>(null);
 
-  // WhatsApp QR Code Easy Flow State
-  const [waConnectMode, setWaConnectMode] = useState<"QRCODE" | "MANUAL">("QRCODE");
+  // WhatsApp Connection Mode
+  const [waConnectMode, setWaConnectMode] = useState<"FACEBOOK" | "QRCODE" | "MANUAL">("FACEBOOK");
   const [isGeneratingQr, setIsGeneratingQr] = useState(false);
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
   const [qrSessionId, setQrSessionId] = useState<string | null>(null);
@@ -164,7 +164,12 @@ export default function IntegrationsPage() {
       } else if (succ) {
         setUrlNotification({
           type: "success",
-          message: succ === "mercadolivre" ? "Mercado Livre conectado e autenticado com sucesso!" : "Conexão estabelecida com sucesso!",
+          message:
+            succ === "whatsapp"
+              ? "WhatsApp oficial conectado com sucesso via Meta Cloud API!"
+              : succ === "mercadolivre"
+              ? "Mercado Livre conectado e autenticado com sucesso!"
+              : "Conexão estabelecida com sucesso!",
         });
       }
     }
@@ -278,14 +283,10 @@ export default function IntegrationsPage() {
     setConnectModalOpen(true);
 
     if (provider.id.toUpperCase() === "WHATSAPP") {
-      setWaConnectMode("QRCODE");
+      setWaConnectMode("FACEBOOK");
       setQrCodeData(null);
       setQrSessionId(null);
       setWaPhoneNickname("WhatsApp Grupo de Ofertas");
-      // Auto-trigger QR generation immediately
-      setTimeout(() => {
-        handleGenerateQrCode();
-      }, 100);
     }
   };
 
@@ -836,38 +837,159 @@ export default function IntegrationsPage() {
 
             {/* Scrollable Content Container */}
             <div className="overflow-y-auto pr-1 space-y-5 flex-1">
-              {/* WhatsApp Specific: Mode Selector (QR Code Easy vs. Manual API) */}
+              {/* WhatsApp Specific: Mode Selector (Facebook OAuth vs. QR Code vs. Manual API) */}
               {selectedProvider.id.toUpperCase() === "WHATSAPP" && (
-                <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-slate-950 border border-slate-800">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-1.5 rounded-2xl bg-slate-950 border border-slate-800">
                   <button
                     type="button"
-                    onClick={() => setWaConnectMode("QRCODE")}
-                    className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                    onClick={() => setWaConnectMode("FACEBOOK")}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      waConnectMode === "FACEBOOK"
+                        ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    🔵 Login Facebook (Grátis)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWaConnectMode("QRCODE");
+                      if (!qrCodeData) handleGenerateQrCode();
+                    }}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                       waConnectMode === "QRCODE"
                         ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30"
                         : "text-slate-400 hover:text-white"
                     }`}
                   >
-                    <QrCode className="w-4 h-4" />
-                    📱 Conectar via QR Code (100% Fácil)
+                    <QrCode className="w-3.5 h-3.5" />
+                    📱 Instância / QR Code
                   </button>
                   <button
                     type="button"
                     onClick={() => setWaConnectMode("MANUAL")}
-                    className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+                    className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${
                       waConnectMode === "MANUAL"
                         ? "bg-slate-800 text-white border border-slate-700"
                         : "text-slate-400 hover:text-white"
                     }`}
                   >
-                    <Settings className="w-4 h-4" />
-                    ⚙️ Configuração Manual / API
+                    <Settings className="w-3.5 h-3.5" />
+                    ⚙️ API Manual
                   </button>
                 </div>
               )}
 
-              {/* WhatsApp Mode: QR Code Flow & Evolution API Setup Guide */}
-              {selectedProvider.id.toUpperCase() === "WHATSAPP" && waConnectMode === "QRCODE" ? (
+              {/* WhatsApp Mode 1: Meta WhatsApp Cloud API via Facebook Login (1-Click Embedded Flow) */}
+              {selectedProvider.id.toUpperCase() === "WHATSAPP" && waConnectMode === "FACEBOOK" ? (
+                <div className="space-y-4">
+                  {/* Meta Cloud API Highlight Card */}
+                  <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-950/40 via-slate-950 to-slate-900 border border-blue-500/30 space-y-4 shadow-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-xs font-bold text-blue-400">
+                        <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-400" />
+                        <span>Meta WhatsApp Cloud API Oficial</span>
+                      </div>
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                        1.000 msgs/mês GRÁTIS
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      Conecte seu WhatsApp comercial em <strong>1 clique</strong> fazendo login com sua conta do Facebook. Sem precisar de servidor externo, sem QR Code expirando e 100% oficial pela Meta.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                      <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center gap-2 text-xs text-slate-300">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span>Zero Risco de Banimento</span>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center gap-2 text-xs text-slate-300">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span>Sem Celular Conectado</span>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center gap-2 text-xs text-slate-300">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span>100% Gratuito (Até 1k msgs)</span>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center gap-2 text-xs text-slate-300">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <span>Envio em Grupos e Canais</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step-by-Step Summary */}
+                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                    <span className="text-xs font-bold text-white block">
+                      🚀 Como funciona a conexão em 1 clique:
+                    </span>
+                    <div className="space-y-2 text-xs text-slate-300">
+                      <div className="flex items-start gap-2.5">
+                        <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-300 font-bold flex items-center justify-center shrink-0 text-[11px] border border-blue-500/30 mt-0.5">
+                          1
+                        </span>
+                        <div>
+                          <strong className="text-white">Clique no botão azul abaixo:</strong>
+                          <p className="text-[11px] text-slate-400 mt-0.5">
+                            Você será redirecionado para a janela segura de autorização oficial do Facebook / Meta.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-300 font-bold flex items-center justify-center shrink-0 text-[11px] border border-blue-500/30 mt-0.5">
+                          2
+                        </span>
+                        <div>
+                          <strong className="text-white">Selecione seu Perfil e Número:</strong>
+                          <p className="text-[11px] text-slate-400 mt-0.5">
+                            Escolha sua conta comercial existente ou crie uma conta WhatsApp Business instantaneamente.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-300 font-bold flex items-center justify-center shrink-0 text-[11px] border border-blue-500/30 mt-0.5">
+                          3
+                        </span>
+                        <div>
+                          <strong className="text-white">Pronto para Enviar Ofertas:</strong>
+                          <p className="text-[11px] text-slate-400 mt-0.5">
+                            O robô salva seu canal verificado e começa a disparar promoções automáticas.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Big Action Button */}
+                  <div className="pt-2">
+                    <a
+                      href="/api/integrations/oauth/whatsapp/authorize"
+                      className="w-full inline-flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-500 shadow-xl shadow-blue-600/30 transition-all cursor-pointer"
+                    >
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                      </svg>
+                      <span>Conectar com Facebook (WhatsApp Oficial)</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setConnectModalOpen(false)}
+                      className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors"
+                    >
+                      Fechar
+                    </button>
+                    <div className="text-[11px] text-slate-500 flex items-center gap-1">
+                      <Lock className="w-3 h-3 text-emerald-400" />
+                      <span>Conexão direta com a API da Meta</span>
+                    </div>
+                  </div>
+                </div>
+              ) : selectedProvider.id.toUpperCase() === "WHATSAPP" && waConnectMode === "QRCODE" ? (
                 <div className="space-y-4">
                   {/* Evolution API Requirement & Free Tier Notice */}
                   <div className="p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 space-y-3">
