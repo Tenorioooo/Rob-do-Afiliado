@@ -369,7 +369,7 @@ export default function RadarPage() {
                   )}
                   <Link href={`/radar/${opp.id}`} className="flex-1">
                     <Button variant="glow" size="sm" className="w-full justify-center gap-1.5 text-xs font-semibold">
-                      <span>Ver Raio-X & Breakdown</span>
+                      <span>Ver detalhes</span>
                       <ArrowUpRight className="w-3.5 h-3.5" />
                     </Button>
                   </Link>
