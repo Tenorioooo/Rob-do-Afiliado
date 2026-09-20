@@ -131,7 +131,7 @@ export class ProviderRegistry {
       ],
     },
 
-    // 3. WHATSAPP (GRUPOS & CANAIS DE OFERTAS / INSTÂNCIAS / META CLOUD API)
+    // 3. WHATSAPP (GRUPOS & CANAIS DE OFERTAS / EVOLUTION API / INSTÂNCIAS / META CLOUD API)
     {
       id: "WHATSAPP",
       name: "WhatsApp (Grupos & Canais de Ofertas)",
@@ -140,52 +140,62 @@ export class ProviderRegistry {
       initialStatus: "REQUER CREDENCIAIS",
       categoryLabel: "Canal de distribuição",
       actionButtonLabel: "Configurar WhatsApp",
-      description: "Envie ofertas automáticas com fotos, links tagueados e emojis diretamente em Grupos de WhatsApp de Achadinhos e Canais (Evolution API, Z-API, Webhook ou Meta Cloud API).",
+      description: "Envie ofertas automáticas com fotos, links de afiliado tagueados e emojis diretamente em Grupos de WhatsApp. Requer instância na Evolution API (ou Z-API / Zapito / Meta Cloud API).",
       documentationUrl: "https://evolution-api.com",
       capabilitiesDisplay: [
         "Disparo de ofertas em Grupos e Canais de WhatsApp",
         "Envio de fotos dos produtos e copies formatadas",
-        "Compatível com Evolution API, Z-API, Zapito e Meta Cloud API",
+        "Integração nativa com Evolution API, Z-API e Zapito",
       ],
       capabilities: ["SEND_MESSAGE", "SEND_MEDIA", "WEBHOOKS"],
       isOfficiallySupported: true,
       setupGuide: [
         {
-          title: "1. Modo Grupos de Ofertas (Recomendado para Afiliados)",
-          description: "Conecte sua instância de WhatsApp (Evolution API, Z-API, Zapito ou Webhook) escaneando o QR Code no seu painel de instâncias.",
+          title: "⚠️ 1. É Obrigatório ter uma Instância Evolution API",
+          description: "O WhatsApp não permite conexões automáticas sem um gateway WebSocket ativo. Para que o robô envie mensagens e o WhatsApp aceite o QR Code, você precisa ter sua Evolution API ativa (em servidor próprio, VPS, Railway, Render ou painel da Evolution).",
+          linkUrl: "https://evolution-api.com",
+          linkLabel: "Acessar Evolution API",
         },
         {
-          title: "2. Copie a URL e Chave da API",
-          description: "Cole abaixo a URL da API da sua instância (ex: https://api.suainstancia.com) e a Chave de API (ApiKey / Token).",
+          title: "2. Como pegar a URL da Instância",
+          description: "Acesse o painel do seu servidor da Evolution API e copie o endereço principal onde a API está hospedada (exemplo: https://api.seudominio.com ou https://evolution-sua-empresa.up.railway.app).",
         },
         {
-          title: "3. Cadastre seus Grupos de Promoção",
-          description: "Na aba 'Canais', cadastre o ID/JID do Grupo (ex: 1203630283749@g.us) ou número para onde o robô irá disparar as ofertas automaticamente.",
+          title: "3. Como pegar a Chave de API (Global ApiKey ou Token)",
+          description: "No painel da Evolution API ou no arquivo de variáveis de ambiente (.env) da sua Evolution API, copie o valor do campo AUTHENTICATION_API_KEY (ou a Chave de API gerada para sua instância).",
+        },
+        {
+          title: "4. Escanear o QR Code Real do WhatsApp",
+          description: "Com a URL e a Chave de API preenchidas, clique em 'Gerar / Buscar QR Code'. Aponte a câmera do seu celular no WhatsApp (Aparelhos Conectados) para o QR Code gerado em tempo real.",
+        },
+        {
+          title: "5. Adicionar seus Grupos de Promoções",
+          description: "Após conectar a instância, vá na aba 'Canais' do Robô do Afiliado e cadastre o JID/ID do grupo (ex: 1203630283749@g.us) para onde o robô irá disparar os achadinhos.",
         },
       ],
       requiredFields: [
         {
           key: "instanceUrl",
-          label: "URL da API / Instância de WhatsApp (para Grupos)",
-          type: "text",
-          placeholder: "https://api.suainstancia.com ou https://seu-webhook.com",
-          helperText: "URL da sua Evolution API, Z-API, Zapito ou Webhook de disparo em grupos",
-          required: false,
+          label: "URL da Evolution API / Instância (Obrigatório)",
+          type: "url",
+          placeholder: "https://api.seudominio.com",
+          helperText: "Endereço do seu servidor Evolution API (ex: https://api.meuzap.com)",
+          required: true,
         },
         {
           key: "apiKey",
-          label: "Chave de API / Token da Instância",
+          label: "Chave de API / Token da Instância (Obrigatório)",
           type: "password",
-          placeholder: "sua_chave_de_api_ou_token",
-          helperText: "Chave de autenticação (ApiKey da Evolution API ou Client-Token da Z-API)",
-          required: false,
+          placeholder: "Cole sua AUTHENTICATION_API_KEY aqui",
+          helperText: "Chave de autenticação configurada na Evolution API",
+          required: true,
         },
         {
           key: "instanceName",
           label: "Nome da Instância (Opcional)",
           type: "text",
           placeholder: "promocoes_vip",
-          helperText: "Nome da instância (usado na Evolution API)",
+          helperText: "Nome da instância criada na Evolution API (padrão: default)",
           required: false,
         },
         {
@@ -193,7 +203,7 @@ export class ProviderRegistry {
           label: "Phone Number ID (Meta Cloud API Oficial)",
           type: "text",
           placeholder: "105948202485930",
-          helperText: "Opcional: Apenas caso utilize a Meta Cloud API do Meta Developers",
+          helperText: "Opcional: Apenas caso utilize a Meta Cloud API corporativa da Meta",
           required: false,
         },
         {

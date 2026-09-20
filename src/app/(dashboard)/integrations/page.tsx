@@ -246,7 +246,9 @@ export default function IntegrationsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sessionId: qrSessionId,
-          phoneNickname: waPhoneNickname || "WhatsApp Grupo de Ofertas",
+          instanceUrl: waInstanceUrl.trim() || undefined,
+          apiKey: waApiKey.trim() || undefined,
+          phoneNickname: waPhoneNickname || "WhatsApp Grupo de Ofertas VIP",
         }),
       });
       const data = await res.json();
@@ -255,7 +257,7 @@ export default function IntegrationsPage() {
       setConnectModalOpen(false);
       setUrlNotification({
         type: "success",
-        message: "WhatsApp conectado com sucesso via QR Code!",
+        message: "WhatsApp conectado com sucesso via Evolution API!",
       });
       fetchInitialData();
     } catch (err: unknown) {
@@ -863,77 +865,123 @@ export default function IntegrationsPage() {
               </div>
             )}
 
-            {/* WhatsApp Mode: 100% Easy QR Code Flow */}
+            {/* WhatsApp Mode: QR Code Flow & Evolution API Setup Guide */}
             {selectedProvider.id.toUpperCase() === "WHATSAPP" && waConnectMode === "QRCODE" ? (
               <div className="space-y-4">
-                {/* Visual Instructions */}
-                <div className="p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 space-y-2.5">
-                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
-                    <Smartphone className="w-4 h-4" />
-                    <span>Como conectar em 3 passos simples:</span>
+                {/* Evolution API Requirement Notice */}
+                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
+                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                      <span>Obrigatório: Ter uma conta / instância na Evolution API</span>
+                    </div>
+                    <a
+                      href="https://evolution-api.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] font-semibold text-amber-300 hover:text-amber-200 underline flex items-center gap-1"
+                    >
+                      Site Evolution API <ExternalLink className="w-3 h-3" />
+                    </a>
                   </div>
-                  <ol className="space-y-2 text-xs text-slate-300">
-                    <li className="flex items-start gap-2">
-                      <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center shrink-0 text-[10px] border border-emerald-500/30 mt-0.5">
-                        1
-                      </span>
-                      <span>Abra o <strong>WhatsApp</strong> no seu celular.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center shrink-0 text-[10px] border border-emerald-500/30 mt-0.5">
-                        2
-                      </span>
-                      <span>Toque no <strong>Menu ⋮ (ou Configurações ⚙️)</strong> e selecione <strong>Aparelhos Conectados</strong>.</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center shrink-0 text-[10px] border border-emerald-500/30 mt-0.5">
-                        3
-                      </span>
-                      <span>Toque em <strong>Conectar um aparelho</strong> e aponte a câmera para o QR Code abaixo:</span>
-                    </li>
-                  </ol>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    O WhatsApp no celular <strong>exige um servidor WebSocket ativo</strong> para emitir o QR Code oficial e disparar mensagens automáticas em grupos. Para isso, é obrigatório criar uma instância na <strong>Evolution API</strong> (hospedada em servidor próprio, Railway, Render, VPS ou Z-API).
+                  </p>
                 </div>
 
-                {/* QR Code Container */}
-                <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-4">
-                  {/* Instance Quick Connect (Optional for fetching real live WhatsApp WebSocket QR) */}
-                  <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-left space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
-                        <Radio className="w-3.5 h-3.5 text-emerald-400" />
-                        Instância de WhatsApp (Evolution API / Z-API / Zapito):
+                {/* Step-by-Step Instructions */}
+                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                  <span className="text-xs font-bold text-white block">
+                    📋 Passo a Passo para Conectar:
+                  </span>
+                  <div className="space-y-2.5 text-xs text-slate-300">
+                    <div className="flex items-start gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center shrink-0 text-[11px] border border-indigo-500/30 mt-0.5">
+                        1
                       </span>
-                      <span className="text-[10px] text-slate-400">Opcional</span>
+                      <div>
+                        <strong className="text-white">Pegar a URL da Instância:</strong>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          Copie o endereço do seu servidor onde a Evolution API está instalada (ex: <code className="text-indigo-400 font-mono">https://api.meuzap.com</code> ou <code className="text-indigo-400 font-mono">https://evolution-app.up.railway.app</code>).
+                        </p>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <input
-                        type="url"
-                        value={waInstanceUrl}
-                        onChange={(e) => setWaInstanceUrl(e.target.value)}
-                        placeholder="URL da Instância (ex: https://api.meuzap.com)"
-                        className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
-                      />
-                      <input
-                        type="password"
-                        value={waApiKey}
-                        onChange={(e) => setWaApiKey(e.target.value)}
-                        placeholder="Chave de API / Token da Instância"
-                        className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
-                      />
+
+                    <div className="flex items-start gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center shrink-0 text-[11px] border border-indigo-500/30 mt-0.5">
+                        2
+                      </span>
+                      <div>
+                        <strong className="text-white">Pegar a Chave de API (ApiKey):</strong>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          No painel ou arquivo de configuração da sua Evolution API, copie a sua chave de autenticação (<code className="text-indigo-400 font-mono">AUTHENTICATION_API_KEY</code> ou token da instância).
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center shrink-0 text-[11px] border border-indigo-500/30 mt-0.5">
+                        3
+                      </span>
+                      <div>
+                        <strong className="text-white">Buscar e Escanear o QR Code Real:</strong>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          Preencha os campos abaixo, clique no botão para buscar o QR Code oficial gerado pelo WhatsApp e aponte a câmera do seu celular (Menu do WhatsApp &gt; <strong>Aparelhos Conectados</strong>).
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* QR Code Container & Instance Inputs */}
+                <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-4">
+                  {/* Instance Inputs */}
+                  <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 text-left space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                        <Radio className="w-3.5 h-3.5 text-emerald-400" />
+                        Dados da sua Instância Evolution API:
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                          1. URL da Evolution API / Servidor:
+                        </label>
+                        <input
+                          type="url"
+                          value={waInstanceUrl}
+                          onChange={(e) => setWaInstanceUrl(e.target.value)}
+                          placeholder="Ex: https://api.meuzap.com ou https://evolution-app.up.railway.app"
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                          2. Chave de API (ApiKey / Token Global):
+                        </label>
+                        <input
+                          type="password"
+                          value={waApiKey}
+                          onChange={(e) => setWaApiKey(e.target.value)}
+                          placeholder="Cole sua AUTHENTICATION_API_KEY"
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
                     </div>
                   </div>
 
                   {isGeneratingQr ? (
                     <div className="py-12 space-y-3">
                       <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin mx-auto" />
-                      <p className="text-xs text-slate-300 font-semibold">Buscando QR Code ao vivo do WhatsApp...</p>
+                      <p className="text-xs text-slate-300 font-semibold">Buscando QR Code ao vivo do WhatsApp na Evolution API...</p>
                     </div>
                   ) : qrCodeData ? (
                     <div className="space-y-3">
                       {isLiveInstance && (
                         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold">
                           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                          QR Code Real da Instância WhatsApp Conectado!
+                          QR Code Real da Instância WhatsApp Carregado com Sucesso!
                         </div>
                       )}
                       <div className="inline-block p-3 rounded-2xl bg-white shadow-2xl shadow-emerald-500/10 border-4 border-emerald-500/30">
@@ -963,14 +1011,14 @@ export default function IntegrationsPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="py-8 space-y-3">
+                    <div className="py-6 space-y-3">
                       <QrCode className="w-12 h-12 text-slate-600 mx-auto" />
                       <button
                         type="button"
                         onClick={handleGenerateQrCode}
                         className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
                       >
-                        ⚡ Gerar / Buscar QR Code do WhatsApp
+                        ⚡ Buscar QR Code Oficial do WhatsApp
                       </button>
                     </div>
                   )}
@@ -984,7 +1032,7 @@ export default function IntegrationsPage() {
                       type="text"
                       value={waPhoneNickname}
                       onChange={(e) => setWaPhoneNickname(e.target.value)}
-                      placeholder="Ex: WhatsApp Pessoal / Grupo VIP"
+                      placeholder="Ex: WhatsApp Grupo de Ofertas VIP"
                       className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
                     />
                   </div>

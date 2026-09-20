@@ -116,6 +116,9 @@ export async function PUT(request: NextRequest) {
       sessionType: "QRCODE",
       qrSessionId: sessionId,
       isQrConnected: true,
+      instanceUrl: body.instanceUrl || undefined,
+      apiKey: body.apiKey || undefined,
+      instanceName: body.instanceName || undefined,
       connectedAt: new Date().toISOString(),
       profileName: phoneNickname,
     };
