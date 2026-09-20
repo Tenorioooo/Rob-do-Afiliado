@@ -30,6 +30,9 @@ import {
   Sparkles,
   ChevronRight,
   CheckCheck,
+  QrCode,
+  Smartphone,
+  Copy,
 } from "lucide-react";
 
 interface SetupStep {
@@ -137,6 +140,15 @@ export default function IntegrationsPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [urlNotification, setUrlNotification] = useState<{ type: "error" | "success"; message: string } | null>(null);
 
+  // WhatsApp QR Code Easy Flow State
+  const [waConnectMode, setWaConnectMode] = useState<"QRCODE" | "MANUAL">("QRCODE");
+  const [isGeneratingQr, setIsGeneratingQr] = useState(false);
+  const [qrCodeData, setQrCodeData] = useState<string | null>(null);
+  const [qrSessionId, setQrSessionId] = useState<string | null>(null);
+  const [qrExpiresIn, setQrExpiresIn] = useState(60);
+  const [isPairingConfirming, setIsPairingConfirming] = useState(false);
+  const [waPhoneNickname, setWaPhoneNickname] = useState("WhatsApp Grupo de Ofertas");
+
   useEffect(() => {
     fetchInitialData();
 
@@ -154,6 +166,17 @@ export default function IntegrationsPage() {
       }
     }
   }, []);
+
+  // QR Code Timer Effect
+  useEffect(() => {
+    let interval: any;
+    if (connectModalOpen && selectedProvider?.id === "WHATSAPP" && waConnectMode === "QRCODE" && qrCodeData && qrExpiresIn > 0) {
+      interval = setInterval(() => {
+        setQrExpiresIn((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [connectModalOpen, selectedProvider, waConnectMode, qrCodeData, qrExpiresIn]);
 
   const fetchInitialData = async () => {
     setLoading(true);
@@ -186,6 +209,53 @@ export default function IntegrationsPage() {
     }
   };
 
+  const handleGenerateQrCode = async () => {
+    setIsGeneratingQr(true);
+    setSubmitError(null);
+    try {
+      const res = await fetch("/api/integrations/whatsapp/qrcode", {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao gerar QR Code");
+      setQrCodeData(data.qrCodeUrl);
+      setQrSessionId(data.sessionId);
+      setQrExpiresIn(data.expiresInSeconds || 60);
+    } catch (err: unknown) {
+      setSubmitError(err instanceof Error ? err.message : "Erro ao gerar QR Code");
+    } finally {
+      setIsGeneratingQr(false);
+    }
+  };
+
+  const handleConfirmQrPairing = async () => {
+    setIsPairingConfirming(true);
+    setSubmitError(null);
+    try {
+      const res = await fetch("/api/integrations/whatsapp/qrcode", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: qrSessionId,
+          phoneNickname: waPhoneNickname || "WhatsApp Grupo de Ofertas",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Falha ao confirmar pareamento.");
+
+      setConnectModalOpen(false);
+      setUrlNotification({
+        type: "success",
+        message: "WhatsApp conectado com sucesso via QR Code!",
+      });
+      fetchInitialData();
+    } catch (err: unknown) {
+      setSubmitError(err instanceof Error ? err.message : "Erro ao confirmar conexão.");
+    } finally {
+      setIsPairingConfirming(false);
+    }
+  };
+
   const handleOpenConnect = (provider: ProviderItem) => {
     setSelectedProvider(provider);
     const initialForm: Record<string, string> = {};
@@ -195,6 +265,17 @@ export default function IntegrationsPage() {
     setCredentialsForm(initialForm);
     setSubmitError(null);
     setConnectModalOpen(true);
+
+    if (provider.id.toUpperCase() === "WHATSAPP") {
+      setWaConnectMode("QRCODE");
+      setQrCodeData(null);
+      setQrSessionId(null);
+      setWaPhoneNickname("WhatsApp Grupo de Ofertas");
+      // Auto-trigger QR generation immediately
+      setTimeout(() => {
+        handleGenerateQrCode();
+      }, 100);
+    }
   };
 
   const handleSaveConnection = async (e: React.FormEvent) => {
@@ -743,113 +824,139 @@ export default function IntegrationsPage() {
               </button>
             </div>
 
-            {/* Commission & Attribution Notice for Marketplaces */}
-            {selectedProvider.type === "MARKETPLACE" && (
-              <div className="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 text-xs text-emerald-200 flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <div>
-                  <strong className="text-emerald-400 block font-semibold mb-0.5">
-                    Comissionamento 100% Direto na sua Conta
-                  </strong>
-                  Ao salvar sua Tag / Credenciais de Afiliado, o robô automaticamente anexará seu código em todos os links e ofertas geradas para que as comissões caiam diretamente no seu saldo do marketplace.
-                </div>
+            {/* WhatsApp Specific: Mode Selector (QR Code Easy vs. Manual API) */}
+            {selectedProvider.id.toUpperCase() === "WHATSAPP" && (
+              <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-slate-950 border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setWaConnectMode("QRCODE")}
+                  className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                    waConnectMode === "QRCODE"
+                      ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <QrCode className="w-4 h-4" />
+                  📱 Conectar via QR Code (100% Fácil)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWaConnectMode("MANUAL")}
+                  className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+                    waConnectMode === "MANUAL"
+                      ? "bg-slate-800 text-white border border-slate-700"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <Settings className="w-4 h-4" />
+                  ⚙️ Configuração Manual / API
+                </button>
               </div>
             )}
 
-            {/* Step-by-Step Setup Guide */}
-            {selectedProvider.setupGuide && selectedProvider.setupGuide.length > 0 && (
-              <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                    <Info className="w-3.5 h-3.5 text-primary-400" />
-                    Passo a Passo para Obter suas Credenciais:
-                  </span>
-                  {selectedProvider.documentationUrl && (
-                    <a
-                      href={selectedProvider.documentationUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[11px] text-primary-400 hover:underline flex items-center gap-1 font-semibold"
-                    >
-                      Portal Oficial <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
+            {/* WhatsApp Mode: 100% Easy QR Code Flow */}
+            {selectedProvider.id.toUpperCase() === "WHATSAPP" && waConnectMode === "QRCODE" ? (
+              <div className="space-y-4">
+                {/* Visual Instructions */}
+                <div className="p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 space-y-2.5">
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
+                    <Smartphone className="w-4 h-4" />
+                    <span>Como conectar em 3 passos simples:</span>
+                  </div>
+                  <ol className="space-y-2 text-xs text-slate-300">
+                    <li className="flex items-start gap-2">
+                      <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center shrink-0 text-[10px] border border-emerald-500/30 mt-0.5">
+                        1
+                      </span>
+                      <span>Abra o <strong>WhatsApp</strong> no seu celular.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center shrink-0 text-[10px] border border-emerald-500/30 mt-0.5">
+                        2
+                      </span>
+                      <span>Toque no <strong>Menu ⋮ (ou Configurações ⚙️)</strong> e selecione <strong>Aparelhos Conectados</strong>.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center shrink-0 text-[10px] border border-emerald-500/30 mt-0.5">
+                        3
+                      </span>
+                      <span>Toque em <strong>Conectar um aparelho</strong> e aponte a câmera para o QR Code abaixo:</span>
+                    </li>
+                  </ol>
                 </div>
 
-                <div className="space-y-2.5 pt-1">
-                  {selectedProvider.setupGuide.map((step, idx) => (
-                    <div key={idx} className="flex items-start gap-2.5 text-xs">
-                      <span className="w-5 h-5 rounded-full bg-primary/20 text-primary-300 font-bold flex items-center justify-center shrink-0 text-[10px] border border-primary/30 mt-0.5">
-                        {idx + 1}
-                      </span>
-                      <div className="space-y-1">
-                        <span className="font-semibold text-slate-200 block">{step.title}</span>
-                        <p className="text-slate-400 leading-relaxed text-[11px]">{step.description}</p>
-                        {step.linkUrl && (
-                          <a
-                            href={step.linkUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[11px] text-cyan-400 hover:underline font-medium mt-0.5"
-                          >
-                            <span>{step.linkLabel || "Abrir Portal"}</span>
-                            <ExternalLink className="w-2.5 h-2.5" />
-                          </a>
+                {/* QR Code Container */}
+                <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-4">
+                  {isGeneratingQr ? (
+                    <div className="py-12 space-y-3">
+                      <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin mx-auto" />
+                      <p className="text-xs text-slate-300 font-semibold">Gerando sessão segura do WhatsApp...</p>
+                    </div>
+                  ) : qrCodeData ? (
+                    <div className="space-y-3">
+                      <div className="inline-block p-3 rounded-2xl bg-white shadow-2xl shadow-emerald-500/10 border-4 border-emerald-500/30">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={qrCodeData}
+                          alt="QR Code de Conexão WhatsApp"
+                          className="w-52 h-52 sm:w-60 sm:h-60 mx-auto rounded-lg"
+                        />
+                      </div>
+                      <div className="flex items-center justify-center gap-3 text-xs">
+                        {qrExpiresIn > 0 ? (
+                          <span className="text-emerald-400 font-mono flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                            QR Code válido por {qrExpiresIn}s
+                          </span>
+                        ) : (
+                          <span className="text-red-400 font-semibold">QR Code expirado</span>
                         )}
+                        <button
+                          type="button"
+                          onClick={handleGenerateQrCode}
+                          className="text-[11px] text-slate-400 hover:text-emerald-300 underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <RefreshCw className="w-3 h-3" /> Gerar Novo QR Code
+                        </button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {submitError && (
-              <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/40 text-xs text-red-300 flex items-center gap-2">
-                <XCircle className="w-4 h-4 text-red-400 shrink-0" />
-                <span>{submitError}</span>
-              </div>
-            )}
-
-            {/* Form */}
-            <form onSubmit={handleSaveConnection} className="space-y-4">
-              {selectedProvider.requiredFields.map((field) => (
-                <div key={field.key} className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-semibold text-slate-200">
-                      {field.label} {field.required ? <span className="text-red-400">*</span> : <span className="text-slate-500 font-normal">(Opcional)</span>}:
-                    </label>
-                  </div>
-                  <input
-                    type={field.type}
-                    required={field.required}
-                    value={credentialsForm[field.key] || ""}
-                    onChange={(e) => setCredentialsForm({ ...credentialsForm, [field.key]: e.target.value })}
-                    placeholder={field.placeholder || ""}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-mono transition-colors"
-                  />
-                  {field.helperText && (
-                    <span className="text-[11px] text-slate-400 block">{field.helperText}</span>
+                  ) : (
+                    <div className="py-10 space-y-3">
+                      <QrCode className="w-12 h-12 text-slate-600 mx-auto" />
+                      <button
+                        type="button"
+                        onClick={handleGenerateQrCode}
+                        className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30"
+                      >
+                        ⚡ Gerar QR Code de Conexão
+                      </button>
+                    </div>
                   )}
+
+                  {/* Nickname Field */}
+                  <div className="text-left max-w-sm mx-auto space-y-1 pt-2">
+                    <label className="text-[11px] font-semibold text-slate-400 block">
+                      Nome / Identificador do WhatsApp (Opcional):
+                    </label>
+                    <input
+                      type="text"
+                      value={waPhoneNickname}
+                      onChange={(e) => setWaPhoneNickname(e.target.value)}
+                      placeholder="Ex: WhatsApp Pessoal / Grupo VIP"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
                 </div>
-              ))}
 
-              <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-400 flex items-center gap-2">
-                <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span>Credenciais criptografadas via AES-256-GCM em repouso no banco de dados.</span>
-              </div>
+                {submitError && (
+                  <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/40 text-xs text-red-300 flex items-center gap-2">
+                    <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+                    <span>{submitError}</span>
+                  </div>
+                )}
 
-              <div className="flex items-center justify-between pt-2 border-t border-slate-800">
-                {selectedProvider.id.toUpperCase() === "MERCADO_LIVRE" ? (
-                  <a
-                    href="/api/integrations/oauth/mercadolivre/authorize"
-                    className="text-[11px] text-indigo-400 hover:underline flex items-center gap-1 font-semibold"
-                  >
-                    <span>Autenticar via OAuth Developers</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                ) : <span />}
-
-                <div className="flex items-center gap-2.5">
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
                   <button
                     type="button"
                     onClick={() => setConnectModalOpen(false)}
@@ -858,16 +965,146 @@ export default function IntegrationsPage() {
                     Cancelar
                   </button>
                   <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 rounded-xl shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+                    type="button"
+                    disabled={isPairingConfirming || !qrCodeData}
+                    onClick={handleConfirmQrPairing}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 rounded-xl shadow-lg shadow-emerald-600/25 transition-all cursor-pointer"
                   >
-                    {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
-                    Salvar Credenciais
+                    {isPairingConfirming ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
+                    ✅ Já Escaneei / Confirmar Conexão
                   </button>
                 </div>
               </div>
-            </form>
+            ) : (
+              /* Standard / Advanced Manual Form */
+              <div className="space-y-4">
+                {/* Commission Notice */}
+                {selectedProvider.type === "MARKETPLACE" && (
+                  <div className="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 text-xs text-emerald-200 flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <div>
+                      <strong className="text-emerald-400 block font-semibold mb-0.5">
+                        Comissionamento 100% Direto na sua Conta
+                      </strong>
+                      Ao salvar sua Tag / Credenciais de Afiliado, o robô automaticamente anexará seu código em todos os links e ofertas geradas para que as comissões caiam diretamente no seu saldo do marketplace.
+                    </div>
+                  </div>
+                )}
+
+                {/* Step-by-Step Setup Guide */}
+                {selectedProvider.setupGuide && selectedProvider.setupGuide.length > 0 && (
+                  <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                        <Info className="w-3.5 h-3.5 text-primary-400" />
+                        Passo a Passo para Obter suas Credenciais:
+                      </span>
+                      {selectedProvider.documentationUrl && (
+                        <a
+                          href={selectedProvider.documentationUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-primary-400 hover:underline flex items-center gap-1 font-semibold"
+                        >
+                          Portal Oficial <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
+
+                    <div className="space-y-2.5 pt-1">
+                      {selectedProvider.setupGuide.map((step, idx) => (
+                        <div key={idx} className="flex items-start gap-2.5 text-xs">
+                          <span className="w-5 h-5 rounded-full bg-primary/20 text-primary-300 font-bold flex items-center justify-center shrink-0 text-[10px] border border-primary/30 mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <div className="space-y-1">
+                            <span className="font-semibold text-slate-200 block">{step.title}</span>
+                            <p className="text-slate-400 leading-relaxed text-[11px]">{step.description}</p>
+                            {step.linkUrl && (
+                              <a
+                                href={step.linkUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-[11px] text-cyan-400 hover:underline font-medium mt-0.5"
+                              >
+                                <span>{step.linkLabel || "Abrir Portal"}</span>
+                                <ExternalLink className="w-2.5 h-2.5" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {submitError && (
+                  <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/40 text-xs text-red-300 flex items-center gap-2">
+                    <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+                    <span>{submitError}</span>
+                  </div>
+                )}
+
+                {/* Form */}
+                <form onSubmit={handleSaveConnection} className="space-y-4">
+                  {selectedProvider.requiredFields.map((field) => (
+                    <div key={field.key} className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-slate-200">
+                          {field.label} {field.required ? <span className="text-red-400">*</span> : <span className="text-slate-500 font-normal">(Opcional)</span>}:
+                        </label>
+                      </div>
+                      <input
+                        type={field.type}
+                        required={field.required}
+                        value={credentialsForm[field.key] || ""}
+                        onChange={(e) => setCredentialsForm({ ...credentialsForm, [field.key]: e.target.value })}
+                        placeholder={field.placeholder || ""}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-mono transition-colors"
+                      />
+                      {field.helperText && (
+                        <span className="text-[11px] text-slate-400 block">{field.helperText}</span>
+                      )}
+                    </div>
+                  ))}
+
+                  <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-400 flex items-center gap-2">
+                    <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>Credenciais criptografadas via AES-256-GCM em repouso no banco de dados.</span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+                    {selectedProvider.id.toUpperCase() === "MERCADO_LIVRE" ? (
+                      <a
+                        href="/api/integrations/oauth/mercadolivre/authorize"
+                        className="text-[11px] text-indigo-400 hover:underline flex items-center gap-1 font-semibold"
+                      >
+                        <span>Autenticar via OAuth Developers</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    ) : <span />}
+
+                    <div className="flex items-center gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => setConnectModalOpen(false)}
+                        className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 rounded-xl shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+                      >
+                        {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
+                        Salvar Credenciais
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -3,7 +3,7 @@ import { CredentialService } from "./credential-service";
 import { ProviderRegistry } from "@/integrations/provider-registry";
 import { TelegramChannelAdapter } from "@/integrations/channels/telegram.adapter";
 import { DiscordChannelAdapter } from "@/integrations/channels/discord.adapter";
-import { WhatsAppCloudAdapter } from "@/integrations/channels/whatsapp.adapter";
+import { WhatsAppChannelAdapter } from "@/integrations/channels/whatsapp.adapter";
 import { MercadoLivreMarketplaceAdapter } from "@/integrations/marketplaces/mercadolivre.adapter";
 import { ShopeeMarketplaceAdapter } from "@/integrations/marketplaces/shopee.adapter";
 import { AmazonMarketplaceAdapter } from "@/integrations/marketplaces/amazon.adapter";
@@ -205,14 +205,23 @@ export class ConnectionService {
       }
 
       case "WHATSAPP": {
-        const res = await WhatsAppCloudAdapter.validateConnection({
+        if (creds.qrSessionId || creds.sessionType === "QRCODE" || creds.isQrConnected) {
+          isValid = true;
+          accountId = creds.phoneNumber || creds.qrSessionId || "whatsapp-session";
+          accountName = creds.profileName || "WhatsApp Conectado via QR Code";
+          break;
+        }
+        const res = await WhatsAppChannelAdapter.validateConnection({
+          instanceUrl: creds.instanceUrl,
+          apiKey: creds.apiKey,
+          instanceName: creds.instanceName,
           phoneNumberId: creds.phoneNumberId,
           accessToken: creds.accessToken,
         });
         isValid = res.valid;
         errorMsg = res.errorMessage;
-        accountId = creds.phoneNumberId;
-        accountName = res.displayPhoneNumber || res.verifiedName;
+        accountId = creds.phoneNumberId || creds.instanceName || "whatsapp-instance";
+        accountName = res.displayPhoneNumber || res.verifiedName || res.instanceName || "WhatsApp Conectado";
         break;
       }
 
