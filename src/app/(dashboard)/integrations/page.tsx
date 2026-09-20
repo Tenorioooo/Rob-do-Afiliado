@@ -146,6 +146,9 @@ export default function IntegrationsPage() {
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
   const [qrSessionId, setQrSessionId] = useState<string | null>(null);
   const [qrExpiresIn, setQrExpiresIn] = useState(60);
+  const [isLiveInstance, setIsLiveInstance] = useState(false);
+  const [waInstanceUrl, setWaInstanceUrl] = useState("");
+  const [waApiKey, setWaApiKey] = useState("");
   const [isPairingConfirming, setIsPairingConfirming] = useState(false);
   const [waPhoneNickname, setWaPhoneNickname] = useState("WhatsApp Grupo de Ofertas");
 
@@ -215,11 +218,17 @@ export default function IntegrationsPage() {
     try {
       const res = await fetch("/api/integrations/whatsapp/qrcode", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          instanceUrl: waInstanceUrl.trim() || undefined,
+          apiKey: waApiKey.trim() || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao gerar QR Code");
       setQrCodeData(data.qrCodeUrl);
       setQrSessionId(data.sessionId);
+      setIsLiveInstance(!!data.isLiveInstance);
       setQrExpiresIn(data.expiresInSeconds || 60);
     } catch (err: unknown) {
       setSubmitError(err instanceof Error ? err.message : "Erro ao gerar QR Code");
@@ -887,13 +896,46 @@ export default function IntegrationsPage() {
 
                 {/* QR Code Container */}
                 <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-4">
+                  {/* Instance Quick Connect (Optional for fetching real live WhatsApp WebSocket QR) */}
+                  <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-left space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
+                        <Radio className="w-3.5 h-3.5 text-emerald-400" />
+                        Instância de WhatsApp (Evolution API / Z-API / Zapito):
+                      </span>
+                      <span className="text-[10px] text-slate-400">Opcional</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input
+                        type="url"
+                        value={waInstanceUrl}
+                        onChange={(e) => setWaInstanceUrl(e.target.value)}
+                        placeholder="URL da Instância (ex: https://api.meuzap.com)"
+                        className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                      />
+                      <input
+                        type="password"
+                        value={waApiKey}
+                        onChange={(e) => setWaApiKey(e.target.value)}
+                        placeholder="Chave de API / Token da Instância"
+                        className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+
                   {isGeneratingQr ? (
                     <div className="py-12 space-y-3">
                       <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin mx-auto" />
-                      <p className="text-xs text-slate-300 font-semibold">Gerando sessão segura do WhatsApp...</p>
+                      <p className="text-xs text-slate-300 font-semibold">Buscando QR Code ao vivo do WhatsApp...</p>
                     </div>
                   ) : qrCodeData ? (
                     <div className="space-y-3">
+                      {isLiveInstance && (
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                          QR Code Real da Instância WhatsApp Conectado!
+                        </div>
+                      )}
                       <div className="inline-block p-3 rounded-2xl bg-white shadow-2xl shadow-emerald-500/10 border-4 border-emerald-500/30">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
@@ -916,19 +958,19 @@ export default function IntegrationsPage() {
                           onClick={handleGenerateQrCode}
                           className="text-[11px] text-slate-400 hover:text-emerald-300 underline flex items-center gap-1 cursor-pointer"
                         >
-                          <RefreshCw className="w-3 h-3" /> Gerar Novo QR Code
+                          <RefreshCw className="w-3 h-3" /> Atualizar QR Code
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <div className="py-10 space-y-3">
+                    <div className="py-8 space-y-3">
                       <QrCode className="w-12 h-12 text-slate-600 mx-auto" />
                       <button
                         type="button"
                         onClick={handleGenerateQrCode}
-                        className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30"
+                        className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
                       >
-                        ⚡ Gerar QR Code de Conexão
+                        ⚡ Gerar / Buscar QR Code do WhatsApp
                       </button>
                     </div>
                   )}
@@ -945,6 +987,19 @@ export default function IntegrationsPage() {
                       placeholder="Ex: WhatsApp Pessoal / Grupo VIP"
                       className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
                     />
+                  </div>
+                </div>
+
+                {/* Telegram Recommendation Alert */}
+                <div className="p-3.5 rounded-xl bg-blue-950/30 border border-blue-500/30 flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <div className="text-xs space-y-1">
+                    <strong className="text-blue-300 block font-semibold">Dica para Afiliados: Telegram sem complicações</strong>
+                    <p className="text-slate-300 leading-relaxed text-[11px]">
+                      Para canais e grupos de ofertas sem necessidade de manter o celular ligado ou pagar servidores, o <strong>Telegram</strong> conecta em 30 segundos com 100% de estabilidade e sem risco de banimento.
+                    </p>
                   </div>
                 </div>
 
