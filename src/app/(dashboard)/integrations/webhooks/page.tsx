@@ -270,9 +270,9 @@ export default function WebhookCenterPage() {
 
       {/* Payload Inspector Modal */}
       {selectedEvent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="relative w-full max-w-3xl rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl p-6 text-white space-y-6 max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto flex min-h-full items-center justify-center">
+          <div className="relative w-full max-w-3xl rounded-3xl bg-slate-900 border border-slate-700 shadow-2xl p-6 sm:p-7 text-white space-y-6 my-auto max-h-[90vh] flex flex-col z-10">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4 shrink-0">
               <div>
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                   <Radio className="w-5 h-5 text-indigo-400" />

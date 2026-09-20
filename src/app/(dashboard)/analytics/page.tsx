@@ -750,8 +750,8 @@ export default function AnalyticsPage() {
 
       {/* Modal: New Experiment */}
       {showExpModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-md w-full space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto flex min-h-full items-center justify-center">
+          <div className="relative bg-slate-900 border border-slate-800 p-6 sm:p-7 rounded-3xl max-w-md w-full space-y-4 my-auto max-h-[90vh] flex flex-col z-10">
             <h3 className="text-base font-bold text-white">Criar Novo Teste A/B</h3>
             <form onSubmit={handleCreateExperiment} className="space-y-4 text-xs">
               <div>

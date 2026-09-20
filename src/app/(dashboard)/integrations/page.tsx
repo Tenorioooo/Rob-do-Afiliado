@@ -750,7 +750,7 @@ export default function IntegrationsPage() {
                   </div>
 
                   {/* Description */}
-                  <p className="text-xs text-slate-300 mb-4 leading-relaxed line-clamp-2">
+                  <p className="text-xs text-slate-300 mb-4 leading-relaxed min-h-[36px]">
                     {provider.description}
                   </p>
 
@@ -807,17 +807,11 @@ export default function IntegrationsPage() {
                     </button>
                   )}
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Dynamic Connection Configuration Modal */}
+       {/* Dynamic Connection Configuration Modal */}
       {connectModalOpen && selectedProvider && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in duration-150 my-8">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto p-4 sm:p-6 flex min-h-full items-center justify-center">
+          <div className="relative bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in duration-150 my-auto max-h-[92vh] flex flex-col z-10">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0">
                   {getProviderIcon(selectedProvider.id)}
@@ -835,389 +829,392 @@ export default function IntegrationsPage() {
               </button>
             </div>
 
-            {/* WhatsApp Specific: Mode Selector (QR Code Easy vs. Manual API) */}
-            {selectedProvider.id.toUpperCase() === "WHATSAPP" && (
-              <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-slate-950 border border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setWaConnectMode("QRCODE")}
-                  className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-                    waConnectMode === "QRCODE"
-                      ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  <QrCode className="w-4 h-4" />
-                  📱 Conectar via QR Code (100% Fácil)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setWaConnectMode("MANUAL")}
-                  className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
-                    waConnectMode === "MANUAL"
-                      ? "bg-slate-800 text-white border border-slate-700"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  <Settings className="w-4 h-4" />
-                  ⚙️ Configuração Manual / API
-                </button>
-              </div>
-            )}
-
-            {/* WhatsApp Mode: QR Code Flow & Evolution API Setup Guide */}
-            {selectedProvider.id.toUpperCase() === "WHATSAPP" && waConnectMode === "QRCODE" ? (
-              <div className="space-y-4">
-                {/* Evolution API Requirement Notice */}
-                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
-                      <AlertTriangle className="w-4 h-4 shrink-0" />
-                      <span>Obrigatório: Ter uma conta / instância na Evolution API</span>
-                    </div>
-                    <a
-                      href="https://evolution-api.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[11px] font-semibold text-amber-300 hover:text-amber-200 underline flex items-center gap-1"
-                    >
-                      Site Evolution API <ExternalLink className="w-3 h-3" />
-                    </a>
-                  </div>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
-                    O WhatsApp no celular <strong>exige um servidor WebSocket ativo</strong> para emitir o QR Code oficial e disparar mensagens automáticas em grupos. Para isso, é obrigatório criar uma instância na <strong>Evolution API</strong> (hospedada em servidor próprio, Railway, Render, VPS ou Z-API).
-                  </p>
+            {/* Scrollable Content Container */}
+            <div className="overflow-y-auto pr-1 space-y-5 flex-1">
+              {/* WhatsApp Specific: Mode Selector (QR Code Easy vs. Manual API) */}
+              {selectedProvider.id.toUpperCase() === "WHATSAPP" && (
+                <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-slate-950 border border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setWaConnectMode("QRCODE")}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                      waConnectMode === "QRCODE"
+                        ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/30"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <QrCode className="w-4 h-4" />
+                    📱 Conectar via QR Code (100% Fácil)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setWaConnectMode("MANUAL")}
+                    className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+                      waConnectMode === "MANUAL"
+                        ? "bg-slate-800 text-white border border-slate-700"
+                        : "text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <Settings className="w-4 h-4" />
+                    ⚙️ Configuração Manual / API
+                  </button>
                 </div>
+              )}
 
-                {/* Step-by-Step Instructions */}
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-                  <span className="text-xs font-bold text-white block">
-                    📋 Passo a Passo para Conectar:
-                  </span>
-                  <div className="space-y-2.5 text-xs text-slate-300">
-                    <div className="flex items-start gap-2.5">
-                      <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center shrink-0 text-[11px] border border-indigo-500/30 mt-0.5">
-                        1
-                      </span>
-                      <div>
-                        <strong className="text-white">Pegar a URL da Instância:</strong>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                          Copie o endereço do seu servidor onde a Evolution API está instalada (ex: <code className="text-indigo-400 font-mono">https://api.meuzap.com</code> ou <code className="text-indigo-400 font-mono">https://evolution-app.up.railway.app</code>).
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-2.5">
-                      <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center shrink-0 text-[11px] border border-indigo-500/30 mt-0.5">
-                        2
-                      </span>
-                      <div>
-                        <strong className="text-white">Pegar a Chave de API (ApiKey):</strong>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                          No painel ou arquivo de configuração da sua Evolution API, copie a sua chave de autenticação (<code className="text-indigo-400 font-mono">AUTHENTICATION_API_KEY</code> ou token da instância).
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-2.5">
-                      <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center shrink-0 text-[11px] border border-indigo-500/30 mt-0.5">
-                        3
-                      </span>
-                      <div>
-                        <strong className="text-white">Buscar e Escanear o QR Code Real:</strong>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                          Preencha os campos abaixo, clique no botão para buscar o QR Code oficial gerado pelo WhatsApp e aponte a câmera do seu celular (Menu do WhatsApp &gt; <strong>Aparelhos Conectados</strong>).
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* QR Code Container & Instance Inputs */}
-                <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-4">
-                  {/* Instance Inputs */}
-                  <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 text-left space-y-3">
+              {/* WhatsApp Mode: QR Code Flow & Evolution API Setup Guide */}
+              {selectedProvider.id.toUpperCase() === "WHATSAPP" && waConnectMode === "QRCODE" ? (
+                <div className="space-y-4">
+                  {/* Evolution API Requirement Notice */}
+                  <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                        <Radio className="w-3.5 h-3.5 text-emerald-400" />
-                        Dados da sua Instância Evolution API:
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      <div>
-                        <label className="text-[11px] font-semibold text-slate-400 block mb-1">
-                          1. URL da Evolution API / Servidor:
-                        </label>
-                        <input
-                          type="url"
-                          value={waInstanceUrl}
-                          onChange={(e) => setWaInstanceUrl(e.target.value)}
-                          placeholder="Ex: https://api.meuzap.com ou https://evolution-app.up.railway.app"
-                          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
-                        />
+                      <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
+                        <AlertTriangle className="w-4 h-4 shrink-0" />
+                        <span>Obrigatório: Ter uma conta / instância na Evolution API</span>
                       </div>
-                      <div>
-                        <label className="text-[11px] font-semibold text-slate-400 block mb-1">
-                          2. Chave de API (ApiKey / Token Global):
-                        </label>
-                        <input
-                          type="password"
-                          value={waApiKey}
-                          onChange={(e) => setWaApiKey(e.target.value)}
-                          placeholder="Cole sua AUTHENTICATION_API_KEY"
-                          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
-                        />
+                      <a
+                        href="https://evolution-api.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] font-semibold text-amber-300 hover:text-amber-200 underline flex items-center gap-1"
+                      >
+                        Site Evolution API <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                      O WhatsApp no celular <strong>exige um servidor WebSocket ativo</strong> para emitir o QR Code oficial e disparar mensagens automáticas em grupos. Para isso, é obrigatório criar uma instância na <strong>Evolution API</strong> (hospedada em servidor próprio, Railway, Render, VPS ou Z-API).
+                    </p>
+                  </div>
+
+                  {/* Step-by-Step Instructions */}
+                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                    <span className="text-xs font-bold text-white block">
+                      📋 Passo a Passo para Conectar:
+                    </span>
+                    <div className="space-y-2.5 text-xs text-slate-300">
+                      <div className="flex items-start gap-2.5">
+                        <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center shrink-0 text-[11px] border border-indigo-500/30 mt-0.5">
+                          1
+                        </span>
+                        <div>
+                          <strong className="text-white">Pegar a URL da Instância:</strong>
+                          <p className="text-[11px] text-slate-400 mt-0.5">
+                            Copie o endereço do seu servidor onde a Evolution API está instalada (ex: <code className="text-indigo-400 font-mono">https://api.meuzap.com</code> ou <code className="text-indigo-400 font-mono">https://evolution-app.up.railway.app</code>).
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2.5">
+                        <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center shrink-0 text-[11px] border border-indigo-500/30 mt-0.5">
+                          2
+                        </span>
+                        <div>
+                          <strong className="text-white">Pegar a Chave de API (ApiKey):</strong>
+                          <p className="text-[11px] text-slate-400 mt-0.5">
+                            No painel ou arquivo de configuração da sua Evolution API, copie a sua chave de autenticação (<code className="text-indigo-400 font-mono">AUTHENTICATION_API_KEY</code> ou token da instância).
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-2.5">
+                        <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center shrink-0 text-[11px] border border-indigo-500/30 mt-0.5">
+                          3
+                        </span>
+                        <div>
+                          <strong className="text-white">Buscar e Escanear o QR Code Real:</strong>
+                          <p className="text-[11px] text-slate-400 mt-0.5">
+                            Preencha os campos abaixo, clique no botão para buscar o QR Code oficial gerado pelo WhatsApp e aponte a câmera do seu celular (Menu do WhatsApp &gt; <strong>Aparelhos Conectados</strong>).
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {isGeneratingQr ? (
-                    <div className="py-12 space-y-3">
-                      <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin mx-auto" />
-                      <p className="text-xs text-slate-300 font-semibold">Buscando QR Code ao vivo do WhatsApp na Evolution API...</p>
-                    </div>
-                  ) : qrCodeData ? (
-                    <div className="space-y-3">
-                      {isLiveInstance && (
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                          QR Code Real da Instância WhatsApp Carregado com Sucesso!
-                        </div>
-                      )}
-                      <div className="inline-block p-3 rounded-2xl bg-white shadow-2xl shadow-emerald-500/10 border-4 border-emerald-500/30">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={qrCodeData}
-                          alt="QR Code de Conexão WhatsApp"
-                          className="w-52 h-52 sm:w-60 sm:h-60 mx-auto rounded-lg"
-                        />
+                  {/* QR Code Container & Instance Inputs */}
+                  <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-4">
+                    {/* Instance Inputs */}
+                    <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 text-left space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <Radio className="w-3.5 h-3.5 text-emerald-400" />
+                          Dados da sua Instância Evolution API:
+                        </span>
                       </div>
-                      <div className="flex items-center justify-center gap-3 text-xs">
-                        {qrExpiresIn > 0 ? (
-                          <span className="text-emerald-400 font-mono flex items-center gap-1">
+                      <div className="space-y-2">
+                        <div>
+                          <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                            1. URL da Evolution API / Servidor:
+                          </label>
+                          <input
+                            type="url"
+                            value={waInstanceUrl}
+                            onChange={(e) => setWaInstanceUrl(e.target.value)}
+                            placeholder="Ex: https://api.meuzap.com ou https://evolution-app.up.railway.app"
+                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                            2. Chave de API (ApiKey / Token Global):
+                          </label>
+                          <input
+                            type="password"
+                            value={waApiKey}
+                            onChange={(e) => setWaApiKey(e.target.value)}
+                            placeholder="Cole sua AUTHENTICATION_API_KEY"
+                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {isGeneratingQr ? (
+                      <div className="py-12 space-y-3">
+                        <RefreshCw className="w-8 h-8 text-emerald-400 animate-spin mx-auto" />
+                        <p className="text-xs text-slate-300 font-semibold">Buscando QR Code ao vivo do WhatsApp na Evolution API...</p>
+                      </div>
+                    ) : qrCodeData ? (
+                      <div className="space-y-3">
+                        {isLiveInstance && (
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold">
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            QR Code válido por {qrExpiresIn}s
-                          </span>
-                        ) : (
-                          <span className="text-red-400 font-semibold">QR Code expirado</span>
+                            QR Code Real da Instância WhatsApp Carregado com Sucesso!
+                          </div>
                         )}
+                        <div className="inline-block p-3 rounded-2xl bg-white shadow-2xl shadow-emerald-500/10 border-4 border-emerald-500/30">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={qrCodeData}
+                            alt="QR Code de Conexão WhatsApp"
+                            className="w-52 h-52 sm:w-60 sm:h-60 mx-auto rounded-lg"
+                          />
+                        </div>
+                        <div className="flex items-center justify-center gap-3 text-xs">
+                          {qrExpiresIn > 0 ? (
+                            <span className="text-emerald-400 font-mono flex items-center gap-1">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                              QR Code válido por {qrExpiresIn}s
+                            </span>
+                          ) : (
+                            <span className="text-red-400 font-semibold">QR Code expirado</span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={handleGenerateQrCode}
+                            className="text-[11px] text-slate-400 hover:text-emerald-300 underline flex items-center gap-1 cursor-pointer"
+                          >
+                            <RefreshCw className="w-3 h-3" /> Atualizar QR Code
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="py-6 space-y-3">
+                        <QrCode className="w-12 h-12 text-slate-600 mx-auto" />
                         <button
                           type="button"
                           onClick={handleGenerateQrCode}
-                          className="text-[11px] text-slate-400 hover:text-emerald-300 underline flex items-center gap-1 cursor-pointer"
+                          className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
                         >
-                          <RefreshCw className="w-3 h-3" /> Atualizar QR Code
+                          ⚡ Buscar QR Code Oficial do WhatsApp
                         </button>
                       </div>
+                    )}
+
+                    {/* Nickname Field */}
+                    <div className="text-left max-w-sm mx-auto space-y-1 pt-2">
+                      <label className="text-[11px] font-semibold text-slate-400 block">
+                        Nome / Identificador do WhatsApp (Opcional):
+                      </label>
+                      <input
+                        type="text"
+                        value={waPhoneNickname}
+                        onChange={(e) => setWaPhoneNickname(e.target.value)}
+                        placeholder="Ex: WhatsApp Grupo de Ofertas VIP"
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                      />
                     </div>
-                  ) : (
-                    <div className="py-6 space-y-3">
-                      <QrCode className="w-12 h-12 text-slate-600 mx-auto" />
-                      <button
-                        type="button"
-                        onClick={handleGenerateQrCode}
-                        className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
-                      >
-                        ⚡ Buscar QR Code Oficial do WhatsApp
-                      </button>
+                  </div>
+
+                  {/* Telegram Recommendation Alert */}
+                  <div className="p-3.5 rounded-xl bg-blue-950/30 border border-blue-500/30 flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <Zap className="w-4 h-4" />
+                    </div>
+                    <div className="text-xs space-y-1">
+                      <strong className="text-blue-300 block font-semibold">Dica para Afiliados: Telegram sem complicações</strong>
+                      <p className="text-slate-300 leading-relaxed text-[11px]">
+                        Para canais e grupos de ofertas sem necessidade de manter o celular ligado ou pagar servidores, o <strong>Telegram</strong> conecta em 30 segundos com 100% de estabilidade e sem risco de banimento.
+                      </p>
+                    </div>
+                  </div>
+
+                  {submitError && (
+                    <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/40 text-xs text-red-300 flex items-center gap-2">
+                      <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+                      <span>{submitError}</span>
                     </div>
                   )}
 
-                  {/* Nickname Field */}
-                  <div className="text-left max-w-sm mx-auto space-y-1 pt-2">
-                    <label className="text-[11px] font-semibold text-slate-400 block">
-                      Nome / Identificador do WhatsApp (Opcional):
-                    </label>
-                    <input
-                      type="text"
-                      value={waPhoneNickname}
-                      onChange={(e) => setWaPhoneNickname(e.target.value)}
-                      placeholder="Ex: WhatsApp Grupo de Ofertas VIP"
-                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
-                    />
+                  {/* Actions */}
+                  <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setConnectModalOpen(false)}
+                      className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isPairingConfirming || !qrCodeData}
+                      onClick={handleConfirmQrPairing}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 rounded-xl shadow-lg shadow-emerald-600/25 transition-all cursor-pointer"
+                    >
+                      {isPairingConfirming ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
+                      ✅ Já Escaneei / Confirmar Conexão
+                    </button>
                   </div>
                 </div>
-
-                {/* Telegram Recommendation Alert */}
-                <div className="p-3.5 rounded-xl bg-blue-950/30 border border-blue-500/30 flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
-                    <Zap className="w-4 h-4" />
-                  </div>
-                  <div className="text-xs space-y-1">
-                    <strong className="text-blue-300 block font-semibold">Dica para Afiliados: Telegram sem complicações</strong>
-                    <p className="text-slate-300 leading-relaxed text-[11px]">
-                      Para canais e grupos de ofertas sem necessidade de manter o celular ligado ou pagar servidores, o <strong>Telegram</strong> conecta em 30 segundos com 100% de estabilidade e sem risco de banimento.
-                    </p>
-                  </div>
-                </div>
-
-                {submitError && (
-                  <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/40 text-xs text-red-300 flex items-center gap-2">
-                    <XCircle className="w-4 h-4 text-red-400 shrink-0" />
-                    <span>{submitError}</span>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
-                  <button
-                    type="button"
-                    onClick={() => setConnectModalOpen(false)}
-                    className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isPairingConfirming || !qrCodeData}
-                    onClick={handleConfirmQrPairing}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 rounded-xl shadow-lg shadow-emerald-600/25 transition-all cursor-pointer"
-                  >
-                    {isPairingConfirming ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
-                    ✅ Já Escaneei / Confirmar Conexão
-                  </button>
-                </div>
-              </div>
-            ) : (
-              /* Standard / Advanced Manual Form */
-              <div className="space-y-4">
-                {/* Commission Notice */}
-                {selectedProvider.type === "MARKETPLACE" && (
-                  <div className="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 text-xs text-emerald-200 flex items-start gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="text-emerald-400 block font-semibold mb-0.5">
-                        Comissionamento 100% Direto na sua Conta
-                      </strong>
-                      Ao salvar sua Tag / Credenciais de Afiliado, o robô automaticamente anexará seu código em todos os links e ofertas geradas para que as comissões caiam diretamente no seu saldo do marketplace.
-                    </div>
-                  </div>
-                )}
-
-                {/* Step-by-Step Setup Guide */}
-                {selectedProvider.setupGuide && selectedProvider.setupGuide.length > 0 && (
-                  <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                        <Info className="w-3.5 h-3.5 text-primary-400" />
-                        Passo a Passo para Obter suas Credenciais:
-                      </span>
-                      {selectedProvider.documentationUrl && (
-                        <a
-                          href={selectedProvider.documentationUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[11px] text-primary-400 hover:underline flex items-center gap-1 font-semibold"
-                        >
-                          Portal Oficial <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-                    </div>
-
-                    <div className="space-y-2.5 pt-1">
-                      {selectedProvider.setupGuide.map((step, idx) => (
-                        <div key={idx} className="flex items-start gap-2.5 text-xs">
-                          <span className="w-5 h-5 rounded-full bg-primary/20 text-primary-300 font-bold flex items-center justify-center shrink-0 text-[10px] border border-primary/30 mt-0.5">
-                            {idx + 1}
-                          </span>
-                          <div className="space-y-1">
-                            <span className="font-semibold text-slate-200 block">{step.title}</span>
-                            <p className="text-slate-400 leading-relaxed text-[11px]">{step.description}</p>
-                            {step.linkUrl && (
-                              <a
-                                href={step.linkUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-[11px] text-cyan-400 hover:underline font-medium mt-0.5"
-                              >
-                                <span>{step.linkLabel || "Abrir Portal"}</span>
-                                <ExternalLink className="w-2.5 h-2.5" />
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {submitError && (
-                  <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/40 text-xs text-red-300 flex items-center gap-2">
-                    <XCircle className="w-4 h-4 text-red-400 shrink-0" />
-                    <span>{submitError}</span>
-                  </div>
-                )}
-
-                {/* Form */}
-                <form onSubmit={handleSaveConnection} className="space-y-4">
-                  {selectedProvider.requiredFields.map((field) => (
-                    <div key={field.key} className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold text-slate-200">
-                          {field.label} {field.required ? <span className="text-red-400">*</span> : <span className="text-slate-500 font-normal">(Opcional)</span>}:
-                        </label>
+              ) : (
+                /* Standard / Advanced Manual Form */
+                <div className="space-y-4">
+                  {/* Commission Notice */}
+                  {selectedProvider.type === "MARKETPLACE" && (
+                    <div className="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 text-xs text-emerald-200 flex items-start gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="text-emerald-400 block font-semibold mb-0.5">
+                          Comissionamento 100% Direto na sua Conta
+                        </strong>
+                        Ao salvar sua Tag / Credenciais de Afiliado, o robô automaticamente anexará seu código em todos os links e ofertas geradas para que as comissões caiam diretamente no seu saldo do marketplace.
                       </div>
-                      <input
-                        type={field.type}
-                        required={field.required}
-                        value={credentialsForm[field.key] || ""}
-                        onChange={(e) => setCredentialsForm({ ...credentialsForm, [field.key]: e.target.value })}
-                        placeholder={field.placeholder || ""}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-mono transition-colors"
-                      />
-                      {field.helperText && (
-                        <span className="text-[11px] text-slate-400 block">{field.helperText}</span>
-                      )}
                     </div>
-                  ))}
+                  )}
 
-                  <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-400 flex items-center gap-2">
-                    <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span>Credenciais criptografadas via AES-256-GCM em repouso no banco de dados.</span>
-                  </div>
+                  {/* Step-by-Step Setup Guide */}
+                  {selectedProvider.setupGuide && selectedProvider.setupGuide.length > 0 && (
+                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                          <Info className="w-3.5 h-3.5 text-primary-400" />
+                          Passo a Passo para Obter suas Credenciais:
+                        </span>
+                        {selectedProvider.documentationUrl && (
+                          <a
+                            href={selectedProvider.documentationUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] text-primary-400 hover:underline flex items-center gap-1 font-semibold"
+                          >
+                            Portal Oficial <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-800">
-                    {selectedProvider.id.toUpperCase() === "MERCADO_LIVRE" ? (
-                      <a
-                        href="/api/integrations/oauth/mercadolivre/authorize"
-                        className="text-[11px] text-indigo-400 hover:underline flex items-center gap-1 font-semibold"
-                      >
-                        <span>Autenticar via OAuth Developers</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    ) : <span />}
-
-                    <div className="flex items-center gap-2.5">
-                      <button
-                        type="button"
-                        onClick={() => setConnectModalOpen(false)}
-                        className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors"
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 rounded-xl shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
-                      >
-                        {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
-                        Salvar Credenciais
-                      </button>
+                      <div className="space-y-2.5 pt-1">
+                        {selectedProvider.setupGuide.map((step, idx) => (
+                          <div key={idx} className="flex items-start gap-2.5 text-xs">
+                            <span className="w-5 h-5 rounded-full bg-primary/20 text-primary-300 font-bold flex items-center justify-center shrink-0 text-[11px] border border-primary/30 mt-0.5">
+                              {idx + 1}
+                            </span>
+                            <div className="space-y-1">
+                              <span className="font-semibold text-slate-200 block">{step.title}</span>
+                              <p className="text-slate-400 leading-relaxed text-[11px]">{step.description}</p>
+                              {step.linkUrl && (
+                                <a
+                                  href={step.linkUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-[11px] text-cyan-400 hover:underline font-medium mt-0.5"
+                                >
+                                  <span>{step.linkLabel || "Abrir Portal"}</span>
+                                  <ExternalLink className="w-2.5 h-2.5" />
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </form>
-              </div>
-            )}
+                  )}
+
+                  {submitError && (
+                    <div className="p-3.5 rounded-xl bg-red-950/40 border border-red-500/40 text-xs text-red-300 flex items-center gap-2">
+                      <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+                      <span>{submitError}</span>
+                    </div>
+                  )}
+
+                  {/* Form */}
+                  <form onSubmit={handleSaveConnection} className="space-y-4">
+                    {selectedProvider.requiredFields.map((field) => (
+                      <div key={field.key} className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold text-slate-200">
+                            {field.label} {field.required ? <span className="text-red-400">*</span> : <span className="text-slate-500 font-normal">(Opcional)</span>}:
+                          </label>
+                        </div>
+                        <input
+                          type={field.type}
+                          required={field.required}
+                          value={credentialsForm[field.key] || ""}
+                          onChange={(e) => setCredentialsForm({ ...credentialsForm, [field.key]: e.target.value })}
+                          placeholder={field.placeholder || ""}
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 font-mono transition-colors"
+                        />
+                        {field.helperText && (
+                          <span className="text-[11px] text-slate-400 block">{field.helperText}</span>
+                        )}
+                      </div>
+                    ))}
+
+                    <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-400 flex items-center gap-2">
+                      <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>Credenciais criptografadas via AES-256-GCM em repouso no banco de dados.</span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+                      {selectedProvider.id.toUpperCase() === "MERCADO_LIVRE" ? (
+                        <a
+                          href="/api/integrations/oauth/mercadolivre/authorize"
+                          className="text-[11px] text-indigo-400 hover:underline flex items-center gap-1 font-semibold"
+                        >
+                          <span>Autenticar via OAuth Developers</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      ) : <span />}
+
+                      <div className="flex items-center gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => setConnectModalOpen(false)}
+                          className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 rounded-xl shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+                        >
+                          {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCheck className="w-4 h-4" />}
+                          Salvar Credenciais
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
 
       {/* Emergency Stop Modal */}
       {emergencyModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-red-500/50 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto p-4 sm:p-6 flex min-h-full items-center justify-center">
+          <div className="relative bg-slate-900 border border-red-500/50 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 my-auto">
             <div className="flex items-center gap-3 text-red-400">
-              <OctagonAlert className="w-6 h-6" />
+              <OctagonAlert className="w-6 h-6 shrink-0" />
               <h3 className="text-base font-bold text-white">Acionar Parada de Emergência</h3>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
