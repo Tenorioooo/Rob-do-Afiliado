@@ -168,32 +168,41 @@ export class RealWhatsAppAdapter implements IChannelAdapter {
 
   validateConfig(config: ChannelConfig): { valid: boolean; errors?: string[] } {
     const errors: string[] = [];
-    if (!config.accessToken && !config.access_token && !config.accessToken_configured) {
-      errors.push("Access Token do WhatsApp Cloud API é obrigatório.");
-    }
-    if (!config.phoneNumberId && !config.phone_number_id) {
-      errors.push("Phone Number ID é obrigatório.");
+    const hasInstance = Boolean(config.instanceUrl || config.instance_url || config.instanceUrl_configured);
+    const hasCloud = Boolean(
+      (config.accessToken || config.access_token || config.accessToken_configured) &&
+      (config.phoneNumberId || config.phone_number_id)
+    );
+
+    if (!hasInstance && !hasCloud) {
+      errors.push("Configure a URL da Instância (para Grupos) ou Phone Number ID e Access Token (Meta Cloud API).");
     }
     return { valid: errors.length === 0, errors };
   }
 
   async testConnection(destination: string, config: ChannelConfig): Promise<ConnectionTestResult> {
+    const instanceUrl = config.instanceUrl || config.instance_url;
+    const apiKey = config.apiKey || config.api_key || config.token;
+    const instanceName = config.instanceName || config.instance_name;
     const accessToken = config.accessToken || config.access_token;
     const phoneNumberId = config.phoneNumberId || config.phone_number_id;
 
-    if (!accessToken || !phoneNumberId) {
+    if (!instanceUrl && (!accessToken || !phoneNumberId)) {
       return {
         success: false,
         source: "real",
         provider: this.provider,
-        message: "Access Token e Phone Number ID são obrigatórios.",
+        message: "Configuração do WhatsApp incompleta (Instância ou Meta Cloud API necessária).",
         timestamp: new Date(),
       };
     }
 
     const validation = await WhatsAppChannelAdapter.validateConnection({
-      accessToken,
+      instanceUrl,
+      apiKey,
+      instanceName,
       phoneNumberId,
+      accessToken,
     });
 
     return {
@@ -201,33 +210,42 @@ export class RealWhatsAppAdapter implements IChannelAdapter {
       source: "real",
       provider: this.provider,
       message: validation.valid
-        ? `WhatsApp Meta Cloud API validado (${validation.verifiedName || validation.displayPhoneNumber})`
-        : `Erro WhatsApp Cloud API: ${validation.errorMessage}`,
+        ? `WhatsApp conectado com sucesso (${validation.instanceName || validation.verifiedName || validation.displayPhoneNumber || "Pronto para envios"})`
+        : `Erro WhatsApp: ${validation.errorMessage}`,
       details: validation,
       timestamp: new Date(),
     };
   }
 
   async sendMessage(payload: DispatchPayload): Promise<DispatchResult> {
+    const instanceUrl = payload.config?.instanceUrl || payload.config?.instance_url;
+    const apiKey = payload.config?.apiKey || payload.config?.api_key || payload.config?.token;
+    const instanceName = payload.config?.instanceName || payload.config?.instance_name;
     const accessToken = payload.config?.accessToken || payload.config?.access_token;
     const phoneNumberId = payload.config?.phoneNumberId || payload.config?.phone_number_id;
 
-    if (!accessToken || !phoneNumberId) {
+    if (!instanceUrl && (!accessToken || !phoneNumberId)) {
       return {
         success: false,
         source: "real",
         provider: this.provider,
-        error: "Access Token ou Phone Number ID não configurados.",
+        error: "Credenciais de WhatsApp (Instância ou Meta Cloud API) não configuradas.",
         errorCode: "MISSING_CREDENTIALS",
         timestamp: new Date(),
       };
     }
 
-    const result = await WhatsAppChannelAdapter.sendTextMessage({
-      accessToken,
+    const messageText = payload.formattedMessage || `${payload.title}\n\n${payload.body}\n\n${payload.affiliateUrl}`;
+
+    const result = await WhatsAppChannelAdapter.sendMessage({
+      instanceUrl,
+      apiKey,
+      instanceName,
       phoneNumberId,
-      to: payload.destination,
-      text: payload.formattedMessage || `${payload.title}\n\n${payload.body}\n\n${payload.affiliateUrl}`,
+      accessToken,
+      destination: payload.destination,
+      text: messageText,
+      imageUrl: payload.imageUrl,
     });
 
     return {

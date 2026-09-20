@@ -21,6 +21,7 @@ export interface DispatchPayload {
   affiliateUrl: string;
   formattedMessage: string;
   destination: string;
+  imageUrl?: string;
   config?: ChannelConfig;
 }
 

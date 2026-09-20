@@ -180,14 +180,33 @@ test("Phase 8: Real Dispatch Telegram, Safety Gate & First Real Autonomous Cycle
     });
     assert.equal(checkWithEvidence.allowed, true);
 
-    // Check WhatsApp in Phase 8 -> BLOCKED
+    // Check non-homologated channel (e.g. DISCORD) -> BLOCKED
+    const discordChan = await prisma.channel.create({
+      data: {
+        userId,
+        name: "Discord Canal",
+        type: "DISCORD",
+        provider: "discord-webhook-api",
+        identifier: "123456",
+        active: true,
+      },
+    });
+    const checkDiscord = await DispatchGuardService.canDispatchLive({
+      userId,
+      channelId: discordChan.id,
+      provider: "DISCORD",
+    });
+    assert.equal(checkDiscord.allowed, false);
+    assert.equal(checkDiscord.errorCode, "DISCORD_DISABLED");
+
+    // Check WhatsApp without verified connection -> INTEGRATION_NOT_FOUND
     const whatsappChan = await prisma.channel.create({
       data: {
         userId,
         name: "WhatsApp Grupo",
         type: "WHATSAPP",
-        provider: "meta-cloud-api",
-        identifier: "123456",
+        provider: "whatsapp-universal-api",
+        identifier: "1203630283749@g.us",
         active: true,
       },
     });
@@ -197,7 +216,7 @@ test("Phase 8: Real Dispatch Telegram, Safety Gate & First Real Autonomous Cycle
       provider: "WHATSAPP",
     });
     assert.equal(checkWhatsApp.allowed, false);
-    assert.equal(checkWhatsApp.errorCode, "WHATSAPP_DISABLED");
+    assert.equal(checkWhatsApp.errorCode, "INTEGRATION_NOT_FOUND");
   });
 
   /* ==========================================================================

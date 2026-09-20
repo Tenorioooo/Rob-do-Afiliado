@@ -231,11 +231,11 @@ export class DispatchGuardService {
 
     const providerName = (params.provider || channel.type || "").toUpperCase();
 
-    // 2.5 Phase 8 Restriction: ONLY Telegram is allowed for Real Dispatch in Phase 8
-    if (providerName !== "TELEGRAM") {
+    // 2.5 Allowed Channels for Real Dispatch: TELEGRAM and WHATSAPP
+    if (providerName !== "TELEGRAM" && providerName !== "WHATSAPP") {
       return {
         allowed: false,
-        blockingReason: `O canal ${providerName} não está habilitado para envios reais na Fase 8. Apenas o Telegram está homologado.`,
+        blockingReason: `O canal ${providerName} não está habilitado para envios reais. Apenas Telegram e WhatsApp estão homologados.`,
         errorCode: `${providerName}_DISABLED`,
       };
     }
