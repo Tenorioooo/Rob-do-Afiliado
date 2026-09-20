@@ -869,24 +869,24 @@ export default function IntegrationsPage() {
               {/* WhatsApp Mode: QR Code Flow & Evolution API Setup Guide */}
               {selectedProvider.id.toUpperCase() === "WHATSAPP" && waConnectMode === "QRCODE" ? (
                 <div className="space-y-4">
-                  {/* Evolution API Requirement Notice */}
-                  <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-3">
+                  {/* Evolution API Requirement & Free Tier Notice */}
+                  <div className="p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
-                        <AlertTriangle className="w-4 h-4 shrink-0" />
-                        <span>Obrigatório: Ter uma conta / instância na Evolution API</span>
+                      <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
+                        <Sparkles className="w-4 h-4 shrink-0" />
+                        <span>A Evolution API é 100% Gratuita & Open-Source</span>
                       </div>
                       <a
-                        href="https://evolution-api.com"
+                        href="https://github.com/EvolutionAPI/evolution-api"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[11px] font-semibold text-amber-300 hover:text-amber-200 underline flex items-center gap-1"
+                        className="text-[11px] font-semibold text-emerald-300 hover:text-emerald-200 underline flex items-center gap-1"
                       >
-                        Site Evolution API <ExternalLink className="w-3 h-3" />
+                        GitHub Oficial <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>
                     <p className="text-[11px] text-slate-300 leading-relaxed">
-                      O WhatsApp no celular <strong>exige um servidor WebSocket ativo</strong> para emitir o QR Code oficial e disparar mensagens automáticas em grupos. Para isso, é obrigatório criar uma instância na <strong>Evolution API</strong> (hospedada em servidor próprio, Railway, Render, VPS ou Z-API).
+                      <strong>Você não precisa pagar nada:</strong> os planos pagos no site oficial são apenas hospedagem opcional. A Evolution API é um projeto de código aberto gratuito que você pode rodar <strong>100% de graça</strong> no seu próprio computador (Docker) ou em servidores gratuitos como <strong>Render, Koyeb, Railway ou Oracle Cloud</strong>.
                     </p>
                   </div>
 
