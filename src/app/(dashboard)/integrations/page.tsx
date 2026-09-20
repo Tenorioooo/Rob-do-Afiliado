@@ -807,6 +807,11 @@ export default function IntegrationsPage() {
                     </button>
                   )}
                 </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
        {/* Dynamic Connection Configuration Modal */}
       {connectModalOpen && selectedProvider && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto p-4 sm:p-6 flex min-h-full items-center justify-center">
