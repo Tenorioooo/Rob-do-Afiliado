@@ -12,7 +12,6 @@ import {
   ExternalLink,
   Settings,
   Radio,
-  Zap,
   Lock,
   ArrowRight,
   Activity,
@@ -22,9 +21,7 @@ import {
   KeyRound,
   Check,
   Info,
-  ShieldAlert,
   Play,
-  OctagonAlert,
   MessageSquare,
   Sparkles,
   ChevronRight,
@@ -32,6 +29,7 @@ import {
   QrCode,
   Smartphone,
   Copy,
+  Zap,
 } from "lucide-react";
 
 interface SetupStep {
@@ -83,27 +81,13 @@ interface Connection {
   lastErrorMessage: string | null;
 }
 
-interface DispatchConfig {
-  realDispatchEnabled: boolean;
-  providerSwitches: Record<string, boolean>;
-  emergencyStopTriggeredAt: string | null;
-  emergencyStopReason: string | null;
-}
-
 export default function IntegrationsPage() {
   const router = useRouter();
 
   const [providers, setProviders] = useState<ProviderItem[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [dispatchConfig, setDispatchConfig] = useState<DispatchConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"all" | "marketplaces" | "channels" | "connected">("all");
-
-  // Emergency Modal
-  const [emergencyModalOpen, setEmergencyModalOpen] = useState(false);
-  const [emergencyConfirmInput, setEmergencyConfirmInput] = useState("");
-  const [emergencyReason, setEmergencyReason] = useState("");
-  const [isSubmittingEmergency, setIsSubmittingEmergency] = useState(false);
 
   // Connect Modal state
   const [connectModalOpen, setConnectModalOpen] = useState(false);
@@ -162,10 +146,9 @@ export default function IntegrationsPage() {
   const fetchInitialData = async () => {
     setLoading(true);
     try {
-      const [provRes, connRes, matrixRes] = await Promise.all([
+      const [provRes, connRes] = await Promise.all([
         fetch("/api/integrations/providers"),
         fetch("/api/integrations"),
-        fetch("/api/integrations/matrix"),
       ]);
 
       if (provRes.ok) {
@@ -176,11 +159,6 @@ export default function IntegrationsPage() {
       if (connRes.ok) {
         const connData = await connRes.json();
         setConnections(connData.connections || []);
-      }
-
-      if (matrixRes.ok) {
-        const mData = await matrixRes.json();
-        setDispatchConfig(mData.dispatchConfig || null);
       }
     } catch (err) {
       console.error("Erro ao carregar integrações:", err);
@@ -298,34 +276,6 @@ export default function IntegrationsPage() {
     }
   };
 
-  const handleTriggerEmergencyStop = async () => {
-    if (emergencyConfirmInput !== "PARAR") return;
-    setIsSubmittingEmergency(true);
-    try {
-      const res = await fetch("/api/integrations/emergency-stop", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          confirmation: "PARAR",
-          reason: emergencyReason || "Parada de emergência acionada pelo operador.",
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setEmergencyModalOpen(false);
-        setEmergencyConfirmInput("");
-        setEmergencyReason("");
-        fetchInitialData();
-      } else {
-        alert(data.error || "Erro ao acionar Parada de Emergência.");
-      }
-    } catch (err) {
-      console.error("Erro no Emergency Stop:", err);
-    } finally {
-      setIsSubmittingEmergency(false);
-    }
-  };
-
   const getProviderIcon = (id: string) => {
     switch (id.toUpperCase()) {
       case "TELEGRAM":
@@ -355,7 +305,6 @@ export default function IntegrationsPage() {
     return true;
   });
 
-  const isGlobalLiveEnabled = dispatchConfig?.realDispatchEnabled ?? false;
   const connectedCount = connections.filter((c) => c.status === "VERIFIED_REAL" || c.status === "CONNECTED").length;
 
   if (loading) {
@@ -368,49 +317,6 @@ export default function IntegrationsPage() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-12">
-      {/* Kill Switch & Emergency Stop Banner */}
-      <div
-        className={`p-4 rounded-2xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg ${
-          isGlobalLiveEnabled
-            ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-200"
-            : "bg-amber-950/40 border-amber-500/40 text-amber-200"
-        }`}
-      >
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg shrink-0 ${
-              isGlobalLiveEnabled ? "bg-emerald-500/20 text-emerald-400" : "bg-amber-500/20 text-amber-400"
-            }`}
-          >
-            {isGlobalLiveEnabled ? <Zap className="w-5 h-5" /> : <ShieldAlert className="w-5 h-5" />}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-white">
-                {isGlobalLiveEnabled ? "🟢 ENVIO REAL ATIVADO (PRODUÇÃO)" : "🟡 ENVIO REAL GLOBAL DESATIVADO (MODO SEGURO)"}
-              </span>
-              <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-slate-900/80 border border-slate-700 text-slate-300">
-                Kill Switch
-              </span>
-            </div>
-            <p className="text-xs text-slate-300 mt-0.5">
-              {isGlobalLiveEnabled
-                ? "Publicações reais permitidas somente para canais VERIFIED_REAL com permissão do Autopiloto."
-                : "Nenhum canal externo recebe publicações automáticas silenciosamente. Pings, diagnósticos e testes controlados continuam disponíveis."}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 self-end md:self-auto">
-          <button
-            onClick={() => setEmergencyModalOpen(true)}
-            className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-red-200 bg-red-600/30 hover:bg-red-600/50 border border-red-500/40 rounded-xl shadow-md transition-all"
-          >
-            <OctagonAlert className="w-4 h-4 text-red-400" /> Parada de Emergência
-          </button>
-        </div>
-      </div>
-
       {/* Main Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -1160,60 +1066,6 @@ export default function IntegrationsPage() {
                   </form>
                 </div>
               )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Emergency Stop Modal */}
-      {emergencyModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto p-4 sm:p-6 flex min-h-full items-center justify-center">
-          <div className="relative bg-slate-900 border border-red-500/50 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 my-auto">
-            <div className="flex items-center gap-3 text-red-400">
-              <OctagonAlert className="w-6 h-6 shrink-0" />
-              <h3 className="text-base font-bold text-white">Acionar Parada de Emergência</h3>
-            </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Esta ação desativa imediatamente todos os envios reais globais e cancela todas as publicações pendentes na fila do robô.
-            </p>
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1">Motivo do Bloqueio:</label>
-              <input
-                type="text"
-                value={emergencyReason}
-                onChange={(e) => setEmergencyReason(e.target.value)}
-                placeholder="Ex: Auditoria de segurança ou manutenção"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-red-500 font-mono"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1">
-                Digite <strong className="text-red-400 font-mono">PARAR</strong> para confirmar:
-              </label>
-              <input
-                type="text"
-                value={emergencyConfirmInput}
-                onChange={(e) => setEmergencyConfirmInput(e.target.value)}
-                placeholder="PARAR"
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-red-500 font-mono"
-              />
-            </div>
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setEmergencyModalOpen(false)}
-                className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                disabled={emergencyConfirmInput !== "PARAR" || isSubmittingEmergency}
-                onClick={handleTriggerEmergencyStop}
-                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-500 disabled:opacity-40 rounded-xl shadow-md transition-all"
-              >
-                {isSubmittingEmergency ? "Parando..." : "Confirmar Bloqueio Total"}
-              </button>
             </div>
           </div>
         </div>
