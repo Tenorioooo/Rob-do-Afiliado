@@ -500,7 +500,7 @@ export default function ConnectionDetailPage() {
               <Settings className="w-5 h-5 text-indigo-400" /> Credenciais da Integração
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Suas chaves estão protegidas por criptografia AES-256-GCM.
+              Suas chaves e tokens são salvos com segurança.
             </p>
           </div>
           <button

@@ -499,7 +499,7 @@ export default function IntegrationsPage() {
       )}
 
       {/* Stats Summary Bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-sm">
           <span className="text-xs text-slate-400 font-medium">Provedores Disponíveis</span>
           <div className="text-2xl font-bold text-white mt-1">{providers.length || 6}</div>
@@ -513,16 +513,6 @@ export default function IntegrationsPage() {
           <span className="text-[11px] text-emerald-400/80 mt-0.5 block font-semibold">
             {connectedCount > 0 ? "Pronto para disparo" : "Nenhuma conectada ainda"}
           </span>
-        </div>
-        <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-sm">
-          <span className="text-xs text-slate-400 font-medium">Segurança de Credenciais</span>
-          <div className="text-2xl font-bold text-white mt-1">AES-256</div>
-          <span className="text-[11px] text-slate-400 mt-0.5 block">Criptografia em repouso</span>
-        </div>
-        <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-sm">
-          <span className="text-xs text-slate-400 font-medium">Proteção SSRF & Sandbox</span>
-          <div className="text-2xl font-bold text-purple-400 mt-1">Ativo</div>
-          <span className="text-[11px] text-slate-400 mt-0.5 block">Zero Scraping / APIs Oficiais</span>
         </div>
       </div>
 
@@ -1274,7 +1264,7 @@ export default function IntegrationsPage() {
 
                     <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-400 flex items-center gap-2">
                       <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span>Credenciais criptografadas via AES-256-GCM em repouso no banco de dados.</span>
+                      <span>Suas chaves e credenciais são salvas com segurança.</span>
                     </div>
 
                     <div className="flex items-center justify-between pt-2 border-t border-slate-800">
