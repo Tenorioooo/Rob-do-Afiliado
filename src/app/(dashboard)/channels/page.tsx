@@ -89,7 +89,7 @@ export default function ChannelsPage() {
     setEditingChannel(null);
     setChannelType("TELEGRAM");
     setChannelName("");
-    setDestination("@canal_afiliado_vip");
+    setDestination("");
     setBotToken("");
     setWebhookUrl("");
     setIsCreateModalOpen(true);
@@ -99,7 +99,7 @@ export default function ChannelsPage() {
     setEditingChannel(chan);
     setChannelType(chan.type);
     setChannelName(chan.name);
-    setDestination(chan.destination);
+    setDestination(chan.destination || "");
     setBotToken("");
     setWebhookUrl("");
     setIsCreateModalOpen(true);
@@ -471,13 +471,10 @@ export default function ChannelsPage() {
                     type="button"
                     onClick={() => {
                       setChannelType(type);
-                      if (type === "TELEGRAM") setDestination("@canal_afiliado_vip");
-                      if (type === "WHATSAPP") setDestination("5511999998888-group@g.us");
-                      if (type === "DISCORD") setDestination("discord-webhook-id");
                     }}
                     className={`p-2.5 rounded-xl border text-center font-semibold transition-all ${
                       channelType === type
-                        ? "bg-primary/20 border-primary text-white shadow-md shadow-primary/20"
+                        ? "bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-600/20"
                         : "bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200"
                     }`}
                   >
@@ -489,13 +486,13 @@ export default function ChannelsPage() {
 
             {/* Name */}
             <div>
-              <label className="block font-semibold text-slate-300 mb-1">Nome de Identificação</label>
+              <label className="block font-semibold text-slate-300 mb-1">Nome do Canal / Grupo</label>
               <input
                 type="text"
                 placeholder="Ex: Canal VIP de Promoções"
                 value={channelName}
                 onChange={(e) => setChannelName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-200 text-xs focus:outline-none focus:border-primary"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
                 required
               />
             </div>
@@ -507,7 +504,7 @@ export default function ChannelsPage() {
                   ? "Chat ID ou @username do Canal"
                   : channelType === "WHATSAPP"
                   ? "ID do Grupo ou Número de Broadcast"
-                  : "Webhook ID / Channel ID"}
+                  : "URL do Webhook do Discord"}
               </label>
               <input
                 type="text"
@@ -515,12 +512,12 @@ export default function ChannelsPage() {
                 onChange={(e) => setDestination(e.target.value)}
                 placeholder={
                   channelType === "TELEGRAM"
-                    ? "@canal_promocoes_vip ou -100123456789"
+                    ? "Ex: @meucanal ou -1001234567890"
                     : channelType === "WHATSAPP"
-                    ? "5511999998888-group@g.us"
+                    ? "Ex: 5511999998888 ou group_id"
                     : "https://discord.com/api/webhooks/..."
                 }
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-200 text-xs font-mono focus:outline-none focus:border-primary"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-200 text-xs font-mono focus:outline-none focus:border-indigo-500"
                 required
               />
             </div>
@@ -529,10 +526,10 @@ export default function ChannelsPage() {
             <div>
               <label className="block font-semibold text-slate-300 mb-1">
                 {channelType === "TELEGRAM"
-                  ? "Bot Token (opcional para Mock)"
+                  ? "Bot Token (@BotFather) — Opcional se já conectado em Integrações"
                   : channelType === "WHATSAPP"
-                  ? "API Key (opcional para Mock)"
-                  : "Webhook URL completa"}
+                  ? "Access Token / API Key — Opcional se já conectado em Integrações"
+                  : "Chave Secreta Adicional (Opcional)"}
               </label>
               <input
                 type="password"
@@ -540,11 +537,15 @@ export default function ChannelsPage() {
                 onChange={(e) =>
                   channelType === "DISCORD" ? setWebhookUrl(e.target.value) : setBotToken(e.target.value)
                 }
-                placeholder={editingChannel ? "•••••••••••• (deixe em branco para manter)" : "Chave de autenticação..."}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-200 text-xs font-mono focus:outline-none focus:border-primary"
+                placeholder={editingChannel ? "•••••••••••• (deixe em branco para manter)" : "Cole a chave de autenticação se desejar..."}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-200 text-xs font-mono focus:outline-none focus:border-indigo-500"
               />
               <p className="text-[10px] text-slate-500 mt-1">
-                Credenciais são criptografadas e nunca exibidas de volta na interface.
+                {channelType === "TELEGRAM"
+                  ? "Se você já conectou o Telegram na Central de Integrações, pode deixar este campo em branco para usar o Bot global."
+                  : channelType === "WHATSAPP"
+                  ? "Se você já conectou o WhatsApp na Central de Integrações, o robô usará a credencial principal."
+                  : "As credenciais são salvas com criptografia em repouso."}
               </p>
             </div>
 
