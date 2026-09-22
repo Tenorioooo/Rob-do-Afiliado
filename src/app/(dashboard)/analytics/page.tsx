@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { ProviderLogo } from "@/components/ui/provider-logo";
 import {
   BarChart3,
   TrendingUp,
@@ -22,16 +23,22 @@ import {
   Layers,
   Send,
   HelpCircle,
+  ShoppingBag,
+  Trophy,
+  Target,
 } from "lucide-react";
 
 export default function AnalyticsPage() {
   const [days, setDays] = useState<number>(30);
-  const [activeTab, setActiveTab] = useState<"overview" | "channels" | "copy" | "products" | "learning" | "experiments">("overview");
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "marketplaces" | "channels" | "copy" | "products" | "learning" | "experiments"
+  >("overview");
   const [loading, setLoading] = useState<boolean>(true);
   const [simulating, setSimulating] = useState<boolean>(false);
 
   // Analytics states
   const [overview, setOverview] = useState<any>(null);
+  const [platforms, setPlatforms] = useState<any[]>([]);
   const [channels, setChannels] = useState<any[]>([]);
   const [copyStyles, setCopyStyles] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
@@ -49,6 +56,7 @@ export default function AnalyticsPage() {
     try {
       const [
         overviewRes,
+        platformsRes,
         channelsRes,
         copyRes,
         prodRes,
@@ -57,6 +65,7 @@ export default function AnalyticsPage() {
         expRes,
       ] = await Promise.all([
         fetch(`/api/analytics/overview?days=${days}`).then((r) => r.json()),
+        fetch("/api/analytics/platforms").then((r) => r.json()),
         fetch("/api/analytics/channels").then((r) => r.json()),
         fetch("/api/analytics/copy").then((r) => r.json()),
         fetch("/api/analytics/products").then((r) => r.json()),
@@ -66,6 +75,7 @@ export default function AnalyticsPage() {
       ]);
 
       setOverview(overviewRes);
+      setPlatforms(platformsRes.platforms || []);
       setChannels(channelsRes.channels || []);
       setCopyStyles(copyRes);
       setProducts(prodRes.products || []);
@@ -121,7 +131,6 @@ export default function AnalyticsPage() {
           ],
         }),
       });
-
       if (res.ok) {
         setShowExpModal(false);
         setExpName("");
@@ -134,7 +143,11 @@ export default function AnalyticsPage() {
 
   const summary = overview?.summary;
   const comparison = overview?.comparison;
-  const dataSource = overview?.dataSource || "MOCK";
+
+  // Find top performing platform
+  const topPlatform = platforms.length > 0
+    ? [...platforms].sort((a, b) => (b.metrics?.performanceScore || 0) - (a.metrics?.performanceScore || 0))[0]
+    : null;
 
   return (
     <div className="space-y-8">
@@ -145,20 +158,9 @@ export default function AnalyticsPage() {
             <h2 className="text-2xl font-extrabold text-white tracking-tight">
               Inteligência de Conversão & Analytics
             </h2>
-            <div className="flex items-center gap-2">
-              <span
-                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
-                  dataSource === "REAL"
-                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                    : dataSource === "MIXED"
-                    ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                    : "bg-indigo-500/10 text-indigo-400 border-indigo-500/30"
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                DATA SOURCE: {dataSource}
-              </span>
-            </div>
+            <Badge variant="glow" size="md">
+              Rastreamento em Tempo Real
+            </Badge>
           </div>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
             Rastreamento de ponta a ponta com atribuição determinística e aprendizado contínuo para o Autopiloto.
@@ -188,15 +190,15 @@ export default function AnalyticsPage() {
             ))}
           </div>
 
-          {/* Simulate Events button (Controlled mock) */}
+          {/* Refresh Data button */}
           <button
-            onClick={handleSimulate}
-            disabled={simulating}
+            onClick={loadData}
+            disabled={loading}
             className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-50"
-            title="Gera cliques e conversões simuladas controladas com identificador MOCK para testes locais"
+            title="Atualizar métricas"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-primary ${simulating ? "animate-spin" : ""}`} />
-            {simulating ? "Simulando..." : "Simular Tráfego Mock"}
+            <RefreshCw className={`w-3.5 h-3.5 text-primary ${loading ? "animate-spin" : ""}`} />
+            <span>Atualizar</span>
           </button>
         </div>
       </div>
@@ -205,6 +207,7 @@ export default function AnalyticsPage() {
       <div className="flex items-center gap-2 border-b border-slate-800 pb-2 overflow-x-auto text-xs font-semibold">
         {[
           { id: "overview", label: "Visão Geral", icon: BarChart3 },
+          { id: "marketplaces", label: `Marketplaces (${platforms.length})`, icon: ShoppingBag },
           { id: "channels", label: "Canais", icon: Send },
           { id: "copy", label: "Estilos de Copy", icon: Layers },
           { id: "products", label: "Produtos", icon: Award },
@@ -418,6 +421,216 @@ export default function AnalyticsPage() {
             </div>
           )}
 
+          {/* TAB: MARKETPLACES (COMPARATIVO DE PLATAFORMAS) */}
+          {activeTab === "marketplaces" && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <ShoppingBag className="w-4 h-4 text-primary" />
+                    Comparativo de Marketplaces & Lojas
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Compare o volume de vendas, taxas de conversão, cliques e retorno de comissão entre Shopee, Mercado Livre e Amazon.
+                  </p>
+                </div>
+
+                {topPlatform && (
+                  <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3.5 py-1.5 rounded-xl text-xs text-amber-400 font-bold shrink-0">
+                    <Trophy className="w-4 h-4 text-amber-400" />
+                    <span>Líder de Conversão: {topPlatform.platform.replace("_", " ")}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Marketplace Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {platforms.map((p: any) => {
+                  const platName = p.platform === "MERCADO_LIVRE"
+                    ? "Mercado Livre"
+                    : p.platform === "SHOPEE"
+                    ? "Shopee"
+                    : p.platform === "AMAZON"
+                    ? "Amazon"
+                    : p.platform;
+                  
+                  const totalCommission = (p.metrics?.confirmedCommission || 0) + (p.metrics?.estimatedCommission || 0);
+                  const isWinner = topPlatform && topPlatform.platform === p.platform && p.metrics?.performanceScore > 0;
+
+                  return (
+                    <div
+                      key={p.platform}
+                      className={`p-6 rounded-3xl border backdrop-blur-xl flex flex-col justify-between space-y-5 transition-all ${
+                        isWinner
+                          ? "bg-slate-900/90 border-amber-500/40 shadow-xl shadow-amber-500/5 hover:border-amber-500/60"
+                          : "bg-slate-900/60 border-slate-800 hover:border-slate-700"
+                      }`}
+                    >
+                      <div>
+                        {/* Card Header */}
+                        <div className="flex items-start justify-between gap-3 mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0 overflow-hidden p-1.5 shadow-inner">
+                              <ProviderLogo provider={p.platform} size="lg" />
+                            </div>
+                            <div>
+                              <h4 className="text-base font-bold text-white flex items-center gap-2">
+                                {platName}
+                                {isWinner && (
+                                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                                    TOP ROI
+                                  </span>
+                                )}
+                              </h4>
+                              <span className="text-[11px] text-slate-400 block mt-0.5">
+                                {p.productsCount} produtos • {p.publicationsCount} publicações
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="text-right">
+                            <span className="text-xl font-black text-white bg-slate-950 border border-slate-800 px-3 py-1 rounded-xl block">
+                              {p.metrics?.performanceScore || 0}
+                              <span className="text-[10px] text-slate-500 font-normal">/100</span>
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Metrics Grid */}
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="bg-slate-950/70 border border-slate-800/80 p-3 rounded-2xl">
+                            <span className="text-[10px] text-slate-400 block font-medium">Comissão Total</span>
+                            <strong className="text-base font-black text-emerald-400 mt-0.5 block">
+                              {formatCurrency(totalCommission)}
+                            </strong>
+                            <span className="text-[10px] text-slate-500 block mt-0.5">
+                              Volume: {formatCurrency(p.metrics?.revenue || 0)}
+                            </span>
+                          </div>
+
+                          <div className="bg-slate-950/70 border border-slate-800/80 p-3 rounded-2xl">
+                            <span className="text-[10px] text-slate-400 block font-medium">Taxa de Conversão</span>
+                            <strong className="text-base font-black text-cyan-400 mt-0.5 block">
+                              {p.metrics?.conversionRate || 0}%
+                            </strong>
+                            <span className="text-[10px] text-slate-500 block mt-0.5">
+                              {p.metrics?.conversions || 0} conversões
+                            </span>
+                          </div>
+
+                          <div className="bg-slate-950/70 border border-slate-800/80 p-3 rounded-2xl">
+                            <span className="text-[10px] text-slate-400 block font-medium">Total de Cliques</span>
+                            <strong className="text-sm font-bold text-white mt-0.5 block">
+                              {p.metrics?.clicks || 0}
+                            </strong>
+                            <span className="text-[10px] text-slate-500 block mt-0.5">
+                              CTR: {p.metrics?.ctr || 0}%
+                            </span>
+                          </div>
+
+                          <div className="bg-slate-950/70 border border-slate-800/80 p-3 rounded-2xl">
+                            <span className="text-[10px] text-slate-400 block font-medium">Ganho p/ Clique (EPC)</span>
+                            <strong className="text-sm font-bold text-indigo-400 mt-0.5 block">
+                              {formatCurrency(p.metrics?.epc || 0)}
+                            </strong>
+                            <span className="text-[10px] text-slate-500 block mt-0.5">
+                              {p.offersCount} ofertas ativas
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Performance Bar */}
+                      <div className="pt-2 border-t border-slate-800/80">
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1.5">
+                          <span>Eficiência no Autopiloto</span>
+                          <span className="font-bold text-white">{p.metrics?.performanceScore || 0}%</span>
+                        </div>
+                        <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              (p.metrics?.performanceScore || 0) >= 70
+                                ? "bg-emerald-400"
+                                : (p.metrics?.performanceScore || 0) >= 40
+                                ? "bg-amber-400"
+                                : "bg-indigo-500"
+                            }`}
+                            style={{ width: `${Math.min(100, Math.max(8, p.metrics?.performanceScore || 0))}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Comparative Ranking Table */}
+              <div className="p-6 rounded-3xl border border-slate-800 bg-slate-900/60 backdrop-blur-xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Tabela Comparativa de Performance</h4>
+                    <p className="text-xs text-slate-400">Detalhamento das métricas auditadas de cada catálogo.</p>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-800 text-slate-400 text-[11px]">
+                        <th className="pb-3 font-semibold">Marketplace</th>
+                        <th className="pb-3 font-semibold text-center">Produtos</th>
+                        <th className="pb-3 font-semibold text-center">Publicações</th>
+                        <th className="pb-3 font-semibold text-center">Cliques</th>
+                        <th className="pb-3 font-semibold text-center">CTR</th>
+                        <th className="pb-3 font-semibold text-center">Conversões</th>
+                        <th className="pb-3 font-semibold text-center">Taxa Conv.</th>
+                        <th className="pb-3 font-semibold text-right">Comissão Total</th>
+                        <th className="pb-3 font-semibold text-right">EPC</th>
+                        <th className="pb-3 font-semibold text-right">Score</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60">
+                      {platforms.map((p: any) => {
+                        const platName = p.platform === "MERCADO_LIVRE"
+                          ? "Mercado Livre"
+                          : p.platform === "SHOPEE"
+                          ? "Shopee"
+                          : p.platform === "AMAZON"
+                          ? "Amazon"
+                          : p.platform;
+                        const totalCommission = (p.metrics?.confirmedCommission || 0) + (p.metrics?.estimatedCommission || 0);
+
+                        return (
+                          <tr key={p.platform} className="hover:bg-slate-800/30 transition-colors">
+                            <td className="py-3.5">
+                              <div className="flex items-center gap-2.5">
+                                <ProviderLogo provider={p.platform} size="xs" />
+                                <span className="font-bold text-white">{platName}</span>
+                              </div>
+                            </td>
+                            <td className="py-3.5 text-center text-slate-300 font-mono">{p.productsCount}</td>
+                            <td className="py-3.5 text-center text-slate-300 font-mono">{p.publicationsCount}</td>
+                            <td className="py-3.5 text-center text-white font-mono font-bold">{p.metrics?.clicks || 0}</td>
+                            <td className="py-3.5 text-center text-slate-300 font-mono">{p.metrics?.ctr || 0}%</td>
+                            <td className="py-3.5 text-center text-emerald-400 font-mono font-bold">{p.metrics?.conversions || 0}</td>
+                            <td className="py-3.5 text-center text-cyan-400 font-mono font-bold">{p.metrics?.conversionRate || 0}%</td>
+                            <td className="py-3.5 text-right text-emerald-400 font-mono font-bold">{formatCurrency(totalCommission)}</td>
+                            <td className="py-3.5 text-right text-indigo-400 font-mono">{formatCurrency(p.metrics?.epc || 0)}</td>
+                            <td className="py-3.5 text-right">
+                              <span className="font-mono font-black text-xs px-2 py-0.5 rounded-lg bg-slate-950 border border-slate-800 text-white">
+                                {p.metrics?.performanceScore || 0}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* TAB: CHANNELS */}
           {activeTab === "channels" && (
             <div className="space-y-4">
@@ -442,13 +655,16 @@ export default function AnalyticsPage() {
                       className="p-5 rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md space-y-4"
                     >
                       <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-xs text-slate-400 font-medium block uppercase tracking-wider">
-                            {ch.type}
-                          </span>
-                          <h4 className="text-base font-bold text-white mt-0.5">{ch.name}</h4>
+                        <div className="flex items-center gap-2.5">
+                          <ProviderLogo provider={ch.type} size="sm" />
+                          <div>
+                            <span className="text-[10px] text-slate-400 font-medium block uppercase tracking-wider">
+                              {ch.type}
+                            </span>
+                            <h4 className="text-sm font-bold text-white">{ch.name}</h4>
+                          </div>
                         </div>
-                        <span className="text-lg font-black text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-xl">
+                        <span className="text-sm font-black text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-xl">
                           {ch.metrics.performanceScore}/100
                         </span>
                       </div>
@@ -559,7 +775,8 @@ export default function AnalyticsPage() {
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs text-slate-400 font-semibold uppercase">{p.platform}</span>
+                          <ProviderLogo provider={p.platform} size="xs" />
+                          <span className="text-xs text-slate-300 font-semibold uppercase">{p.platform.replace("_", " ")}</span>
                           <span className="text-xs text-slate-500">•</span>
                           <span className="text-xs text-slate-400">{p.category}</span>
                           <span
