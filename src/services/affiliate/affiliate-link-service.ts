@@ -10,13 +10,24 @@ export class AffiliateLinkService {
     input: AffiliateLinkInput,
     forceRegenerate: boolean = false
   ): Promise<{ link: any; generated: GeneratedAffiliateLinkResult }> {
-    // 1. Validate Product Existence
-    const product = await prisma.product.findUnique({
-      where: { id: input.productId },
-    });
+    // 1. Validate Product Existence or URL
+    let product = input.productId && input.productId !== "custom-url"
+      ? await prisma.product.findUnique({
+          where: { id: input.productId },
+        })
+      : null;
 
-    if (!product) {
-      throw new Error(`Produto ${input.productId} não encontrado.`);
+    const originUrl = input.originalUrl || product?.url || "";
+    let platformKey = (input.platform || product?.platform || "SHOPEE").toLowerCase();
+
+    if (!input.platform && originUrl) {
+      if (originUrl.includes("shopee")) platformKey = "shopee";
+      else if (originUrl.includes("mercadolivre") || originUrl.includes("mercadolibre")) platformKey = "mercado_livre";
+      else if (originUrl.includes("amazon") || originUrl.includes("amzn")) platformKey = "amazon";
+    }
+
+    if (!product && !originUrl) {
+      throw new Error(`Informe o produto ou a URL original para gerar o link.`);
     }
 
     // 2. Validate Opportunity if provided
@@ -25,13 +36,13 @@ export class AffiliateLinkService {
       const opp = await prisma.opportunity.findFirst({
         where: { id: opportunityId, userId: input.userId },
       });
-      if (!opp) {
+      if (!opp && product) {
         // Fallback: check if opportunity exists for userId & productId
         const oppByProd = await prisma.opportunity.findUnique({
           where: {
             userId_productId: {
               userId: input.userId,
-              productId: input.productId,
+              productId: product.id,
             },
           },
         });
@@ -40,11 +51,11 @@ export class AffiliateLinkService {
     }
 
     // 3. Check for existing active link if not force regenerating
-    if (!forceRegenerate) {
+    if (!forceRegenerate && product) {
       const existingLink = await prisma.affiliateLink.findFirst({
         where: {
           userId: input.userId,
-          productId: input.productId,
+          productId: product.id,
           active: true,
           status: "GENERATED",
         },
@@ -76,7 +87,6 @@ export class AffiliateLinkService {
     }
 
     // 4. Generate link via platform adapter (checking for active real connection first)
-    const platformKey = (input.platform || product.platform).toLowerCase();
     const trackingExtraParams: Record<string, string> = {};
 
     const trackingConfig = {
@@ -121,7 +131,7 @@ export class AffiliateLinkService {
             const shopeeResult = await ShopeeMarketplaceAdapter.generateAffiliateLink({
               appId,
               secretKey,
-              originUrl: input.originalUrl || product.url,
+              originUrl: originUrl,
               subIds: [subIdPrefix, input.userId.slice(0, 10), (opportunityId || "").slice(0, 10)],
             });
 
@@ -131,7 +141,7 @@ export class AffiliateLinkService {
                 url: shopeeResult.shortLink,
                 shortCode: `shp_${Date.now().toString(36)}`,
                 platform: "SHOPEE",
-                externalProductId: input.externalProductId || product.externalId,
+                externalProductId: input.externalProductId || product?.externalId || "shopee_item",
                 source: "real",
                 generatedAt: new Date(),
                 tracking: trackingConfig,
@@ -163,10 +173,10 @@ export class AffiliateLinkService {
     }
 
     if (!generatedResult) {
-      const adapter = getAffiliateAdapter(input.platform || product.platform);
+      const adapter = getAffiliateAdapter(input.platform || product?.platform || "SHOPEE");
       generatedResult = await adapter.generateLink(
-        input.originalUrl || product.url,
-        input.externalProductId || product.externalId,
+        originUrl,
+        input.externalProductId || product?.externalId || Date.now().toString(),
         trackingConfig
       );
     }
@@ -188,15 +198,15 @@ export class AffiliateLinkService {
     const savedLink = await prisma.affiliateLink.create({
       data: {
         userId: input.userId,
-        productId: input.productId,
+        productId: product?.id || null,
         opportunityId: opportunityId || null,
-        platform: input.platform || product.platform,
-        externalProductId: input.externalProductId || product.externalId,
-        originalUrl: input.originalUrl || product.url,
+        platform: (input.platform || product?.platform || platformKey.toUpperCase()),
+        externalProductId: input.externalProductId || product?.externalId || null,
+        originalUrl: originUrl,
         affiliateUrl: generatedResult.url,
         shortCode,
         status: "GENERATED",
-        source: generatedResult.source,
+        source: generatedResult.source || "real",
         utmSource: trackingConfig.utmSource,
         utmMedium: trackingConfig.utmMedium,
         utmCampaign: trackingConfig.utmCampaign,
@@ -213,7 +223,9 @@ export class AffiliateLinkService {
           userId: input.userId,
           eventType: "AFFILIATE_LINK_GENERATED",
           title: `Link de Afiliado Gerado (${savedLink.platform})`,
-          description: `Link de afiliado gerado com sucesso para ${product.title.slice(0, 50)}...`,
+          description: product?.title
+            ? `Link de afiliado gerado com sucesso para ${product.title.slice(0, 50)}...`
+            : `Link de afiliado gerado com sucesso (${savedLink.shortCode})`,
           metadata: JSON.stringify({
             linkId: savedLink.id,
             shortCode: savedLink.shortCode,

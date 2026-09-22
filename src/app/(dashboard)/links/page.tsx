@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProviderLogo } from "@/components/ui/provider-logo";
 import {
   Link2,
   Copy,
@@ -21,6 +22,7 @@ import {
   TrendingUp,
   DollarSign,
   Tag,
+  Globe,
 } from "lucide-react";
 
 interface AffiliateLinkRecord {
@@ -101,35 +103,39 @@ export default function LinksPage() {
 
   const handleCreateLink = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!urlInput) return;
+    if (!urlInput.trim()) {
+      toast({
+        title: "Atenção",
+        message: "Por favor, insira a URL do produto.",
+        type: "warning",
+      });
+      return;
+    }
     setIsCreating(true);
 
     try {
-      // Find a matching product or generate generic affiliate link
       const res = await fetch("/api/affiliate-links/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          productId: "custom-url", // Service will handle or link
+          productId: "custom-url",
           platform: platformInput,
-          originalUrl: urlInput,
-          customCampaign: campaignInput || "manual_link",
+          originalUrl: urlInput.trim(),
+          customCampaign: campaignInput.trim() || "manual_link",
         }),
       });
 
-      // If custom-url fails because product doesn't exist, we fallback or show message
       const data = await res.json();
       if (!res.ok) {
-        // Direct link creation
         toast({
-          title: "Aviso",
-          message: "Para links rastreáveis de produtos do catálogo, utilize o Radar de Oportunidades.",
-          type: "info",
+          title: "Erro ao gerar link",
+          message: data.error || "Não foi possível gerar o link de afiliado.",
+          type: "error",
         });
       } else {
         toast({
           title: "Link Gerado com Sucesso!",
-          message: `Código ${data.link.shortCode} criado.`,
+          message: `Código ${data.link?.shortCode || ""} criado com rastreamento ativo.`,
           type: "success",
         });
         setNewLinkModal(false);
@@ -164,12 +170,24 @@ export default function LinksPage() {
           </p>
         </div>
 
-        <Link href="/radar">
-          <Button variant="glow" size="sm" className="gap-2 text-xs font-semibold">
+        <div className="flex items-center gap-2.5">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setNewLinkModal(true)}
+            className="gap-2 text-xs font-semibold"
+          >
             <Plus className="w-4 h-4" />
-            <span>Gerar Link do Radar</span>
+            <span>Criar Link</span>
           </Button>
-        </Link>
+
+          <Link href="/radar">
+            <Button variant="glow" size="sm" className="gap-2 text-xs font-semibold">
+              <Sparkles className="w-4 h-4" />
+              <span>Radar de Ofertas</span>
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* KPI Overview Cards */}
@@ -207,18 +225,24 @@ export default function LinksPage() {
 
       {/* Filter and Search Bar */}
       <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 backdrop-blur-xl flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          {["ALL", "SHOPEE", "MERCADO_LIVRE", "AMAZON"].map((plat) => (
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {[
+            { id: "ALL", label: "Todas as Lojas" },
+            { id: "SHOPEE", label: "Shopee" },
+            { id: "MERCADO_LIVRE", label: "Mercado Livre" },
+            { id: "AMAZON", label: "Amazon" },
+          ].map((plat) => (
             <button
-              key={plat}
-              onClick={() => setPlatformFilter(plat)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                platformFilter === plat
+              key={plat.id}
+              onClick={() => setPlatformFilter(plat.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 ${
+                platformFilter === plat.id
                   ? "bg-primary text-white shadow-md shadow-primary/25"
-                  : "bg-slate-950/60 text-slate-400 hover:text-white border border-slate-800"
+                  : "bg-slate-950/60 text-slate-400 hover:text-white border border-slate-800 hover:border-slate-700"
               }`}
             >
-              {plat === "ALL" ? "Todas as Lojas" : plat.replace("_", " ")}
+              {plat.id !== "ALL" && <ProviderLogo provider={plat.id} size="xs" />}
+              <span>{plat.label}</span>
             </button>
           ))}
         </div>
@@ -247,13 +271,18 @@ export default function LinksPage() {
           <Link2 className="w-10 h-10 text-primary-400 mx-auto opacity-70" />
           <h3 className="text-base font-bold text-white">Nenhum link de afiliado gerado</h3>
           <p className="text-xs text-slate-400 max-w-md mx-auto">
-            Acesse o Radar de Oportunidades para gerar links de afiliados determinísticos com rastreamento UTM automático.
+            Crie um link personalizado colando a URL do produto ou acesse o Radar de Ofertas para garimpar oportunidades.
           </p>
-          <Link href="/radar">
-            <Button variant="glow" size="sm" className="mt-2">
-              Ir para o Radar de Oportunidades
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <Button variant="secondary" size="sm" onClick={() => setNewLinkModal(true)}>
+              Criar Link Personalizado
             </Button>
-          </Link>
+            <Link href="/radar">
+              <Button variant="glow" size="sm">
+                Ir para o Radar de Ofertas
+              </Button>
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="space-y-3">
@@ -271,29 +300,31 @@ export default function LinksPage() {
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0">
-                    <Link2 className="w-5 h-5 text-primary" />
+                    <ProviderLogo provider={link.platform} size="md" />
                   </div>
                 )}
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <Badge
-                      variant={
-                        link.platform === "SHOPEE"
-                          ? "shopee"
-                          : link.platform === "MERCADO_LIVRE"
-                          ? "mercadolivre"
-                          : "amazon"
-                      }
-                      size="sm"
-                    >
-                      {link.platform.replace("_", " ")}
-                    </Badge>
-                    <span className="font-mono text-xs font-bold text-white">
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-950 border border-slate-800">
+                      <ProviderLogo provider={link.platform} size="xs" />
+                      <span className="text-[11px] font-bold text-slate-200">
+                        {link.platform === "MERCADO_LIVRE"
+                          ? "Mercado Livre"
+                          : link.platform === "SHOPEE"
+                          ? "Shopee"
+                          : link.platform === "AMAZON"
+                          ? "Amazon"
+                          : link.platform}
+                      </span>
+                    </div>
+
+                    <span className="font-mono text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">
                       {link.shortCode}
                     </span>
-                    <Badge variant="outline" size="sm">
-                      {link.source.toUpperCase()}
+
+                    <Badge variant={link.active ? "success" : "outline"} size="sm">
+                      {link.active ? "Ativo" : "Inativo"}
                     </Badge>
                   </div>
 
@@ -345,6 +376,90 @@ export default function LinksPage() {
           ))}
         </div>
       )}
+
+      {/* Modal: Criar Link Personalizado */}
+      <Modal
+        isOpen={newLinkModal}
+        onClose={() => setNewLinkModal(false)}
+        title="Gerar Link de Afiliado"
+      >
+        <form onSubmit={handleCreateLink} className="space-y-4 text-xs">
+          <div>
+            <label className="block font-semibold text-slate-300 mb-1.5">Plataforma / Marketplace</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { id: "SHOPEE", label: "Shopee" },
+                { id: "MERCADO_LIVRE", label: "Mercado Livre" },
+                { id: "AMAZON", label: "Amazon" },
+              ].map((plat) => (
+                <button
+                  key={plat.id}
+                  type="button"
+                  onClick={() => setPlatformInput(plat.id)}
+                  className={`p-2.5 rounded-xl border text-center font-semibold transition-all flex items-center justify-center gap-2 ${
+                    platformInput === plat.id
+                      ? "bg-indigo-600/20 border-indigo-500 text-white shadow-md shadow-indigo-600/20"
+                      : "bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700"
+                  }`}
+                >
+                  <ProviderLogo provider={plat.id} size="xs" />
+                  <span>{plat.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-semibold text-slate-300 mb-1">
+              URL Original do Produto <span className="text-rose-400">*</span>
+            </label>
+            <input
+              type="url"
+              placeholder="Cole o link do produto (ex: https://shopee.com.br/... ou https://produto.mercadolivre.com.br/...)"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block font-semibold text-slate-300 mb-1">Nome da Campanha (Opcional)</label>
+            <input
+              type="text"
+              placeholder="Ex: grupo_vip, stories_instagram, black_friday"
+              value={campaignInput}
+              onChange={(e) => setCampaignInput(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-200 text-xs focus:outline-none focus:border-indigo-500"
+            />
+            <p className="text-[10px] text-slate-500 mt-1">
+              Sua tag ou credencial oficial configurada na Central de Integrações será anexada automaticamente.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setNewLinkModal(false)}
+              disabled={isCreating}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              variant="glow"
+              size="sm"
+              isLoading={isCreating}
+              className="gap-2"
+            >
+              <Link2 className="w-4 h-4" />
+              <span>Gerar Link</span>
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
