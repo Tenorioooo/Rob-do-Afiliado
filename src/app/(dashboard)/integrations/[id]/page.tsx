@@ -321,10 +321,9 @@ export default function ConnectionDetailPage() {
                 {getStatusBadge(connection.status)}
               </div>
               <p className="text-xs text-slate-400 mt-1">
-                Tipo: <strong className="text-slate-300 capitalize">{connection.type.toLowerCase()}</strong> • Autenticação:{" "}
-                <strong className="text-slate-300">{connection.authType}</strong>
+                Tipo: <strong className="text-slate-300 capitalize">{connection.type.toLowerCase() === "channel" ? "Canal de Mensagens" : "Marketplace"}</strong>
                 {connection.externalAccountName && (
-                  <> • Conta: <strong className="text-indigo-400">{connection.externalAccountName}</strong></>
+                  <> • Conta / Canal: <strong className="text-indigo-400">{connection.externalAccountName}</strong></>
                 )}
               </p>
             </div>

@@ -724,28 +724,15 @@ export default function IntegrationsPage() {
                     </div>
 
                     {/* Status Badge */}
-                    {isVerified ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shrink-0">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                        VERIFIED_REAL
-                      </span>
-                    ) : isConnected ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30 shrink-0">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                        {conn.status}
+                    {isConnected ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shrink-0">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                        Conectado
                       </span>
                     ) : (
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border shrink-0 ${
-                          provider.initialStatus.includes("PRONTO")
-                            ? "bg-slate-800 text-slate-300 border-slate-700"
-                            : provider.initialStatus.includes("OAUTH")
-                            ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
-                            : "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                        }`}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                        {provider.initialStatus}
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-800/80 text-slate-400 border border-slate-700/60 shrink-0">
+                        <span className="w-2 h-2 rounded-full bg-slate-500" />
+                        Não integrado
                       </span>
                     )}
                   </div>
@@ -757,7 +744,7 @@ export default function IntegrationsPage() {
 
                   {/* Capabilities List */}
                   <div className="space-y-1.5 mb-6">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Capacidades Oficiais:</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Recursos Disponíveis:</span>
                     {provider.capabilitiesDisplay.map((cap, i) => (
                       <div key={i} className="flex items-center gap-2 text-xs text-slate-300">
                         <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
@@ -769,7 +756,7 @@ export default function IntegrationsPage() {
                   {/* Account Name if Connected */}
                   {conn?.externalAccountName && (
                     <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs mb-4 flex items-center justify-between">
-                      <span className="text-slate-400">Conta:</span>
+                      <span className="text-slate-400">Conta / Canal:</span>
                       <strong className="text-indigo-400 font-mono">{conn.externalAccountName}</strong>
                     </div>
                   )}
@@ -778,31 +765,22 @@ export default function IntegrationsPage() {
                 {/* Footer / Action Button */}
                 <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
-                      {provider.authType}
-                    </span>
-                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-emerald-950/30 text-emerald-400 border border-emerald-500/20">
-                      REAL
+                    <span className="text-xs text-slate-400 font-medium">
+                      {isConnected ? "🟢 Ativo no Robô" : "⚪ Disponível"}
                     </span>
                   </div>
 
                   {conn ? (
                     <Link
                       href={`/integrations/${conn.id}`}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md transition-all"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl shadow-md transition-all"
                     >
                       Gerenciar <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
                   ) : (
                     <button
                       onClick={() => handleOpenConnect(provider)}
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-xl shadow-md transition-all ${
-                        provider.initialStatus.includes("PRONTO")
-                          ? "text-white bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/20"
-                          : provider.initialStatus.includes("OAUTH")
-                          ? "text-white bg-blue-600 hover:bg-blue-500 shadow-blue-600/20"
-                          : "text-white bg-slate-800 hover:bg-slate-700 border border-slate-700"
-                      }`}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/20 rounded-xl shadow-md transition-all"
                     >
                       {provider.actionButtonLabel}
                     </button>
