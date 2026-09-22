@@ -157,7 +157,7 @@ export default function ChannelsPage() {
         if (!res.ok) throw new Error(data.error || "Erro ao criar canal");
         toast({
           title: "Canal Conectado!",
-          message: `Canal ${channelName} vinculado com sucesso (Mock Adapter Ativo).`,
+          message: `Canal ${channelName} vinculado com sucesso e pronto para envios.`,
           type: "success",
         });
       }
@@ -306,16 +306,16 @@ export default function ChannelsPage() {
         </div>
       </div>
 
-      {/* Realism Notice Banner */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-slate-900 border border-indigo-500/20 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      {/* Information Banner */}
+      <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <p className="font-bold text-white">Mock Adapters 100% Determinísticos & Seguros</p>
+            <p className="font-bold text-white">Disparo Multi-Canal com Proteção de Envio</p>
             <p className="text-slate-400 text-[11px] mt-0.5">
-              Todos os canais usam adaptadores modulares com tag <code className="text-indigo-300 font-mono bg-indigo-950/60 px-1 py-0.5 rounded">source: &quot;mock&quot;</code> e credenciais mascaradas.
+              Você pode cadastrar múltiplos canais e grupos de destino para receber as ofertas garimpadas e agendadas pelo robô.
             </p>
           </div>
         </div>
