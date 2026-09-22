@@ -23,6 +23,7 @@ import {
   Sparkles,
   Settings2,
 } from "lucide-react";
+import { ProviderLogo } from "@/components/ui/provider-logo";
 
 interface ChannelData {
   id: string;
@@ -360,8 +361,8 @@ export default function ChannelsPage() {
                   {/* Top Bar */}
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-primary">
-                        <Radio className="w-5 h-5" />
+                      <div className="w-11 h-11 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0 overflow-hidden p-1.5 shadow-inner">
+                        <ProviderLogo provider={chan.type} size="md" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
@@ -474,13 +475,14 @@ export default function ChannelsPage() {
                     onClick={() => {
                       setChannelType(type);
                     }}
-                    className={`p-2.5 rounded-xl border text-center font-semibold transition-all ${
+                    className={`p-2.5 rounded-xl border text-center font-semibold transition-all flex items-center justify-center gap-2 ${
                       channelType === type
-                        ? "bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-600/20"
-                        : "bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200"
+                        ? "bg-indigo-600/20 border-indigo-500 text-white shadow-md shadow-indigo-600/20"
+                        : "bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700"
                     }`}
                   >
-                    {type}
+                    <ProviderLogo provider={type} size="xs" />
+                    <span>{type === "TELEGRAM" ? "Telegram" : type === "WHATSAPP" ? "WhatsApp" : "Discord"}</span>
                   </button>
                 ))}
               </div>

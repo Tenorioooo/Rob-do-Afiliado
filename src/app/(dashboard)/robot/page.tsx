@@ -27,6 +27,7 @@ import {
   ShoppingBag,
   ExternalLink,
 } from "lucide-react";
+import { ProviderLogo } from "@/components/ui/provider-logo";
 
 interface MarketplaceConnection {
   id: string;
@@ -340,7 +341,10 @@ export default function RobotPage() {
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-bold text-white">{int.name}</span>
+                    <div className="flex items-center gap-2">
+                      <ProviderLogo provider={int.plat} size="xs" />
+                      <span className="text-sm font-bold text-white">{int.name}</span>
+                    </div>
                     <Badge variant={int.badgeVariant}>
                       {int.connected && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
                       {int.badgeText}

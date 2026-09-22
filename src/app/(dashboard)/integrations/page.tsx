@@ -31,6 +31,7 @@ import {
   Copy,
   Zap,
 } from "lucide-react";
+import { ProviderLogo } from "@/components/ui/provider-logo";
 
 interface SetupStep {
   title: string;
@@ -277,22 +278,7 @@ export default function IntegrationsPage() {
   };
 
   const getProviderIcon = (id: string) => {
-    switch (id.toUpperCase()) {
-      case "TELEGRAM":
-        return <Send className="w-6 h-6 text-sky-400" />;
-      case "DISCORD":
-        return <MessageSquare className="w-6 h-6 text-indigo-400" />;
-      case "WHATSAPP":
-        return <Radio className="w-6 h-6 text-emerald-400" />;
-      case "MERCADO_LIVRE":
-        return <ShoppingBag className="w-6 h-6 text-amber-400" />;
-      case "SHOPEE":
-        return <ShoppingBag className="w-6 h-6 text-orange-400" />;
-      case "AMAZON":
-        return <Layers className="w-6 h-6 text-amber-500" />;
-      default:
-        return <KeyRound className="w-6 h-6 text-indigo-400" />;
-    }
+    return <ProviderLogo provider={id} size="md" />;
   };
 
   // Filtered providers
@@ -471,8 +457,8 @@ export default function IntegrationsPage() {
                   {/* Card Header */}
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0 shadow-inner">
-                        {getProviderIcon(provider.id)}
+                      <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0 shadow-inner overflow-hidden p-1.5">
+                        <ProviderLogo provider={provider.id} size="lg" />
                       </div>
                       <div>
                         <h3 className="text-base font-bold text-white">{provider.name}</h3>
@@ -554,8 +540,8 @@ export default function IntegrationsPage() {
           <div className="relative bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in duration-150 my-auto max-h-[92vh] flex flex-col z-10">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0">
-                  {getProviderIcon(selectedProvider.id)}
+                <div className="w-11 h-11 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0 overflow-hidden p-1.5">
+                  <ProviderLogo provider={selectedProvider.id} size="lg" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">Conectar {selectedProvider.name}</h3>

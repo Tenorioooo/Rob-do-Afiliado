@@ -22,6 +22,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { ProviderRegistry } from "@/integrations/provider-registry";
+import { ProviderLogo } from "@/components/ui/provider-logo";
 
 interface ConnectionDetails {
   id: string;
@@ -312,8 +313,8 @@ export default function ConnectionDetailPage() {
         </Link>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center shadow-md">
-              <KeyRound className="w-7 h-7 text-indigo-400" />
+            <div className="w-14 h-14 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center shadow-md overflow-hidden p-2">
+              <ProviderLogo provider={connection.provider} size="xl" />
             </div>
             <div>
               <div className="flex items-center gap-3">
