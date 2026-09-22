@@ -280,7 +280,7 @@ export class ProviderRegistry {
       categoryLabel: "Marketplace de afiliados",
       actionButtonLabel: "Configurar Shopee",
       description: "Geração oficial de short links de afiliados (shp.ee) e consulta de comissões via Open Platform.",
-      documentationUrl: "https://open-api.affiliate.shopee.com.br",
+      documentationUrl: "https://affiliate.shopee.com.br/open_api",
       capabilitiesDisplay: [
         "Geração de short links oficiais shp.ee",
         "Atribuição direta de comissões na sua conta",
@@ -295,10 +295,10 @@ export class ProviderRegistry {
       isOfficiallySupported: true,
       setupGuide: [
         {
-          title: "1. Acesse o Shopee Affiliate Open Platform",
-          description: "Faça login no portal de desenvolvedores de afiliados da Shopee.",
-          linkUrl: "https://open-api.affiliate.shopee.com.br",
-          linkLabel: "Abrir Shopee Affiliate Open Platform",
+          title: "1. Acesse o Portal de Afiliados da Shopee (Open API)",
+          description: "Faça login no painel de afiliados da Shopee e acesse as configurações da Open API.",
+          linkUrl: "https://affiliate.shopee.com.br/open_api",
+          linkLabel: "Abrir Painel de Afiliados Shopee (Open API)",
         },
         {
           title: "2. Obtenha seu App ID e Secret Key",

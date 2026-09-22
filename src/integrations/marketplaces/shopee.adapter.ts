@@ -13,7 +13,7 @@ export class ShopeeMarketplaceAdapter {
     timestamp: number | string;
     payload: string;
   }): string {
-    const factor = `${params.appId}${params.timestamp}${params.payload}${params.secret}`;
+    const factor = `${params.appId.trim()}${params.timestamp}${params.payload}${params.secret.trim()}`;
     return crypto.createHash("sha256").update(factor).digest("hex");
   }
 
@@ -21,12 +21,14 @@ export class ShopeeMarketplaceAdapter {
    * Generates official Shopee Affiliate Open API authorization headers.
    */
   private static generateAuthHeaders(appId: string, secretKey: string, payload: string): Record<string, string> {
+    const cleanAppId = String(appId || "").trim();
+    const cleanSecret = String(secretKey || "").trim();
     const timestamp = Math.floor(Date.now() / 1000).toString();
-    const signature = this.generateSignature({ appId, secret: secretKey, timestamp, payload });
+    const signature = this.generateSignature({ appId: cleanAppId, secret: cleanSecret, timestamp, payload });
 
     return {
       "Content-Type": "application/json",
-      Authorization: `SHA256 Credential=${appId}, Timestamp=${timestamp}, Signature=${signature}`,
+      Authorization: `SHA256 Credential=${cleanAppId}, Timestamp=${timestamp}, Signature=${signature}`,
     };
   }
 
@@ -40,19 +42,16 @@ export class ShopeeMarketplaceAdapter {
     subIds?: string[];
   }): Promise<{ shortLink?: string; success: boolean; errorMessage?: string }> {
     try {
-      const query = `
-        mutation {
-          generateShortLink(input: {
-            originUrl: "${params.originUrl}",
-            subIds: ${JSON.stringify(params.subIds || [])}
-          }) {
-            shortLink
-          }
-        }
-      `;
+      const cleanAppId = String(params.appId || "").trim();
+      const cleanSecret = String(params.secretKey || "").trim();
 
+      if (!cleanAppId || !cleanSecret) {
+        return { success: false, errorMessage: "App ID ou Secret Key da Shopee não configurados." };
+      }
+
+      const query = `mutation { generateShortLink(input: { originUrl: ${JSON.stringify(params.originUrl)}, subIds: ${JSON.stringify(params.subIds || [])} }) { shortLink } }`;
       const payload = JSON.stringify({ query });
-      const headers = this.generateAuthHeaders(params.appId, params.secretKey, payload);
+      const headers = this.generateAuthHeaders(cleanAppId, cleanSecret, payload);
 
       const res = await ExternalRequestClient.request(this.GRAPHQL_ENDPOINT, {
         method: "POST",
@@ -80,25 +79,39 @@ export class ShopeeMarketplaceAdapter {
    */
   static async validateConnection(appId: string, secretKey: string): Promise<{ valid: boolean; errorMessage?: string }> {
     try {
-      const query = `
-        query {
-          conversionReport(page: 1, limit: 1) {
-            total
-          }
-        }
-      `;
+      const cleanAppId = String(appId || "").trim();
+      const cleanSecret = String(secretKey || "").trim();
+
+      if (!cleanAppId || !cleanSecret) {
+        return { valid: false, errorMessage: "App ID e Secret Key são obrigatórios." };
+      }
+
+      // Compact query without excess whitespace/newlines
+      const query = `query { productOfferV2(page: 1, limit: 1) { nodes { itemId } } }`;
       const payload = JSON.stringify({ query });
-      const headers = this.generateAuthHeaders(appId, secretKey, payload);
+      const headers = this.generateAuthHeaders(cleanAppId, cleanSecret, payload);
 
       const res = await ExternalRequestClient.request(this.GRAPHQL_ENDPOINT, {
         method: "POST",
         headers,
         body: payload,
-        timeoutMs: 6000,
+        timeoutMs: 8000,
       });
 
       if (res.ok && res.data && !res.data.errors) {
         return { valid: true };
+      }
+
+      // If productOfferV2 fails or errors, try generateShortLink with test link as fallback
+      if (res.data?.errors?.[0]?.message?.includes("productOfferV2")) {
+        const testRes = await this.generateAffiliateLink({
+          appId: cleanAppId,
+          secretKey: cleanSecret,
+          originUrl: "https://shopee.com.br",
+        });
+        if (testRes.success) {
+          return { valid: true };
+        }
       }
 
       const errMsg = res.data?.errors?.[0]?.message || `Credenciais inválidas (HTTP ${res.status})`;
