@@ -316,7 +316,7 @@ export default function DashboardPage() {
                       <td className="px-4 py-3.5 text-right">
                         <Link href={`/radar/${opp.id}`}>
                           <Button variant="outline" size="sm" className="text-xs h-8 px-3">
-                            Ver Raio-X
+                            Ver detalhes
                           </Button>
                         </Link>
                       </td>
