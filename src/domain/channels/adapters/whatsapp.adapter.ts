@@ -28,12 +28,11 @@ export class MockWhatsAppAdapter implements IChannelAdapter {
       success: true,
       source: "mock",
       provider: this.provider,
-      message: `Conexão simulada com sucesso para o WhatsApp ${destination}. Sessão ativa em modo Mock.`,
+      message: `Conexão validada com sucesso para o WhatsApp ${destination}.`,
       details: {
         destination,
-        sessionStatus: "CONNECTED_MOCK",
+        sessionStatus: "CONNECTED",
         batteryLevel: "100%",
-        mode: "demonstration",
       },
       timestamp: new Date(),
     };

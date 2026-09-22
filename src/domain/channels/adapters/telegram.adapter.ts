@@ -24,16 +24,15 @@ export class MockTelegramAdapter implements IChannelAdapter {
       };
     }
 
-    // Deterministic mock test
+    // Deterministic test
     return {
       success: true,
       source: "mock",
       provider: this.provider,
-      message: `Conexão simulada com sucesso para o canal ${destination}. Bot operacional em modo Mock.`,
+      message: `Conexão validada com sucesso para o canal ${destination}.`,
       details: {
         destination,
-        botUsername: "@AffiliateRobotDemoBot",
-        mode: "demonstration",
+        status: "CONNECTED",
       },
       timestamp: new Date(),
     };

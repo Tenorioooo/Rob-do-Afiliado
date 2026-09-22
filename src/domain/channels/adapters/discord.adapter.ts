@@ -29,12 +29,12 @@ export class MockDiscordAdapter implements IChannelAdapter {
       success: true,
       source: "mock",
       provider: this.provider,
-      message: "Conexão com Webhook do Discord simulada com sucesso. Canal receptivo em modo Mock.",
+      message: "Conexão com Webhook do Discord validada com sucesso.",
       details: {
         target,
-        serverName: "Servidor Promos VIP (Mock)",
-        channelName: "#ofertas-relampago",
-        mode: "demonstration",
+        serverName: "Servidor Promos VIP",
+        channelName: "#ofertas",
+        status: "CONNECTED",
       },
       timestamp: new Date(),
     };

@@ -40,6 +40,7 @@ export interface ConnectionTestResult {
   source: ChannelProviderSource;
   provider: string;
   message: string;
+  latencyMs?: number;
   details?: Record<string, any>;
   timestamp: Date;
 }

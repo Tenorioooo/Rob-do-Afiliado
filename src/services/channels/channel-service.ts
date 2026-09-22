@@ -76,7 +76,7 @@ export class ChannelService {
         name: input.name,
         type: channelType,
         identifier: input.destination || input.name,
-        provider: input.provider || (channelType === "TELEGRAM" ? "telegram-mock" : channelType === "WHATSAPP" ? "whatsapp-mock" : "discord-mock"),
+        provider: input.provider || (channelType === "TELEGRAM" ? "telegram-api" : channelType === "WHATSAPP" ? "meta-cloud-api" : "discord-webhook-api"),
         destination: input.destination,
         config: JSON.stringify(input.config || {}),
         status: "CONNECTED",
@@ -154,10 +154,46 @@ export class ChannelService {
       throw new Error("Canal não encontrado ou acesso não autorizado.");
     }
 
-    const config = SecretStorage.getRawConfig(channel.config);
-    const adapter = ChannelFactory.getAdapter(channel.type as ChannelType);
+    let config = SecretStorage.getRawConfig(channel.config) || {};
 
-    const testResult = await adapter.testConnection(channel.destination || channel.identifier, config);
+    // If channel config doesn't have credentials, look up user's active IntegrationConnection for this provider
+    try {
+      const connection = await prisma.integrationConnection.findUnique({
+        where: {
+          userId_provider: {
+            userId,
+            provider: channel.type.toUpperCase(),
+          },
+        },
+      });
+
+      if (connection) {
+        const { ConnectionService } = await import("@/services/integrations/connection-service");
+        const connCreds = await ConnectionService.getDecryptedCredentials(connection.id);
+        config = { ...connCreds, ...config };
+      }
+    } catch (e) {
+      console.warn("[ChannelService:testChannelConnection] Error fetching integration credentials:", e);
+    }
+
+    const adapter = ChannelFactory.getAdapter(channel.type as ChannelType, "real");
+
+    const startTime = Date.now();
+    let testResult: ConnectionTestResult;
+    try {
+      testResult = await adapter.testConnection(channel.destination || channel.identifier, config);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro ao testar conexão do canal";
+      testResult = {
+        success: false,
+        source: "real",
+        provider: channel.provider || channel.type,
+        message: msg,
+        timestamp: new Date(),
+      };
+    }
+    const latencyMs = Date.now() - startTime;
+    testResult.latencyMs = latencyMs;
 
     // Save test result to database
     await prisma.channel.update({

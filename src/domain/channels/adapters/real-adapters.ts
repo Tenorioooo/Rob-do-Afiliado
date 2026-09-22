@@ -23,7 +23,7 @@ export class RealTelegramAdapter implements IChannelAdapter {
         success: false,
         source: "real",
         provider: this.provider,
-        message: "Bot Token não informado.",
+        message: "Bot Token não configurado no canal ou na Central de Integrações.",
         timestamp: new Date(),
       };
     }
@@ -34,7 +34,7 @@ export class RealTelegramAdapter implements IChannelAdapter {
         success: false,
         source: "real",
         provider: this.provider,
-        message: `Falha de validação Telegram: ${validation.errorMessage}`,
+        message: `Falha ao validar bot do Telegram: ${validation.errorMessage || "Token inválido"}`,
         timestamp: new Date(),
       };
     }
@@ -43,8 +43,14 @@ export class RealTelegramAdapter implements IChannelAdapter {
       success: true,
       source: "real",
       provider: this.provider,
-      message: `Conexão Telegram validada com sucesso com @${validation.username || validation.firstName}`,
-      details: validation,
+      message: `Conexão validada com sucesso com @${validation.username || validation.firstName || "Bot"}`,
+      details: {
+        botUsername: validation.username ? `@${validation.username}` : undefined,
+        botName: validation.firstName,
+        botId: validation.botId,
+        destination: destination || undefined,
+        status: "ONLINE",
+      },
       timestamp: new Date(),
     };
   }
@@ -98,6 +104,16 @@ export class RealDiscordAdapter implements IChannelAdapter {
     const botToken = config.botToken || config.bot_token;
 
     const targetUrl = webhookUrl?.startsWith("http") ? webhookUrl : "";
+    if (!targetUrl && !botToken) {
+      return {
+        success: false,
+        source: "real",
+        provider: this.provider,
+        message: "URL do Webhook do Discord não informada.",
+        timestamp: new Date(),
+      };
+    }
+
     const validation = await DiscordChannelAdapter.validateConnection(targetUrl);
 
     return {
@@ -105,9 +121,15 @@ export class RealDiscordAdapter implements IChannelAdapter {
       source: "real",
       provider: this.provider,
       message: validation.valid
-        ? "Webhook / Bot do Discord validado com sucesso."
-        : `Erro Discord: ${validation.errorMessage}`,
-      details: validation,
+        ? `Webhook do Discord conectado com sucesso${validation.name ? ` (${validation.name})` : ""}.`
+        : `Erro ao validar Webhook do Discord: ${validation.errorMessage || "URL inválida"}`,
+      details: {
+        webhookName: validation.name,
+        channelId: validation.channelId,
+        guildId: validation.guildId,
+        destination: destination || undefined,
+        status: validation.valid ? "ONLINE" : "ERROR",
+      },
       timestamp: new Date(),
     };
   }
@@ -192,7 +214,7 @@ export class RealWhatsAppAdapter implements IChannelAdapter {
         success: false,
         source: "real",
         provider: this.provider,
-        message: "Configuração do WhatsApp incompleta (Instância ou Meta Cloud API necessária).",
+        message: "Configuração do WhatsApp não encontrada (Instância ou Meta Cloud API necessária).",
         timestamp: new Date(),
       };
     }
@@ -211,8 +233,14 @@ export class RealWhatsAppAdapter implements IChannelAdapter {
       provider: this.provider,
       message: validation.valid
         ? `WhatsApp conectado com sucesso (${validation.instanceName || validation.verifiedName || validation.displayPhoneNumber || "Pronto para envios"})`
-        : `Erro WhatsApp: ${validation.errorMessage}`,
-      details: validation,
+        : `Erro ao validar WhatsApp: ${validation.errorMessage || "Credenciais inválidas"}`,
+      details: {
+        instanceName: validation.instanceName,
+        verifiedName: validation.verifiedName,
+        displayPhoneNumber: validation.displayPhoneNumber,
+        destination: destination || undefined,
+        status: validation.valid ? "ONLINE" : "ERROR",
+      },
       timestamp: new Date(),
     };
   }

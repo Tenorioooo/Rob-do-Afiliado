@@ -390,8 +390,10 @@ export default function ChannelsPage() {
                   {/* Channel Details Box */}
                   <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 mb-4 text-xs space-y-2">
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-500">Provedor</span>
-                      <span className="font-mono text-slate-300">{chan.provider}</span>
+                      <span className="text-slate-500">Tipo de Conexão</span>
+                      <span className="text-slate-300 font-medium">
+                        {chan.type === "TELEGRAM" ? "Telegram Bot API" : chan.type === "WHATSAPP" ? "WhatsApp API" : "Discord Webhook"}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between text-[11px]">
@@ -404,7 +406,7 @@ export default function ChannelsPage() {
                       {parsedTest ? (
                         <span className={`font-semibold flex items-center gap-1 ${parsedTest.success ? "text-emerald-400" : "text-rose-400"}`}>
                           {parsedTest.success ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                          {parsedTest.latencyMs}ms ({parsedTest.source})
+                          {parsedTest.latencyMs ? `${parsedTest.latencyMs}ms` : "Conectado"}
                         </span>
                       ) : (
                         <span className="text-slate-500">Nunca testado</span>
@@ -567,7 +569,7 @@ export default function ChannelsPage() {
           isOpen={!!testModalResult}
           onClose={() => setTestModalResult(null)}
           title={`Resultado do Teste: ${testModalResult.channelName}`}
-          description="Verificação do contrato do Dispatcher com o ChannelAdapter."
+          description="Verificação de conectividade e status operacional do canal."
         >
           <div className="space-y-4 text-xs">
             <div
@@ -578,21 +580,23 @@ export default function ChannelsPage() {
               }`}
             >
               {testModalResult.result.success ? (
-                <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" />
               ) : (
-                <XCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                <XCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
               )}
               <div>
                 <p className="font-bold text-sm">{testModalResult.result.message}</p>
-                <p className="text-[11px] opacity-80 mt-1">
-                  Latência registrada: {testModalResult.result.latencyMs}ms | Fonte: {testModalResult.result.source}
-                </p>
+                {testModalResult.result.latencyMs !== undefined && (
+                  <p className="text-[11px] opacity-80 mt-1">
+                    Tempo de resposta: {testModalResult.result.latencyMs}ms
+                  </p>
+                )}
               </div>
             </div>
 
-            {testModalResult.result.details && (
+            {testModalResult.result.details && Object.keys(testModalResult.result.details).length > 0 && (
               <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-                <p className="font-semibold text-slate-400 mb-1">Payload de Diagnóstico</p>
+                <p className="font-semibold text-slate-400 mb-1.5">Informações do Diagnóstico</p>
                 <pre className="text-[10px] font-mono text-indigo-300 overflow-x-auto">
                   {JSON.stringify(testModalResult.result.details, null, 2)}
                 </pre>
