@@ -41,6 +41,8 @@ export async function GET() {
         status: true,
         externalAccountName: true,
         lastValidatedAt: true,
+        lastErrorMessage: true,
+        lastErrorCode: true,
       },
     });
 

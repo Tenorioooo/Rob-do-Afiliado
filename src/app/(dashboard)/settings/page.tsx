@@ -19,7 +19,9 @@ import {
   Lock,
   Loader2,
   ExternalLink,
+  AlertTriangle,
 } from "lucide-react";
+import { ProviderLogo } from "@/components/ui/provider-logo";
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -362,60 +364,170 @@ export default function SettingsPage() {
       )}
 
       {/* TAB CONTENT: INTEGRATIONS */}
-      {activeTab === "integrations" && (
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 backdrop-blur-xl max-w-3xl space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-bold text-white mb-1">Canais & Marketplaces Conectados</h3>
-              <p className="text-xs text-slate-400">Status das conexões reais cadastradas no banco de dados.</p>
-            </div>
-            <Link href="/integrations">
-              <Button variant="glow" size="sm" className="gap-1 text-xs font-semibold">
-                Central de Integrações
-                <ExternalLink className="w-3.5 h-3.5" />
-              </Button>
-            </Link>
-          </div>
+      {activeTab === "integrations" && (() => {
+        const connectedCount = connections.filter(
+          (c) =>
+            !c.lastErrorMessage &&
+            c.status !== "ERROR" &&
+            c.status !== "FAILED" &&
+            (c.status === "CONNECTED" || c.status === "VERIFIED_REAL" || c.status === "ACTIVE")
+        ).length;
 
-          <div className="space-y-3 pt-2">
-            {connections.length === 0 ? (
-              <div className="p-6 rounded-2xl bg-slate-950/70 border border-slate-800 text-center">
-                <p className="text-xs text-slate-400 mb-3">Nenhum canal ou marketplace conectado ainda.</p>
-                <Link href="/integrations">
-                  <Button variant="outline" size="sm" className="text-xs">
-                    Conectar Novo Canal ou Marketplace
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              connections.map((conn, i) => (
-                <div
-                  key={i}
-                  className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 flex items-center justify-between"
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-white text-sm">{conn.provider.replace("_", " ")}</span>
-                      <Badge variant={conn.status === "CONNECTED" ? "success" : "outline"}>
-                        {conn.status === "CONNECTED" ? "Conectado" : conn.status}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-1">
-                      {conn.externalAccountName ? `Conta: ${conn.externalAccountName}` : `Tipo: ${conn.type}`}
-                      {conn.lastValidatedAt && ` • Verificado em: ${new Date(conn.lastValidatedAt).toLocaleDateString()}`}
-                    </p>
+        const errorCount = connections.filter(
+          (c) => c.status === "ERROR" || c.status === "FAILED" || !!c.lastErrorMessage
+        ).length;
+
+        const getProviderName = (provider: string) => {
+          switch (provider.toUpperCase()) {
+            case "TELEGRAM":
+              return "Telegram";
+            case "DISCORD":
+              return "Discord";
+            case "WHATSAPP":
+              return "WhatsApp";
+            case "MERCADO_LIVRE":
+            case "MERCADOLIVRE":
+              return "Mercado Livre";
+            case "SHOPEE":
+              return "Shopee";
+            case "AMAZON":
+              return "Amazon";
+            default:
+              return provider.replace("_", " ");
+          }
+        };
+
+        return (
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-6 sm:p-8 backdrop-blur-xl max-w-3xl space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-3">
+                  <h3 className="text-base font-bold text-white">Canais & Marketplaces Conectados</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      {connectedCount} Conectado{connectedCount === 1 ? "" : "s"}
+                    </span>
+                    {errorCount > 0 && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30 animate-pulse">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                        {errorCount} com Falha
+                      </span>
+                    )}
                   </div>
+                </div>
+                <p className="text-xs text-slate-400 mt-1">Status em tempo real das conexões de canais e lojas integradas.</p>
+              </div>
+              <Link href="/integrations">
+                <Button variant="glow" size="sm" className="gap-1.5 text-xs font-semibold shrink-0">
+                  <span>Central de Integrações</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Button>
+              </Link>
+            </div>
+
+            <div className="space-y-3 pt-1">
+              {connections.length === 0 ? (
+                <div className="p-8 rounded-2xl bg-slate-950/70 border border-slate-800 text-center space-y-3">
+                  <p className="text-xs text-slate-400">Nenhum canal ou marketplace conectado no momento.</p>
                   <Link href="/integrations">
                     <Button variant="outline" size="sm" className="text-xs">
-                      Gerenciar
+                      Conectar Novo Canal ou Marketplace
                     </Button>
                   </Link>
                 </div>
-              ))
-            )}
+              ) : (
+                connections.map((conn, i) => {
+                  const isError = conn.status === "ERROR" || conn.status === "FAILED" || !!conn.lastErrorMessage;
+                  const isConnected = !isError && (conn.status === "CONNECTED" || conn.status === "VERIFIED_REAL" || conn.status === "ACTIVE");
+                  const isConnecting = conn.status === "CONNECTING" || conn.status === "PENDING";
+
+                  return (
+                    <div
+                      key={conn.id || i}
+                      className={`p-4 rounded-2xl border transition-all ${
+                        isError
+                          ? "bg-rose-950/20 border-rose-500/40 shadow-lg shadow-rose-950/10"
+                          : "bg-slate-950/70 border-slate-800 hover:border-slate-700"
+                      }`}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-3.5">
+                          <div className="w-11 h-11 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0 overflow-hidden p-1.5 shadow-inner">
+                            <ProviderLogo provider={conn.provider} size="md" />
+                          </div>
+
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-bold text-white text-sm">
+                                {getProviderName(conn.provider)}
+                              </h4>
+
+                              {isError ? (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                                  Falha na Conexão
+                                </span>
+                              ) : isConnected ? (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                  Conectado
+                                </span>
+                              ) : isConnecting ? (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                                  Conectando
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+                                  Desconectado
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="text-xs text-slate-400 mt-1">
+                              {conn.externalAccountName
+                                ? `Conta: ${conn.externalAccountName}`
+                                : `Tipo: ${conn.type === "CHANNEL" ? "Canal de Distribuição" : "Marketplace"}`}
+                              {conn.lastValidatedAt && (
+                                <> • Verificado em: <span className="text-slate-300 font-mono">{new Date(conn.lastValidatedAt).toLocaleDateString()}</span></>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+
+                        <Link href={`/integrations/${conn.id}`}>
+                          <Button
+                            variant={isError ? "destructive" : "outline"}
+                            size="sm"
+                            className="text-xs font-semibold shrink-0 w-full sm:w-auto"
+                          >
+                            {isError ? "Resolver Falha" : "Gerenciar"}
+                          </Button>
+                        </Link>
+                      </div>
+
+                      {/* Error Banner Card */}
+                      {isError && (
+                        <div className="mt-3 p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 text-xs text-rose-300 flex items-start gap-2.5">
+                          <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <strong className="block text-rose-200">Falha / Atenção na Autenticação</strong>
+                            <p className="text-[11px] text-rose-300/90 mt-0.5">
+                              {conn.lastErrorMessage ||
+                                "A conexão perdeu a permissão ou as credenciais expiraram. Clique em Resolver Falha para revalidar."}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
