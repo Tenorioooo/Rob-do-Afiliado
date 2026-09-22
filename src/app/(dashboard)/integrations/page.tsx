@@ -25,7 +25,6 @@ import {
   ShieldAlert,
   Play,
   OctagonAlert,
-  Table,
   MessageSquare,
   Sparkles,
   ChevronRight,
@@ -84,31 +83,6 @@ interface Connection {
   lastErrorMessage: string | null;
 }
 
-interface MatrixItem {
-  providerId: string;
-  providerName: string;
-  type: string;
-  capability: string;
-  label: string;
-  officialEvidence: boolean;
-  officialSourceTitle: string;
-  officialSourceUrl: string;
-  authType: string;
-  credentialsRequired: string[];
-  hasCredentials: boolean;
-  requiresApproval: boolean;
-  accountRequirements: string;
-  healthCheckPassed: boolean;
-  realTestPassed: boolean;
-  webhookConfigured: boolean;
-  isVerifiedReal: boolean;
-  enabledForAutopilot: boolean;
-  isKillSwitchActive: boolean;
-  status: string;
-  verifiedAt: string;
-  limitationsAndNotes: string;
-}
-
 interface DispatchConfig {
   realDispatchEnabled: boolean;
   providerSwitches: Record<string, boolean>;
@@ -121,10 +95,9 @@ export default function IntegrationsPage() {
 
   const [providers, setProviders] = useState<ProviderItem[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [matrixData, setMatrixData] = useState<MatrixItem[]>([]);
   const [dispatchConfig, setDispatchConfig] = useState<DispatchConfig | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"all" | "marketplaces" | "channels" | "connected" | "matrix">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "marketplaces" | "channels" | "connected">("all");
 
   // Emergency Modal
   const [emergencyModalOpen, setEmergencyModalOpen] = useState(false);
@@ -207,7 +180,6 @@ export default function IntegrationsPage() {
 
       if (matrixRes.ok) {
         const mData = await matrixRes.json();
-        setMatrixData(mData.matrix || []);
         setDispatchConfig(mData.dispatchConfig || null);
       }
     } catch (err) {
@@ -550,121 +522,10 @@ export default function IntegrationsPage() {
         >
           Conectadas ({connections.length})
         </button>
-        <button
-          onClick={() => setActiveTab("matrix")}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
-            activeTab === "matrix" ? "bg-purple-600 text-white shadow-sm" : "text-purple-400 hover:text-purple-200 hover:bg-purple-950/30"
-          }`}
-        >
-          <Table className="w-3.5 h-3.5" /> Matriz de Capacidades ({matrixData.length})
-        </button>
       </div>
 
       {/* Main Content Area */}
-      {activeTab === "matrix" ? (
-        /* Matrix Table View */
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-md">
-          <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <Table className="w-4 h-4 text-purple-400" /> Matriz de Capacidades Técnicas
-              </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Rastreabilidade de cada capacidade oficial, suporte no Brasil e evidência técnica auditada.
-              </p>
-            </div>
-            <span className="text-xs text-slate-500 font-mono">{matrixData.length} capacidades</span>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950/80 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">Provedor</th>
-                  <th className="py-3 px-4">Capacidade</th>
-                  <th className="py-3 px-4 text-center">Evidência</th>
-                  <th className="py-3 px-4">Auth</th>
-                  <th className="py-3 px-4 text-center">Credenciais</th>
-                  <th className="py-3 px-4 text-center">Health Check</th>
-                  <th className="py-3 px-4 text-center">Teste Real</th>
-                  <th className="py-3 px-4 text-center">Webhook</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Última Verificação</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {matrixData.map((item, idx) => (
-                  <tr key={`${item.providerId}_${item.capability}_${idx}`} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-3 px-4 font-bold text-white whitespace-nowrap">
-                      {item.providerName}
-                    </td>
-                    <td className="py-3 px-4 font-medium text-slate-300">
-                      <div>{item.label}</div>
-                      <span className="text-[10px] text-slate-500 font-mono">{item.capability}</span>
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      {item.officialEvidence ? (
-                        <span className="text-emerald-400 font-bold" title={item.officialSourceTitle}>✓</span>
-                      ) : (
-                        <span className="text-slate-600">—</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">
-                      {item.authType}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      {item.hasCredentials ? (
-                        <span className="text-emerald-400 font-bold">✓</span>
-                      ) : (
-                        <span className="text-amber-400 font-mono text-[10px]">Pendente</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      {item.healthCheckPassed ? (
-                        <span className="text-emerald-400 font-bold">✓</span>
-                      ) : (
-                        <span className="text-slate-600">—</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      {item.realTestPassed ? (
-                        <span className="text-emerald-400 font-bold">✓</span>
-                      ) : (
-                        <span className="text-slate-600">—</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      {item.webhookConfigured ? (
-                        <span className="text-emerald-400 font-bold">✓</span>
-                      ) : (
-                        <span className="text-slate-600">—</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
-                          item.status === "VERIFIED_REAL"
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
-                            : item.status === "REQUIRES_APPROVAL"
-                            ? "bg-amber-500/10 text-amber-400 border border-amber-500/30"
-                            : item.status === "REQUIRES_CREDENTIALS"
-                            ? "bg-blue-500/10 text-blue-400 border border-blue-500/30"
-                            : "bg-slate-800 text-slate-400 border border-slate-700"
-                        }`}
-                      >
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-slate-500 text-[11px] whitespace-nowrap">
-                      {item.verifiedAt}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : activeTab === "connected" && filteredProviders.length === 0 ? (
+      {activeTab === "connected" && filteredProviders.length === 0 ? (
         /* Empty State for Connected Tab */
         <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-12 text-center max-w-2xl mx-auto shadow-lg">
           <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mx-auto mb-4">
