@@ -30,6 +30,7 @@ import {
   ArrowRight,
   Layers,
   ChevronDown,
+  Trash2,
 } from "lucide-react";
 import { OfferStyle, ChannelPreviewType, OfferQueuePriority } from "@/domain/offers/types";
 
@@ -87,6 +88,10 @@ export default function OffersPage() {
   const [platformFilter, setPlatformFilter] = useState("ALL");
   const [search, setSearch] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Delete Offer Modal
+  const [offerToDelete, setOfferToDelete] = useState<OfferItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Selected Offer Modal for Editing & Multi-Channel Preview
   const [selectedOffer, setSelectedOffer] = useState<OfferItem | null>(null);
@@ -245,6 +250,34 @@ export default function OffersPage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Erro ao cancelar";
       toast({ title: "Erro", message: msg, type: "error" });
+    }
+  };
+
+  const handleDeleteOffer = async (offerId: string) => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/offers/${offerId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao excluir oferta");
+
+      toast({
+        title: "Oferta Excluída!",
+        message: "A oferta foi removida com sucesso.",
+        type: "success",
+      });
+
+      setOfferToDelete(null);
+      if (selectedOffer && selectedOffer.id === offerId) {
+        setSelectedOffer(null);
+      }
+      fetchOffers();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erro ao excluir oferta";
+      toast({ title: "Falha ao excluir", message: msg, type: "error" });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -653,6 +686,17 @@ export default function OffersPage() {
                       <span>+ Fila</span>
                     </Button>
                   )}
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setOfferToDelete(offer)}
+                    className="text-xs gap-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-950/30"
+                    title="Excluir Oferta"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Excluir</span>
+                  </Button>
                 </div>
               </div>
             );
@@ -834,6 +878,18 @@ export default function OffersPage() {
                 >
                   <Copy className="w-3.5 h-3.5" />
                   Copiar Oferta Completa
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setOfferToDelete(selectedOffer);
+                    setSelectedOffer(null);
+                  }}
+                  className="text-xs gap-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-950/30"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Excluir Oferta
                 </Button>
               </div>
 
@@ -1084,6 +1140,56 @@ export default function OffersPage() {
               </Button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {offerToDelete && (
+        <Modal
+          isOpen={!!offerToDelete}
+          onClose={() => !isDeleting && setOfferToDelete(null)}
+          title="Excluir Oferta"
+          size="sm"
+        >
+          <div className="space-y-4 text-xs">
+            <p className="text-slate-300 leading-relaxed">
+              Tem certeza que deseja excluir esta oferta permanentemente?
+            </p>
+
+            <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+              <strong className="text-white line-clamp-2">{offerToDelete.title}</strong>
+              <div className="text-[11px] text-slate-400">
+                Produto: {offerToDelete.product.title}
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-rose-950/30 border border-rose-500/20 text-rose-300 text-[11px]">
+              ⚠️ Esta ação é irreversível e removerá todos os dados desta cópia gerada.
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={isDeleting}
+                onClick={() => setOfferToDelete(null)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                isLoading={isDeleting}
+                onClick={() => handleDeleteOffer(offerToDelete.id)}
+                className="gap-1.5 font-semibold"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Sim, Excluir
+              </Button>
+            </div>
+          </div>
         </Modal>
       )}
     </div>

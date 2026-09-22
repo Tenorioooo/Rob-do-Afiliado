@@ -80,3 +80,23 @@ export async function PATCH(
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
+    await OfferService.deleteOffer(params.id, session.userId);
+
+    return NextResponse.json({ success: true, message: "Oferta excluída com sucesso" });
+  } catch (error: unknown) {
+    console.error("[API:Offers:Delete:Error]", error);
+    const msg = error instanceof Error ? error.message : "Erro ao excluir oferta";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}

@@ -294,6 +294,25 @@ export class OfferService {
   }
 
   /**
+   * Delete an offer.
+   */
+  static async deleteOffer(offerId: string, userId: string) {
+    const offer = await prisma.offer.findFirst({
+      where: { id: offerId, userId },
+    });
+
+    if (!offer) {
+      throw new Error("Oferta não encontrada.");
+    }
+
+    await prisma.offer.delete({
+      where: { id: offerId },
+    });
+
+    return { success: true };
+  }
+
+  /**
    * Get user offers with filters and pagination.
    */
   static async getUserOffers(
