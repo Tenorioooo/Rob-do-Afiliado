@@ -552,17 +552,17 @@ export default function OffersPage() {
             return (
               <div
                 key={offer.id}
-                className="group p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 transition-all backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                className="group p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 transition-all backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full overflow-hidden"
               >
                 {/* Product & Copy Details */}
-                <div className="flex items-start gap-3.5 flex-1 min-w-0">
+                <div className="flex items-start gap-3.5 flex-1 min-w-0 w-full">
                   <img
                     src={offer.product.imageUrl}
                     alt={offer.product.title}
                     className="w-14 h-14 rounded-xl object-cover bg-slate-950 border border-slate-800 shrink-0"
                   />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5">
                       <Badge
                         variant={
                           offer.product.platform === "SHOPEE"
@@ -604,14 +604,14 @@ export default function OffersPage() {
                       )}
                     </div>
 
-                    <h4 className="text-sm font-bold text-white truncate group-hover:text-primary-300 transition-colors">
+                    <h4 className="text-sm font-bold text-white line-clamp-1 group-hover:text-primary-300 transition-colors break-words">
                       {offer.title}
                     </h4>
-                    <p className="text-xs text-slate-400 truncate mt-0.5 max-w-2xl">
+                    <p className="text-xs text-slate-400 line-clamp-2 mt-1 break-words leading-relaxed">
                       {offer.body}
                     </p>
 
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[11px] text-slate-500 mt-2 font-mono">
+                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-slate-500 mt-2 font-mono">
                       <span>Preço: {formatCurrency(offer.product.currentPrice)}</span>
                       <span>•</span>
                       <span>Comissão: {formatCurrency(offer.product.commissionAmount)}</span>
@@ -839,7 +839,7 @@ export default function OffersPage() {
 
                 {/* Simulated Channel Message Bubble */}
                 <div
-                  className={`rounded-2xl p-5 border text-xs font-sans whitespace-pre-line leading-relaxed shadow-xl ${
+                  className={`rounded-2xl p-4 sm:p-5 border text-xs font-sans whitespace-pre-wrap leading-relaxed shadow-xl break-words overflow-hidden ${
                     previewChannel === "WHATSAPP"
                       ? "bg-[#0b141a] border-[#222d34] text-[#e9edef]"
                       : previewChannel === "TELEGRAM"
@@ -849,22 +849,22 @@ export default function OffersPage() {
                       : "bg-slate-950 border-slate-800 text-slate-200"
                   }`}
                 >
-                  <div className="font-bold text-sm mb-2 text-primary-300">{selectedOffer.title}</div>
-                  <div className="mb-3">{selectedOffer.body}</div>
-                  <div className="font-semibold text-emerald-400 mb-1">{selectedOffer.cta}</div>
+                  <div className="font-bold text-sm mb-2 text-primary-300 break-words">{selectedOffer.title}</div>
+                  <div className="mb-3 break-words whitespace-pre-wrap">{selectedOffer.body}</div>
+                  <div className="font-semibold text-emerald-400 mb-1 break-words">{selectedOffer.cta}</div>
                   <div className="font-mono text-[11px] text-cyan-400 break-all underline">
                     {selectedOffer.affiliateLink?.affiliateUrl || selectedOffer.product.url}
                   </div>
                 </div>
 
                 {/* Anti-Fabrication Verified Claims Box */}
-                <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2 break-words overflow-hidden">
+                  <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-300">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                     <span>Validação Anti-Fabricação</span>
                     <Badge variant="success" size="sm">ZERO CLAIMS FALSOS</Badge>
                   </div>
-                  <div className="text-[11px] text-slate-400">
+                  <div className="text-[11px] text-slate-400 break-words leading-relaxed">
                     Preço de {formatCurrency(selectedOffer.product.currentPrice)}, desconto de {selectedOffer.product.discountPercent}% e atributos validados diretamente contra o banco de dados.
                   </div>
                 </div>
@@ -1004,12 +1004,12 @@ export default function OffersPage() {
                   <p className="text-[11px] text-slate-300 leading-relaxed">
                     Você está prestes a publicar esta oferta em um canal <strong>REAL</strong> do Telegram.
                   </p>
-                  <div className="bg-slate-950/60 p-2.5 rounded-lg border border-slate-800 space-y-1 text-[11px] text-slate-300">
-                    <div><strong>Canal:</strong> {selectedChan?.name}</div>
-                    <div><strong>Destino:</strong> {selectedChan?.destination || selectedChan?.identifier}</div>
-                    <div><strong>Produto:</strong> {dispatchModalOffer.product.title}</div>
+                  <div className="bg-slate-950/60 p-2.5 rounded-lg border border-slate-800 space-y-1 text-[11px] text-slate-300 break-words overflow-hidden">
+                    <div className="break-words"><strong>Canal:</strong> {selectedChan?.name}</div>
+                    <div className="break-words"><strong>Destino:</strong> {selectedChan?.destination || selectedChan?.identifier}</div>
+                    <div className="break-words"><strong>Produto:</strong> {dispatchModalOffer.product.title}</div>
                     <div><strong>Preço:</strong> {formatCurrency(dispatchModalOffer.product.currentPrice)}</div>
-                    <div><strong>Link:</strong> {dispatchModalOffer.affiliateLink?.affiliateUrl || dispatchModalOffer.product.url}</div>
+                    <div className="break-all"><strong>Link:</strong> {dispatchModalOffer.affiliateLink?.affiliateUrl || dispatchModalOffer.product.url}</div>
                     <div><strong>Estilo:</strong> {dispatchModalOffer.style}</div>
                   </div>
                   <p className="text-[10px] text-amber-400/90 font-medium">
@@ -1107,7 +1107,7 @@ export default function OffersPage() {
               <label className="text-xs font-semibold text-slate-300 block mb-1.5">
                 Nível de Prioridade na Fila
               </label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {(["LOW", "NORMAL", "HIGH", "URGENT"] as OfferQueuePriority[]).map((pri) => (
                   <button
                     key={pri}
