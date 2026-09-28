@@ -17,6 +17,7 @@ import {
 
 export default function PlanPage() {
   const { toast } = useToast();
+  const currentPlan = OFFICIAL_PLANS.find((p) => p.code === "PRO") || OFFICIAL_PLANS[1];
 
   const handlePlanAction = (planName: string) => {
     toast({
@@ -55,27 +56,21 @@ export default function PlanPage() {
               <span className="text-xs font-bold text-primary-300 uppercase tracking-wider">
                 Plano em Vigor
               </span>
-              <Badge variant="default">R$ 197 / mês</Badge>
+              <Badge variant="glow" size="md">R$ {currentPlan.price} / mês</Badge>
             </div>
 
-            <h3 className="text-2xl font-extrabold text-white mb-2">Plano PRO</h3>
+            <h3 className="text-2xl font-extrabold text-white mb-2">{currentPlan.name}</h3>
             <p className="text-xs text-slate-300 leading-relaxed mb-6">
-              Acesso total ao robô autônomo, geração neural de copy sem limites e canais ilimitados de distribuição.
+              {currentPlan.description}
             </p>
 
             <div className="space-y-2.5 pt-4 border-t border-slate-800 text-xs text-slate-200">
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-400" />
-                <span>Varredura contínua 24h em Shopee, Mercado Livre e Amazon</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-400" />
-                <span>Canais ilimitados de Telegram e WhatsApp</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-400" />
-                <span>Opportunity Score e Inteligência de Horários</span>
-              </div>
+              {currentPlan.features.map((feat, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>{feat}</span>
+                </div>
+              ))}
             </div>
           </div>
 
