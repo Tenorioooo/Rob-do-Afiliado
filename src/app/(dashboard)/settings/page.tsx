@@ -151,14 +151,14 @@ export default function SettingsPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-extrabold text-white tracking-tight">Configurações</h2>
+        <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Configurações</h2>
         <p className="text-xs sm:text-sm text-slate-400 mt-1">
           Gerencie seu perfil, segurança de acesso, preferências e integrações da plataforma.
         </p>
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
+      <div className="flex items-center gap-1.5 overflow-x-auto border-b border-slate-800 pb-3 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
         {[
           { id: "profile", label: "Perfil", icon: User },
           { id: "security", label: "Segurança", icon: Shield },
@@ -172,13 +172,13 @@ export default function SettingsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition-all ${
                 isActive
                   ? "bg-primary text-white shadow-md shadow-primary/25"
-                  : "text-slate-400 hover:text-white hover:bg-slate-900"
+                  : "text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent"
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-4 h-4 shrink-0" />
               <span>{tab.label}</span>
             </button>
           );
@@ -274,7 +274,7 @@ export default function SettingsPage() {
             <h4 className="text-sm font-bold text-white mb-1">Sessões Ativas</h4>
             <p className="text-xs text-slate-400 mb-4">Dispositivos conectados à sua conta.</p>
 
-            <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold text-white">Navegador Atual (Windows 11)</p>
                 <p className="text-[10px] text-emerald-400">Sessão ativa agora • IP 189.45.xx.xx</p>
@@ -289,7 +289,7 @@ export default function SettingsPage() {
                     type: "info",
                   })
                 }
-                className="text-xs"
+                className="text-xs w-full sm:w-auto"
               >
                 Desconectar Outros
               </Button>

@@ -272,10 +272,10 @@ export default function ChannelsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-2xl font-extrabold text-white tracking-tight">Canais de Distribuição</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Canais de Distribuição</h2>
             <Badge variant="purple" size="md">Disparo Ativo</Badge>
           </div>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
@@ -283,13 +283,13 @@ export default function ChannelsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="outline"
             size="sm"
             onClick={fetchChannels}
             isLoading={loading}
-            className="gap-2 text-xs"
+            className="gap-2 text-xs h-8"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Atualizar</span>
@@ -299,9 +299,9 @@ export default function ChannelsPage() {
             variant="glow"
             size="sm"
             onClick={openCreateModal}
-            className="gap-2 text-xs font-semibold"
+            className="gap-2 text-xs font-semibold h-8"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             <span>Novo Canal</span>
           </Button>
         </div>

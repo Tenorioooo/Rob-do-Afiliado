@@ -407,50 +407,50 @@ export default function AutopilotPage() {
       )}
 
       {/* Main KPI Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-        <div className="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
-          <span className="text-[11px] text-slate-400">Próxima Execução</span>
-          <span className="text-sm font-bold text-white flex items-center gap-1 mt-1">
-            <Clock className="w-3.5 h-3.5 text-primary" />
-            {config?.nextRunAt ? formatDate(config.nextRunAt).split(" ")[1] : "A cada 30m"}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-3">
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
+          <span className="text-[10px] sm:text-[11px] text-slate-400">Próxima Execução</span>
+          <span className="text-xs sm:text-sm font-bold text-white flex items-center gap-1 mt-1">
+            <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span className="truncate">{config?.nextRunAt ? formatDate(config.nextRunAt).split(" ")[1] : "A cada 30m"}</span>
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
-          <span className="text-[11px] text-slate-400">Último Scan</span>
-          <span className="text-sm font-bold text-white mt-1">
-            {config?.lastRunAt ? formatDate(config.lastRunAt).split(" ")[1] : "Ainda não rodou"}
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
+          <span className="text-[10px] sm:text-[11px] text-slate-400">Último Scan</span>
+          <span className="text-xs sm:text-sm font-bold text-white mt-1 truncate">
+            {config?.lastRunAt ? formatDate(config.lastRunAt).split(" ")[1] : "Ainda não"}
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
-          <span className="text-[11px] text-slate-400">Ciclos Executados</span>
-          <span className="text-xl font-bold text-white mt-1">{stats.totalRuns}</span>
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
+          <span className="text-[10px] sm:text-[11px] text-slate-400">Ciclos Executados</span>
+          <span className="text-lg sm:text-xl font-bold text-white mt-1">{stats.totalRuns}</span>
         </div>
 
-        <div className="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
-          <span className="text-[11px] text-slate-400">Analisados</span>
-          <span className="text-xl font-bold text-indigo-400 mt-1">{formatNumber(stats.productsAnalyzed)}</span>
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
+          <span className="text-[10px] sm:text-[11px] text-slate-400">Analisados</span>
+          <span className="text-lg sm:text-xl font-bold text-indigo-400 mt-1">{formatNumber(stats.productsAnalyzed)}</span>
         </div>
 
-        <div className="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
-          <span className="text-[11px] text-slate-400">Oportunidades</span>
-          <span className="text-xl font-bold text-emerald-400 mt-1">{stats.opportunitiesQualified}</span>
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
+          <span className="text-[10px] sm:text-[11px] text-slate-400">Oportunidades</span>
+          <span className="text-lg sm:text-xl font-bold text-emerald-400 mt-1">{stats.opportunitiesQualified}</span>
         </div>
 
-        <div className="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
-          <span className="text-[11px] text-slate-400">Ofertas Geradas</span>
-          <span className="text-xl font-bold text-primary-300 mt-1">{stats.offersGenerated}</span>
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
+          <span className="text-[10px] sm:text-[11px] text-slate-400">Ofertas Geradas</span>
+          <span className="text-lg sm:text-xl font-bold text-primary-300 mt-1">{stats.offersGenerated}</span>
         </div>
 
-        <div className="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
-          <span className="text-[11px] text-slate-400">Publicações</span>
-          <span className="text-xl font-bold text-cyan-400 mt-1">{stats.publicationsPublished}</span>
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
+          <span className="text-[10px] sm:text-[11px] text-slate-400">Publicações</span>
+          <span className="text-lg sm:text-xl font-bold text-cyan-400 mt-1">{stats.publicationsPublished}</span>
         </div>
 
-        <div className="p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
-          <span className="text-[11px] text-slate-400">Taxa de Sucesso</span>
-          <span className="text-xl font-bold text-emerald-400 mt-1">{stats.successRate}%</span>
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col justify-between">
+          <span className="text-[10px] sm:text-[11px] text-slate-400">Taxa de Sucesso</span>
+          <span className="text-lg sm:text-xl font-bold text-emerald-400 mt-1">{stats.successRate}%</span>
         </div>
       </div>
 
@@ -588,9 +588,9 @@ export default function AutopilotPage() {
             {/* Left Column: Marketplace Platforms & Categories */}
             <div className="space-y-6">
               {/* Platforms */}
-              <div className="p-6 rounded-3xl border border-slate-800 bg-slate-900/60 backdrop-blur-md space-y-4">
+              <div className="p-4 sm:p-6 rounded-3xl border border-slate-800 bg-slate-900/60 backdrop-blur-md space-y-4">
                 <h4 className="text-sm font-bold text-white">Plataformas Monitoradas</h4>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                   {[
                     { id: "SHOPEE", label: "Shopee" },
                     { id: "MERCADO_LIVRE", label: "Mercado Livre" },
@@ -602,7 +602,7 @@ export default function AutopilotPage() {
                         key={plat.id}
                         type="button"
                         onClick={() => togglePlatform(plat.id)}
-                        className={`p-3.5 rounded-2xl border text-xs font-semibold flex items-center justify-between transition-all ${
+                        className={`p-3 rounded-2xl border text-xs font-semibold flex items-center justify-between transition-all ${
                           isChecked
                             ? "bg-primary/20 border-primary text-white"
                             : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"

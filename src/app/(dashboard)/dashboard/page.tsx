@@ -132,31 +132,31 @@ export default function DashboardPage() {
         </div>
 
         {/* Dynamic Stats Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
-          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-            <span className="text-xs text-slate-400 block mb-1">Produtos Analisados</span>
-            <span className="text-2xl font-bold text-white">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mt-4 sm:mt-6">
+          <div className="p-3 sm:p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+            <span className="text-[11px] sm:text-xs text-slate-400 block mb-0.5 sm:mb-1">Produtos Analisados</span>
+            <span className="text-lg sm:text-2xl font-bold text-white">
               {isLoading ? "..." : formatNumber(stats.totalProductsAnalyzed || 0)}
             </span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-            <span className="text-xs text-slate-400 block mb-1">Oportunidades Qualificadas</span>
-            <span className="text-2xl font-bold text-indigo-400">
+          <div className="p-3 sm:p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+            <span className="text-[11px] sm:text-xs text-slate-400 block mb-0.5 sm:mb-1">Oportunidades Qualificadas</span>
+            <span className="text-lg sm:text-2xl font-bold text-indigo-400">
               {isLoading ? "..." : stats.qualifiedOpportunities}
             </span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-            <span className="text-xs text-slate-400 block mb-1">Score Médio</span>
-            <span className="text-2xl font-bold text-emerald-400">
+          <div className="p-3 sm:p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+            <span className="text-[11px] sm:text-xs text-slate-400 block mb-0.5 sm:mb-1">Score Médio</span>
+            <span className="text-lg sm:text-2xl font-bold text-emerald-400">
               {isLoading ? "..." : `${stats.avgScore}/100`}
             </span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-            <span className="text-xs text-slate-400 block mb-1">Taxa de Sucesso no Disparo</span>
-            <span className="text-2xl font-bold text-cyan-400">
+          <div className="p-3 sm:p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+            <span className="text-[11px] sm:text-xs text-slate-400 block mb-0.5 sm:mb-1">Taxa de Sucesso Disparo</span>
+            <span className="text-lg sm:text-2xl font-bold text-cyan-400">
               {isLoading ? "..." : `${stats.successRate ?? 100}%`}
             </span>
           </div>

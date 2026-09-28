@@ -159,10 +159,10 @@ export default function LinksPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-2xl font-extrabold text-white tracking-tight">Meus Links</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Meus Links</h2>
             <Badge variant="glow" size="md">Rastreamento UTM Ativo</Badge>
           </div>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
@@ -170,20 +170,20 @@ export default function LinksPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="secondary"
             size="sm"
             onClick={() => setNewLinkModal(true)}
-            className="gap-2 text-xs font-semibold"
+            className="gap-2 text-xs font-semibold h-8"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             <span>Criar Link</span>
           </Button>
 
           <Link href="/radar">
-            <Button variant="glow" size="sm" className="gap-2 text-xs font-semibold">
-              <Sparkles className="w-4 h-4" />
+            <Button variant="glow" size="sm" className="gap-2 text-xs font-semibold h-8">
+              <Sparkles className="w-3.5 h-3.5" />
               <span>Radar de Ofertas</span>
             </Button>
           </Link>

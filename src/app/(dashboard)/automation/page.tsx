@@ -254,10 +254,10 @@ export default function AutomationPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-2xl font-extrabold text-white tracking-tight">Regras de Automação</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Regras de Automação</h2>
             <Badge variant="purple" size="md">Automation Engine</Badge>
           </div>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
@@ -265,13 +265,13 @@ export default function AutomationPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="outline"
             size="sm"
             onClick={fetchData}
             isLoading={loading}
-            className="gap-2 text-xs"
+            className="gap-2 text-xs h-8"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Atualizar</span>
@@ -282,9 +282,9 @@ export default function AutomationPage() {
             size="sm"
             onClick={openCreateModal}
             disabled={channels.length === 0}
-            className="gap-2 text-xs font-semibold"
+            className="gap-2 text-xs font-semibold h-8"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             <span>Nova Regra</span>
           </Button>
         </div>
@@ -493,7 +493,7 @@ export default function AutomationPage() {
             </div>
 
             {/* Criteria: Score, Commission, Discount */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <div>
                 <label className="block font-semibold text-slate-300 mb-1">Score Mín. (0-100)</label>
                 <input
@@ -560,7 +560,7 @@ export default function AutomationPage() {
             </div>
 
             {/* Copy Style & Operating Hours */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div>
                 <label className="block font-semibold text-slate-300 mb-1">Estilo de Copy</label>
                 <select
@@ -597,7 +597,7 @@ export default function AutomationPage() {
             </div>
 
             {/* Daily Cap & Interval */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div>
                 <label className="block font-semibold text-slate-300 mb-1">Máx. Diário (Posts)</label>
                 <input

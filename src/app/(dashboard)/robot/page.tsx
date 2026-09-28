@@ -235,31 +235,31 @@ export default function RobotPage() {
       )}
 
       {/* Operational Indicators */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl border border-slate-800 bg-slate-900/60">
-          <span className="text-xs text-slate-400 block mb-1">Última Varredura</span>
-          <span className="text-sm font-bold text-white flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-primary" />
-            {latestScan?.finishedAt ? formatDate(latestScan.finishedAt) : "Nenhum scan ainda"}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-800 bg-slate-900/60">
+          <span className="text-[11px] sm:text-xs text-slate-400 block mb-0.5 sm:mb-1">Última Varredura</span>
+          <span className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5 truncate">
+            <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span className="truncate">{latestScan?.finishedAt ? formatDate(latestScan.finishedAt) : "Nenhum scan"}</span>
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl border border-slate-800 bg-slate-900/60">
-          <span className="text-xs text-slate-400 block mb-1">Total de Scans Realizados</span>
-          <span className="text-lg font-bold text-white">{scans.length} execuções</span>
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-800 bg-slate-900/60">
+          <span className="text-[11px] sm:text-xs text-slate-400 block mb-0.5 sm:mb-1">Total de Scans</span>
+          <span className="text-base sm:text-lg font-bold text-white">{scans.length} execuções</span>
         </div>
 
-        <div className="p-4 rounded-2xl border border-slate-800 bg-slate-900/60">
-          <span className="text-xs text-slate-400 block mb-1">Último Total Analisado</span>
-          <span className="text-lg font-bold text-indigo-400">
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-800 bg-slate-900/60">
+          <span className="text-[11px] sm:text-xs text-slate-400 block mb-0.5 sm:mb-1">Último Analisado</span>
+          <span className="text-base sm:text-lg font-bold text-indigo-400">
             {latestScan?.totalAnalyzed || 0} produtos
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl border border-slate-800 bg-slate-900/60">
-          <span className="text-xs text-slate-400 block mb-1">Últimas Qualificadas</span>
-          <span className="text-lg font-bold text-emerald-400">
-            {latestScan?.totalQualified || 0} oportunidades
+        <div className="p-3 sm:p-4 rounded-2xl border border-slate-800 bg-slate-900/60">
+          <span className="text-[11px] sm:text-xs text-slate-400 block mb-0.5 sm:mb-1">Qualificadas</span>
+          <span className="text-base sm:text-lg font-bold text-emerald-400">
+            {latestScan?.totalQualified || 0} itens
           </span>
         </div>
       </div>

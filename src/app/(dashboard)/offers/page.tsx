@@ -403,10 +403,10 @@ export default function OffersPage() {
   return (
     <div className="space-y-8">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-2xl font-extrabold text-white tracking-tight">Ofertas & IA</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Ofertas & IA</h2>
             <Badge variant="glow" size="md">Anti-Fabricação Ativa</Badge>
           </div>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
@@ -415,46 +415,46 @@ export default function OffersPage() {
         </div>
 
         <Link href="/radar">
-          <Button variant="glow" size="sm" className="gap-2 text-xs font-semibold">
+          <Button variant="glow" size="sm" className="gap-2 text-xs font-semibold w-full sm:w-auto justify-center">
             <Plus className="w-4 h-4" />
-            <span>Gerar Nova a Partir do Radar</span>
+            <span>Gerar Nova no Radar</span>
           </Button>
         </Link>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3.5">
-        <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total</span>
-          <div className="text-2xl font-bold text-white mt-1">{totalOffers}</div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
+        <div className="p-3 sm:p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-xl">
+          <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total</span>
+          <div className="text-xl sm:text-2xl font-bold text-white mt-0.5 sm:mt-1">{totalOffers}</div>
         </div>
-        <div className="p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/20 backdrop-blur-xl">
-          <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Aprovadas</span>
-          <div className="text-2xl font-bold text-emerald-400 mt-1">{approvedOffers}</div>
+        <div className="p-3 sm:p-4 rounded-2xl bg-emerald-950/20 border border-emerald-500/20 backdrop-blur-xl">
+          <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Aprovadas</span>
+          <div className="text-xl sm:text-2xl font-bold text-emerald-400 mt-0.5 sm:mt-1">{approvedOffers}</div>
         </div>
-        <div className="p-4 rounded-2xl bg-cyan-950/20 border border-cyan-500/20 backdrop-blur-xl">
-          <span className="text-[11px] font-semibold text-cyan-400 uppercase tracking-wider">Prontas</span>
-          <div className="text-2xl font-bold text-cyan-400 mt-1">{readyOffers}</div>
+        <div className="p-3 sm:p-4 rounded-2xl bg-cyan-950/20 border border-cyan-500/20 backdrop-blur-xl">
+          <span className="text-[10px] sm:text-[11px] font-semibold text-cyan-400 uppercase tracking-wider">Prontas</span>
+          <div className="text-xl sm:text-2xl font-bold text-cyan-400 mt-0.5 sm:mt-1">{readyOffers}</div>
         </div>
-        <div className="p-4 rounded-2xl bg-indigo-950/20 border border-indigo-500/20 backdrop-blur-xl">
-          <span className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">Agendadas / Fila</span>
-          <div className="text-2xl font-bold text-indigo-300 mt-1">{scheduledOffers}</div>
+        <div className="p-3 sm:p-4 rounded-2xl bg-indigo-950/20 border border-indigo-500/20 backdrop-blur-xl">
+          <span className="text-[10px] sm:text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">Agendadas</span>
+          <div className="text-xl sm:text-2xl font-bold text-indigo-300 mt-0.5 sm:mt-1">{scheduledOffers}</div>
         </div>
-        <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-500/20 backdrop-blur-xl">
-          <span className="text-[11px] font-semibold text-amber-400 uppercase tracking-wider">Rascunhos</span>
-          <div className="text-2xl font-bold text-amber-400 mt-1">{draftOffers}</div>
+        <div className="col-span-2 sm:col-span-1 p-3 sm:p-4 rounded-2xl bg-amber-950/20 border border-amber-500/20 backdrop-blur-xl">
+          <span className="text-[10px] sm:text-[11px] font-semibold text-amber-400 uppercase tracking-wider">Rascunhos</span>
+          <div className="text-xl sm:text-2xl font-bold text-amber-400 mt-0.5 sm:mt-1">{draftOffers}</div>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 backdrop-blur-xl flex flex-col md:flex-row gap-3.5 items-center justify-between">
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+      <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 backdrop-blur-xl flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
           {/* Status Tabs */}
           {["ALL", "READY", "APPROVED", "SCHEDULED", "DRAFT", "CANCELLED"].map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition-all ${
                 statusFilter === st
                   ? "bg-primary text-white shadow-md shadow-primary/25"
                   : "bg-slate-950/60 text-slate-400 hover:text-white border border-slate-800"
@@ -475,37 +475,39 @@ export default function OffersPage() {
           ))}
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          {/* Style Selector */}
-          <select
-            value={styleFilter}
-            onChange={(e) => setStyleFilter(e.target.value)}
-            aria-label="Filtrar por estilo de copy"
-            className="bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-primary"
-          >
-            <option value="ALL">Todos os Estilos</option>
-            <option value="DIRETO">Direto</option>
-            <option value="DESCONTO">Desconto</option>
-            <option value="URGENCIA">Urgência</option>
-            <option value="PREMIUM">Premium</option>
-            <option value="CURTO">Curto</option>
-          </select>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+          <div className="flex items-center gap-2">
+            {/* Style Selector */}
+            <select
+              value={styleFilter}
+              onChange={(e) => setStyleFilter(e.target.value)}
+              aria-label="Filtrar por estilo de copy"
+              className="flex-1 sm:flex-initial bg-slate-950/80 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-primary"
+            >
+              <option value="ALL">Todos os Estilos</option>
+              <option value="DIRETO">Direto</option>
+              <option value="DESCONTO">Desconto</option>
+              <option value="URGENCIA">Urgência</option>
+              <option value="PREMIUM">Premium</option>
+              <option value="CURTO">Curto</option>
+            </select>
 
-          {/* Platform Selector */}
-          <select
-            value={platformFilter}
-            onChange={(e) => setPlatformFilter(e.target.value)}
-            aria-label="Filtrar por marketplace"
-            className="bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-primary"
-          >
-            <option value="ALL">Todas as Lojas</option>
-            <option value="SHOPEE">Shopee</option>
-            <option value="MERCADO_LIVRE">Mercado Livre</option>
-            <option value="AMAZON">Amazon</option>
-          </select>
+            {/* Platform Selector */}
+            <select
+              value={platformFilter}
+              onChange={(e) => setPlatformFilter(e.target.value)}
+              aria-label="Filtrar por marketplace"
+              className="flex-1 sm:flex-initial bg-slate-950/80 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-primary"
+            >
+              <option value="ALL">Todas as Lojas</option>
+              <option value="SHOPEE">Shopee</option>
+              <option value="MERCADO_LIVRE">Mercado Livre</option>
+              <option value="AMAZON">Amazon</option>
+            </select>
+          </div>
 
           {/* Search Input */}
-          <div className="relative flex-1 md:w-56">
+          <div className="relative flex-1 md:w-52">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
@@ -609,24 +611,26 @@ export default function OffersPage() {
                       {offer.body}
                     </p>
 
-                    <div className="flex items-center gap-3 text-[11px] text-slate-500 mt-2 font-mono">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[11px] text-slate-500 mt-2 font-mono">
                       <span>Preço: {formatCurrency(offer.product.currentPrice)}</span>
+                      <span>•</span>
                       <span>Comissão: {formatCurrency(offer.product.commissionAmount)}</span>
-                      <span>Criada em: {formatDate(offer.createdAt)}</span>
+                      <span>•</span>
+                      <span>Criada: {formatDate(offer.createdAt)}</span>
                       <span className="text-emerald-400 flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" /> Anti-Fabricação OK
+                        <CheckCircle2 className="w-3 h-3 shrink-0" /> Anti-Fabricação OK
                       </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-wrap items-center gap-2 shrink-0 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0 border-slate-800">
+                <div className="flex flex-wrap items-center gap-2 shrink-0 w-full md:w-auto justify-start sm:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-slate-800">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleCopyFullOffer(offer)}
-                    className="text-xs gap-1.5"
+                    className="text-xs gap-1.5 h-8"
                   >
                     {copiedId === offer.id ? (
                       <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -640,7 +644,7 @@ export default function OffersPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => openOfferDetail(offer)}
-                    className="text-xs gap-1.5"
+                    className="text-xs gap-1.5 h-8"
                   >
                     <Edit3 className="w-3.5 h-3.5 text-primary-300" />
                     <span>Ver & Editar</span>
@@ -653,7 +657,7 @@ export default function OffersPage() {
                       setDispatchModalOffer(offer);
                       setDispatchMode("NOW");
                     }}
-                    className="text-xs gap-1.5 text-cyan-400 border-cyan-500/30 hover:bg-cyan-950/30"
+                    className="text-xs gap-1.5 text-cyan-400 border-cyan-500/30 hover:bg-cyan-950/30 h-8"
                     title="Disparar ou Agendar no Canal"
                   >
                     <Send className="w-3.5 h-3.5" />
@@ -665,7 +669,7 @@ export default function OffersPage() {
                       variant="emerald"
                       size="sm"
                       onClick={() => handleApprove(offer.id)}
-                      className="text-xs gap-1.5"
+                      className="text-xs gap-1.5 h-8 font-semibold"
                     >
                       <ThumbsUp className="w-3.5 h-3.5" />
                       <span>Aprovar</span>
@@ -680,7 +684,7 @@ export default function OffersPage() {
                         setQueueModalOffer(offer);
                         setQueuePriority("NORMAL");
                       }}
-                      className="text-xs gap-1.5 font-semibold"
+                      className="text-xs gap-1.5 font-semibold h-8"
                     >
                       <Clock className="w-3.5 h-3.5" />
                       <span>+ Fila</span>
@@ -691,7 +695,7 @@ export default function OffersPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setOfferToDelete(offer)}
-                    className="text-xs gap-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-950/30"
+                    className="text-xs gap-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 h-8"
                     title="Excluir Oferta"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
