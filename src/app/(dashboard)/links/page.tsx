@@ -289,9 +289,9 @@ export default function LinksPage() {
           {links.map((link) => (
             <div
               key={link.id}
-              className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 transition-all backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+              className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 transition-all backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 w-full min-w-0 overflow-hidden"
             >
-              <div className="flex items-start gap-3.5 flex-1 min-w-0">
+              <div className="flex items-start gap-3.5 flex-1 min-w-0 w-full overflow-hidden">
                 {link.product?.imageUrl ? (
                   <img
                     src={link.product.imageUrl}
@@ -304,9 +304,9 @@ export default function LinksPage() {
                   </div>
                 )}
 
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-950 border border-slate-800">
+                <div className="min-w-0 flex-1 overflow-hidden space-y-1">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-950 border border-slate-800 shrink-0">
                       <ProviderLogo provider={link.platform} size="xs" />
                       <span className="text-[11px] font-bold text-slate-200">
                         {link.platform === "MERCADO_LIVRE"
@@ -319,7 +319,7 @@ export default function LinksPage() {
                       </span>
                     </div>
 
-                    <span className="font-mono text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20">
+                    <span className="font-mono text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20 shrink-0">
                       {link.shortCode}
                     </span>
 
@@ -328,29 +328,29 @@ export default function LinksPage() {
                     </Badge>
                   </div>
 
-                  <h4 className="text-xs sm:text-sm font-semibold text-white truncate max-w-xl">
+                  <h4 className="text-xs sm:text-sm font-semibold text-white line-clamp-1 break-words">
                     {link.product?.title || "Link Personalizado"}
                   </h4>
 
-                  <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-400 mt-1 font-mono">
-                    <span className="text-cyan-400 truncate max-w-xs">{link.affiliateUrl}</span>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-400 font-mono">
+                    <span className="text-cyan-400 break-all select-all">{link.affiliateUrl}</span>
                     {link.utmCampaign && (
-                      <span className="text-slate-500 flex items-center gap-1">
+                      <span className="text-slate-500 flex items-center gap-1 shrink-0">
                         <Tag className="w-3 h-3" /> {link.utmCampaign}
                       </span>
                     )}
-                    <span>Criado em: {formatDate(link.createdAt)}</span>
+                    <span className="shrink-0">Criado: {formatDate(link.createdAt)}</span>
                   </div>
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2 shrink-0 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0 border-slate-800">
+              <div className="flex items-center gap-2 shrink-0 w-full md:w-auto justify-start sm:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-slate-800">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleCopy(link.id, link.affiliateUrl)}
-                  className="text-xs gap-1.5 font-semibold"
+                  className="text-xs gap-1.5 font-semibold h-8"
                 >
                   {copiedId === link.id ? (
                     <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -366,7 +366,7 @@ export default function LinksPage() {
                   rel="noopener noreferrer"
                   className="inline-flex"
                 >
-                  <Button variant="ghost" size="sm" className="text-xs gap-1">
+                  <Button variant="ghost" size="sm" className="text-xs gap-1 h-8">
                     <ExternalLink className="w-3.5 h-3.5" />
                     <span>Ver Original</span>
                   </Button>

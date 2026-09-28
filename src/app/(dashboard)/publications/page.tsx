@@ -519,10 +519,10 @@ export default function PublicationsPage() {
             </div>
 
             {/* Idempotency & Metadata */}
-            <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1 text-[11px] font-mono text-slate-400">
-              <p>Idempotency Key: <span className="text-indigo-300">{selectedPublication.idempotencyKey}</span></p>
+            <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-1 text-[11px] font-mono text-slate-400 overflow-hidden">
+              <p className="break-all">Idempotency Key: <span className="text-indigo-300 break-all">{selectedPublication.idempotencyKey}</span></p>
               {selectedPublication.externalPostId && (
-                <p>External Post ID: <span className="text-emerald-300">{selectedPublication.externalPostId}</span></p>
+                <p className="break-all">External Post ID: <span className="text-emerald-300 break-all">{selectedPublication.externalPostId}</span></p>
               )}
             </div>
 

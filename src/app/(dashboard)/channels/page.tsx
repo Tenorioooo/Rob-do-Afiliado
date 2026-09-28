@@ -351,7 +351,7 @@ export default function ChannelsPage() {
             return (
               <div
                 key={chan.id}
-                className={`rounded-3xl border p-6 flex flex-col justify-between backdrop-blur-xl shadow-xl transition-all ${
+                className={`rounded-3xl border p-5 sm:p-6 flex flex-col justify-between backdrop-blur-xl shadow-xl transition-all w-full overflow-hidden ${
                   chan.active
                     ? "border-slate-800 bg-slate-900/60 hover:border-slate-700"
                     : "border-slate-800/50 bg-slate-950/40 opacity-70"
@@ -360,16 +360,16 @@ export default function ChannelsPage() {
                 <div>
                   {/* Top Bar */}
                   <div className="flex items-start justify-between gap-3 mb-4">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       <div className="w-11 h-11 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center shrink-0 overflow-hidden p-1.5 shadow-inner">
                         <ProviderLogo provider={chan.type} size="md" />
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-bold text-white truncate max-w-[140px]">{chan.name}</h3>
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-sm font-bold text-white line-clamp-1 break-words">{chan.name}</h3>
                           {getChannelBadge(chan.type)}
                         </div>
-                        <p className="text-[11px] text-slate-400 font-mono mt-0.5 truncate max-w-[180px]">
+                        <p className="text-[11px] text-slate-400 font-mono mt-0.5 break-all">
                           {chan.destination}
                         </p>
                       </div>
