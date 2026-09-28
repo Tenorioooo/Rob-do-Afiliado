@@ -303,7 +303,7 @@ export default function PublicationsPage() {
       ) : (
         <div className="rounded-3xl border border-slate-800 bg-slate-900/60 overflow-hidden backdrop-blur-xl shadow-xl">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs" style={{ minWidth: '640px' }}>
               <thead className="border-b border-slate-800 bg-slate-950/80 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                 <tr>
                   <th className="py-3.5 px-4">Oferta / Produto</th>

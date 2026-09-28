@@ -150,14 +150,14 @@ export default function RobotPage() {
   const latestScan = scans.length > 0 ? scans[0] : null;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-3">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-2xl font-extrabold text-white tracking-tight">Meu Robô</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Meu Robô</h2>
             <Badge variant={isActive ? "success" : "warning"} size="md">
-              {isActive ? "ATIVO & OPERACIONAL" : "PAUSADO"}
+              {isActive ? "ATIVO" : "PAUSADO"}
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
@@ -165,16 +165,16 @@ export default function RobotPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="glow"
             size="sm"
             onClick={handleExecuteScan}
             isLoading={isScanning}
-            className="text-xs gap-1.5 font-semibold px-5"
+            className="text-xs gap-1.5 font-semibold"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isScanning ? "animate-spin" : ""}`} />
-            {isScanning ? "Analisando..." : "Executar Análise Agora"}
+            {isScanning ? "Analisando..." : "Executar Análise"}
           </Button>
 
           <Button
@@ -200,16 +200,16 @@ export default function RobotPage() {
 
       {/* Live Scan Execution Progress Stepper (visible during scanning) */}
       {isScanning && (
-        <div className="rounded-3xl border border-primary/50 bg-gradient-to-r from-primary/20 via-slate-900/90 to-indigo-950/40 p-6 backdrop-blur-xl shadow-2xl animate-in fade-in space-y-4">
+        <div className="rounded-2xl sm:rounded-3xl border border-primary/50 bg-gradient-to-r from-primary/20 via-slate-900/90 to-indigo-950/40 p-4 sm:p-6 backdrop-blur-xl shadow-2xl animate-in fade-in space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <Bot className="w-5 h-5 text-primary animate-bounce" />
-              <h3 className="text-sm font-bold text-white">Executando Pipeline do Robô...</h3>
+              <h3 className="text-sm font-bold text-white">Executando Pipeline...</h3>
             </div>
-            <span className="text-xs font-mono text-primary-300">Passo {scanStep} de 5</span>
+            <span className="text-xs font-mono text-primary-300">Passo {scanStep}/5</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
             <div className={`p-2.5 rounded-xl border flex items-center gap-2 ${scanStep >= 1 ? "bg-primary/20 border-primary text-white" : "bg-slate-950/60 border-slate-800 text-slate-500"}`}>
               <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
               <span>1. Configuração</span>
@@ -226,7 +226,7 @@ export default function RobotPage() {
               <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
               <span>4. Scoring IA</span>
             </div>
-            <div className={`p-2.5 rounded-xl border flex items-center gap-2 ${scanStep >= 5 ? "bg-emerald-500/20 border-emerald-500 text-emerald-300" : "bg-slate-950/60 border-slate-800 text-slate-500"}`}>
+            <div className={`col-span-2 sm:col-span-1 p-2.5 rounded-xl border flex items-center gap-2 ${scanStep >= 5 ? "bg-emerald-500/20 border-emerald-500 text-emerald-300" : "bg-slate-950/60 border-slate-800 text-slate-500"}`}>
               <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
               <span>5. Radar Atualizado</span>
             </div>
@@ -381,9 +381,9 @@ export default function RobotPage() {
             Nenhuma varredura registrada ainda. Clique em "Executar Análise Agora" para rodar o primeiro scan.
           </div>
         ) : (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl">
+          <div className="rounded-xl sm:rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left text-xs" style={{ minWidth: '640px' }}>
                 <thead className="bg-slate-950/80 text-slate-400 font-semibold uppercase tracking-wider text-[10px] border-b border-slate-800">
                   <tr>
                     <th className="px-4 py-3.5">Data & Hora</th>

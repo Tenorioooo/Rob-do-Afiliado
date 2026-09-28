@@ -39,10 +39,29 @@
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html {
+    /* Prevent iOS font size adjustment */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    /* Smooth momentum scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
+  }
+
+  /* Improve touch target sizes for mobile */
+  button, a, [role="button"] {
+    touch-action: manipulation;
+  }
+
+  /* Prevent horizontal overflow on mobile */
+  #__next, main {
+    overflow-x: hidden;
   }
 }
 
@@ -97,10 +116,27 @@
   content: "";
 }
 
+/* Responsive tables — enable horizontal scroll on mobile */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 1rem;
+}
+
+/* Mobile-friendly select elements */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px !important;
+}
+
 /* Custom subtle scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
   background: rgba(15, 23, 42, 0.6);
@@ -111,4 +147,22 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(99, 102, 241, 0.6);
+}
+
+/* Hide scrollbar on mobile for cleaner look */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 2px;
+    height: 2px;
+  }
+}
+
+/* Safe area insets for devices with notch/home indicator */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  main {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }

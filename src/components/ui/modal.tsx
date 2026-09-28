@@ -34,7 +34,7 @@ export function Modal({
     }
 
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);
@@ -50,34 +50,38 @@ export function Modal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm p-4 sm:p-6 flex min-h-full items-center justify-center">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col sm:items-center sm:justify-center sm:p-6">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-transparent"
         onClick={onClose}
       />
 
+      {/* Spacer pushes modal to bottom on mobile */}
+      <div className="flex-1 sm:hidden" onClick={onClose} />
+
       {/* Modal Dialog */}
       <div
         className={cn(
-          "relative w-full rounded-3xl border border-slate-700/60 bg-slate-900/95 p-6 sm:p-7 shadow-2xl shadow-black/80 backdrop-blur-xl transition-all duration-200 animate-in zoom-in-95 my-auto max-h-[90vh] flex flex-col z-10",
+          "relative w-full sm:my-auto border border-slate-700/60 bg-slate-900/98 p-5 sm:p-7 shadow-2xl shadow-black/80 backdrop-blur-xl transition-all duration-300 animate-in slide-in-from-bottom sm:zoom-in-95 max-h-[92vh] sm:max-h-[90vh] flex flex-col z-10 overflow-hidden",
+          "rounded-t-3xl sm:rounded-3xl",
           maxWidths[maxWidth || size || "md"]
         )}
       >
         <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-800 shrink-0">
           <div>
-            {title && <h3 className="text-lg font-semibold text-white tracking-tight">{title}</h3>}
+            {title && <h3 className="text-base sm:text-lg font-semibold text-white tracking-tight">{title}</h3>}
             {description && <p className="text-xs text-slate-400 mt-1 leading-relaxed">{description}</p>}
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors shrink-0"
+            className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 active:bg-slate-700 transition-colors shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="mt-4 overflow-y-auto pr-1 flex-1">{children}</div>
+        <div className="mt-4 overflow-y-auto flex-1 overscroll-contain">{children}</div>
       </div>
     </div>
   );

@@ -574,7 +574,7 @@ export default function AnalyticsPage() {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                  <table className="w-full text-left text-xs" style={{ minWidth: '700px' }}>
                     <thead>
                       <tr className="border-b border-slate-800 text-slate-400 text-[11px]">
                         <th className="pb-3 font-semibold">Marketplace</th>

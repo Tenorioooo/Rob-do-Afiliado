@@ -243,20 +243,20 @@ export default function AutopilotPage() {
   const recentEvents = autopilotData?.recentEvents || [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Top Banner & Control Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-3">
         <div>
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-extrabold text-white tracking-tight">
-              Autopiloto Inteligente
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+              Autopiloto
             </h2>
             <Badge
               variant={isAutopilotActive ? "success" : "warning"}
               size="md"
-              className="font-bold px-3 py-1"
+              className="font-bold"
             >
-              {isAutopilotActive ? "● ROBÔ OPERANDO" : "○ PAUSADO"}
+              {isAutopilotActive ? "● ATIVO" : "○ PAUSADO"}
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
@@ -264,11 +264,11 @@ export default function AutopilotPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
           <Link href="/autopilot/history">
-            <Button variant="outline" size="sm" className="text-xs gap-1.5">
+            <Button variant="outline" size="sm" className="text-xs gap-1.5 h-8">
               <History className="w-3.5 h-3.5" />
-              Histórico de Ciclos
+              Histórico
             </Button>
           </Link>
 
@@ -277,20 +277,20 @@ export default function AutopilotPage() {
             size="sm"
             onClick={handleExecuteCycle}
             isLoading={isRunningCycle}
-            className="text-xs gap-1.5 font-semibold px-4"
+            className="text-xs gap-1.5 font-semibold h-8"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRunningCycle ? "animate-spin" : ""}`} />
-            {isRunningCycle ? "Executando..." : "Executar Ciclo Agora"}
+            {isRunningCycle ? "Executando..." : "Executar Ciclo"}
           </Button>
 
           <Button
             variant={isAutopilotActive ? "outline" : "emerald"}
             size="sm"
             onClick={handleToggleAutopilot}
-            className="text-xs gap-1.5 font-semibold"
+            className="text-xs gap-1.5 font-semibold h-8"
           >
             {isAutopilotActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-            {isAutopilotActive ? "Pausar Robô" : "Iniciar Robô"}
+            {isAutopilotActive ? "Pausar" : "Iniciar"}
           </Button>
         </div>
       </div>
@@ -372,19 +372,19 @@ export default function AutopilotPage() {
 
       {/* Live Cycle Stepper (Visible during manual cycle run) */}
       {isRunningCycle && (
-        <div className="rounded-3xl border border-primary/50 bg-gradient-to-r from-primary/20 via-slate-900/90 to-indigo-950/40 p-6 backdrop-blur-xl shadow-2xl animate-in fade-in space-y-4">
+        <div className="rounded-2xl sm:rounded-3xl border border-primary/50 bg-gradient-to-r from-primary/20 via-slate-900/90 to-indigo-950/40 p-4 sm:p-6 backdrop-blur-xl shadow-2xl animate-in fade-in space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <Cpu className="w-5 h-5 text-primary animate-spin" />
-              <h3 className="text-sm font-bold text-white">Executando Ciclo Autônomo do Autopiloto...</h3>
+              <h3 className="text-sm font-bold text-white">Executando Ciclo Autônomo...</h3>
             </div>
-            <span className="text-xs font-mono text-primary-300">Etapa {cycleStep} de 5</span>
+            <span className="text-xs font-mono text-primary-300">Etapa {cycleStep}/5</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
             <div className={`p-2.5 rounded-xl border flex items-center gap-2 ${cycleStep >= 1 ? "bg-primary/20 border-primary text-white" : "bg-slate-950/60 border-slate-800 text-slate-500"}`}>
               <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-              <span>1. Discovery & Snapshots</span>
+              <span>1. Discovery</span>
             </div>
             <div className={`p-2.5 rounded-xl border flex items-center gap-2 ${cycleStep >= 2 ? "bg-primary/20 border-primary text-white" : "bg-slate-950/60 border-slate-800 text-slate-500"}`}>
               <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
@@ -392,15 +392,15 @@ export default function AutopilotPage() {
             </div>
             <div className={`p-2.5 rounded-xl border flex items-center gap-2 ${cycleStep >= 3 ? "bg-primary/20 border-primary text-white" : "bg-slate-950/60 border-slate-800 text-slate-500"}`}>
               <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-              <span>3. Links & Cópias IA</span>
+              <span>3. Links & Cópias</span>
             </div>
             <div className={`p-2.5 rounded-xl border flex items-center gap-2 ${cycleStep >= 4 ? "bg-primary/20 border-primary text-white" : "bg-slate-950/60 border-slate-800 text-slate-500"}`}>
               <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-              <span>4. Safety Gate & Queue</span>
+              <span>4. Safety Gate</span>
             </div>
-            <div className={`p-2.5 rounded-xl border flex items-center gap-2 ${cycleStep >= 5 ? "bg-emerald-500/20 border-emerald-500 text-emerald-300" : "bg-slate-950/60 border-slate-800 text-slate-500"}`}>
+            <div className={`col-span-2 sm:col-span-1 p-2.5 rounded-xl border flex items-center gap-2 ${cycleStep >= 5 ? "bg-emerald-500/20 border-emerald-500 text-emerald-300" : "bg-slate-950/60 border-slate-800 text-slate-500"}`}>
               <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-              <span>5. Dispatcher & Notificações</span>
+              <span>5. Dispatcher</span>
             </div>
           </div>
         </div>
@@ -454,37 +454,37 @@ export default function AutopilotPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-slate-800 space-x-6 text-sm font-medium">
+      {/* Tabs - scrollable on mobile */}
+      <div className="flex overflow-x-auto border-b border-slate-800 gap-1 scrollbar-none -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
         <button
           onClick={() => setActiveTab("overview")}
-          className={`pb-3 transition-colors ${
+          className={`pb-3 px-1 whitespace-nowrap text-sm font-medium transition-colors shrink-0 ${
             activeTab === "overview"
               ? "border-b-2 border-primary text-white font-bold"
               : "text-slate-400 hover:text-white"
           }`}
         >
-          Visão Geral & Decisões
+          Visão Geral
         </button>
         <button
           onClick={() => setActiveTab("config")}
-          className={`pb-3 transition-colors ${
+          className={`pb-3 px-3 whitespace-nowrap text-sm font-medium transition-colors shrink-0 ${
             activeTab === "config"
               ? "border-b-2 border-primary text-white font-bold"
               : "text-slate-400 hover:text-white"
           }`}
         >
-          Configurações do Robô
+          Configurações
         </button>
         <button
           onClick={() => setActiveTab("activity")}
-          className={`pb-3 transition-colors ${
+          className={`pb-3 px-3 whitespace-nowrap text-sm font-medium transition-colors shrink-0 ${
             activeTab === "activity"
               ? "border-b-2 border-primary text-white font-bold"
               : "text-slate-400 hover:text-white"
           }`}
         >
-          Feed de Atividade do Robô
+          Atividade
         </button>
       </div>
 
@@ -515,7 +515,7 @@ export default function AutopilotPage() {
           ) : (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-left text-xs" style={{ minWidth: '560px' }}>
                   <thead className="bg-slate-950/80 text-slate-400 font-semibold uppercase tracking-wider text-[10px] border-b border-slate-800">
                     <tr>
                       <th className="px-4 py-3.5">Produto</th>

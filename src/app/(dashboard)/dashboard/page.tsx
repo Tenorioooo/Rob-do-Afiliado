@@ -71,61 +71,61 @@ export default function DashboardPage() {
   const topOpportunities = data?.topOpportunities || [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Top Welcome Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-3">
         <div>
-          <h2 className="text-2xl font-extrabold text-white tracking-tight">
-            Centro de Controle de Oportunidades & Automação
+          <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight leading-tight">
+            Centro de Controle
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Seu operador virtual está conectado, gerando ofertas e distribuindo nos canais conectados 24/7.
+            Operador virtual conectado, gerando ofertas e distribuindo nos canais 24/7.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 self-start">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
           <span>Inteligência & Dispatcher Ativos</span>
         </div>
       </div>
 
       {/* Main Robot Command Center Card */}
-      <div className="rounded-3xl border border-primary/30 bg-gradient-to-r from-slate-900/90 via-slate-900/80 to-indigo-950/40 p-6 sm:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 blur-3xl rounded-full pointer-events-none" />
+      <div className="rounded-2xl sm:rounded-3xl border border-primary/30 bg-gradient-to-r from-slate-900/90 via-slate-900/80 to-indigo-950/40 p-4 sm:p-6 lg:p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-60 sm:w-80 h-60 sm:h-80 bg-primary/10 blur-3xl rounded-full pointer-events-none" />
 
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-800/80">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary to-indigo-500 p-0.5 shadow-lg shadow-primary/30">
-              <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-white">
-                <Bot className="w-7 h-7 text-primary-300" />
+        <div className="flex flex-col gap-4 pb-4 sm:pb-6 border-b border-slate-800/80">
+          <div className="flex items-start sm:items-center gap-3 sm:gap-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-primary to-indigo-500 p-0.5 shadow-lg shadow-primary/30 shrink-0">
+              <div className="w-full h-full bg-slate-950 rounded-[12px] sm:rounded-[14px] flex items-center justify-center text-white">
+                <Bot className="w-6 h-6 sm:w-7 sm:h-7 text-primary-300" />
               </div>
             </div>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h3 className="text-xl font-bold text-white">Meu Robô de Afiliados</h3>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  Operando normalmente
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-base sm:text-xl font-bold text-white">Meu Robô de Afiliados</h3>
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Operando
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                 {stats.lastScanAt
-                  ? `Última varredura realizada em ${formatDate(stats.lastScanAt)}.`
-                  : "Nenhuma varredura executada ainda. Execute sua primeira análise."}
+                  ? `Última varredura: ${formatDate(stats.lastScanAt)}`
+                  : "Nenhuma varredura ainda. Execute sua primeira análise."}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
             <Link href="/robot">
-              <Button variant="outline" size="sm" className="text-xs">
+              <Button variant="outline" size="sm" className="text-xs h-8">
                 Ajustes do Robô
               </Button>
             </Link>
             <Link href="/automation">
-              <Button variant="glow" size="sm" className="gap-1.5 text-xs font-semibold">
+              <Button variant="glow" size="sm" className="gap-1.5 text-xs font-semibold h-8">
                 <Zap className="w-3.5 h-3.5" />
-                Regras de Automação
+                Automação
               </Button>
             </Link>
           </div>
@@ -257,9 +257,9 @@ export default function DashboardPage() {
             </Link>
           </div>
         ) : (
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+          <div className="rounded-2xl sm:rounded-3xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl">
+            <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
+              <table className="w-full text-left text-xs" style={{ minWidth: '560px' }}>
                 <thead className="bg-slate-950/80 text-slate-400 font-semibold uppercase tracking-wider text-[10px] border-b border-slate-800">
                   <tr>
                     <th className="px-4 py-3.5">Produto</th>

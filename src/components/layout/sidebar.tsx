@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { BRAND, NAVIGATION_ITEMS } from "@/lib/constants/brand";
@@ -21,6 +21,7 @@ import {
   LogOut,
   ShieldAlert,
   User as UserIcon,
+  X,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 
@@ -86,26 +87,37 @@ export function Sidebar({ onItemClick, isAdmin = false }: SidebarProps) {
   const displayRole = sessionUser?.role || (isAdmin ? "ADMIN" : "PRO");
 
   return (
-    <aside className="w-64 flex flex-col justify-between border-r border-slate-800/80 bg-slate-950 text-slate-300 h-full select-none">
+    <aside className="w-64 flex flex-col h-full border-r border-slate-800/80 bg-slate-950 text-slate-300 select-none">
       {/* Brand Header */}
-      <div>
-        <div className="h-16 flex items-center px-6 border-b border-slate-800/80">
-          <Link href="/dashboard" className="flex items-center gap-2.5 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-primary to-indigo-500 shadow-md shadow-primary/30 group-hover:scale-105 transition-transform">
-              <Bot className="h-5 w-5 text-white" />
+      <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800/80 shrink-0">
+        <Link href="/dashboard" className="flex items-center gap-2.5 group" onClick={onItemClick}>
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-primary to-indigo-500 shadow-md shadow-primary/30 group-hover:scale-105 transition-transform shrink-0">
+            <Bot className="h-5 w-5 text-white" />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-bold tracking-tight text-white truncate">{BRAND.name}</span>
+              <span className="inline-flex items-center rounded-md bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary border border-primary/20 shrink-0">
+                PRO
+              </span>
             </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-bold tracking-tight text-white">{BRAND.name}</span>
-                <span className="inline-flex items-center rounded-md bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary border border-primary/20">
-                  PRO
-                </span>
-              </div>
-            </div>
-          </Link>
-        </div>
+          </div>
+        </Link>
 
-        {/* Navigation Items */}
+        {/* Close button for mobile drawer */}
+        {onItemClick && (
+          <button
+            onClick={onItemClick}
+            className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors"
+            aria-label="Fechar menu"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Navigation Items — scrollable */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden py-2">
         <nav className="p-4 space-y-1.5">
           <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 px-3 mb-2">
             Menu Principal
@@ -113,26 +125,28 @@ export function Sidebar({ onItemClick, isAdmin = false }: SidebarProps) {
 
           {NAVIGATION_ITEMS.map((item) => {
             const Icon = ICON_MAP[item.icon as keyof typeof ICON_MAP] || LayoutDashboard;
-            const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/dashboard" && pathname.startsWith(item.href));
 
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={onItemClick}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all duration-150 ${
+                className={`flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-medium transition-all duration-150 ${
                   isActive
                     ? "bg-primary text-white shadow-md shadow-primary/25 font-semibold"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/80"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/80 active:bg-slate-800"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-slate-400"}`} />
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-slate-400"}`} />
                   <span>{item.title}</span>
                 </div>
                 {item.badge && (
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
+                    className={`text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0 ${
                       isActive
                         ? "bg-white/20 text-white"
                         : "bg-primary/10 text-primary-300 border border-primary/20"
@@ -154,13 +168,13 @@ export function Sidebar({ onItemClick, isAdmin = false }: SidebarProps) {
               <Link
                 href="/admin"
                 onClick={onItemClick}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                className={`flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-medium transition-all ${
                   pathname.startsWith("/admin")
                     ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                    : "text-amber-400 hover:bg-amber-500/10"
+                    : "text-amber-400 hover:bg-amber-500/10 active:bg-amber-500/20"
                 }`}
               >
-                <ShieldAlert className="w-4 h-4 text-amber-400" />
+                <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
                 <span>Painel Admin</span>
               </Link>
             </div>
@@ -168,8 +182,8 @@ export function Sidebar({ onItemClick, isAdmin = false }: SidebarProps) {
         </nav>
       </div>
 
-      {/* User Profile & Quick Actions */}
-      <div className="p-4 border-t border-slate-800/80 bg-slate-950/60">
+      {/* User Profile & Quick Actions — always at bottom */}
+      <div className="p-4 border-t border-slate-800/80 bg-slate-950/60 shrink-0">
         <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/60 border border-slate-800">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center text-primary-300 shrink-0 font-bold text-xs">
@@ -184,7 +198,7 @@ export function Sidebar({ onItemClick, isAdmin = false }: SidebarProps) {
           <button
             onClick={handleLogout}
             title="Sair da conta"
-            className="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg transition-colors"
+            className="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg transition-colors shrink-0"
           >
             <LogOut className="w-4 h-4" />
           </button>

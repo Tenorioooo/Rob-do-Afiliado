@@ -93,7 +93,7 @@ export default function AutopilotHistoryPage() {
         ) : (
           <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left text-xs" style={{ minWidth: '600px' }}>
                 <thead className="bg-slate-950/80 text-slate-400 font-semibold uppercase tracking-wider text-[10px] border-b border-slate-800">
                   <tr>
                     <th className="px-4 py-3.5">Data & Hora</th>

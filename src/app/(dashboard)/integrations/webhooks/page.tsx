@@ -200,7 +200,7 @@ export default function WebhookCenterPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
+            <table className="w-full text-left text-xs text-slate-300" style={{ minWidth: '580px' }}>
               <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
                 <tr>
                   <th className="py-3 px-4">Provedor</th>
