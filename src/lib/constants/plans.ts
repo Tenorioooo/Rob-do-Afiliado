@@ -1,6 +1,6 @@
 export interface PlanTier {
   id: string;
-  code: "STARTER" | "PRO" | "ENTERPRISE";
+  code: "STARTER" | "PREMIUM" | "PRO_AUTOPILOT" | "PRO" | "ENTERPRISE";
   name: string;
   price: number;
   period: string;
@@ -23,7 +23,7 @@ export const OFFICIAL_PLANS: PlanTier[] = [
     name: "Starter",
     price: 47,
     period: "mês",
-    description: "Ideal para afiliados iniciantes começarem a automatizar ofertas.",
+    description: "Ideal para afiliados iniciantes começarem a automatizar ofertas com eficiência.",
     popular: false,
     limits: {
       channels: 2,
@@ -40,12 +40,12 @@ export const OFFICIAL_PLANS: PlanTier[] = [
     ],
   },
   {
-    id: "plan-pro",
-    code: "PRO",
-    name: "Pro Autopilot",
+    id: "plan-premium",
+    code: "PREMIUM",
+    name: "Premium",
     price: 97,
     period: "mês",
-    description: "A solução completa para afiliados profissionais escalarem comissionamento 24h.",
+    description: "A solução completa para afiliados escalarem publicações e comissões com IA avançada.",
     popular: true,
     badge: "MAIS ESCOLHIDO",
     limits: {
@@ -56,7 +56,7 @@ export const OFFICIAL_PLANS: PlanTier[] = [
     },
     features: [
       "Até 10 canais conectados (Telegram, Discord, WhatsApp)",
-      "Autopiloto 24h com aprovação e disparo autônomo",
+      "Autopiloto com aprovação e disparo inteligente",
       "Varredura prioritária Mercado Livre, Shopee e Amazon",
       "Geração neural avançada de copies persuasivas",
       "Score de Oportunidade com inteligência preditiva",
@@ -65,14 +65,14 @@ export const OFFICIAL_PLANS: PlanTier[] = [
     ],
   },
   {
-    id: "plan-enterprise",
-    code: "ENTERPRISE",
-    name: "Agency / Enterprise",
+    id: "plan-pro-autopilot",
+    code: "PRO_AUTOPILOT",
+    name: "Pro Autopilot",
     price: 197,
     period: "mês",
-    description: "Potência ilimitada para agências, grandes canais e operações de alta escala.",
+    description: "Autonomia 24h sem limites para grandes canais, agências e afiliados de alta escala.",
     popular: false,
-    badge: "ILIMITADO",
+    badge: "AUTONOMIA TOTAL",
     limits: {
       channels: 999,
       offersPerDay: 9999,
@@ -81,7 +81,7 @@ export const OFFICIAL_PLANS: PlanTier[] = [
     },
     features: [
       "Canais e grupos ilimitados",
-      "Disparos ilimitados 24h sem restrição",
+      "Autopiloto 24h 100% autônomo sem restrições",
       "Varredura ultra rápida a cada 5 minutos",
       "Multi-usuários e permissões de equipe",
       "Acesso completo a Webhooks e API personalizada",

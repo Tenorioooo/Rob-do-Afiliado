@@ -17,7 +17,7 @@ import {
 
 export default function PlanPage() {
   const { toast } = useToast();
-  const currentPlan = OFFICIAL_PLANS.find((p) => p.code === "PRO") || OFFICIAL_PLANS[1];
+  const currentPlan = OFFICIAL_PLANS.find((p) => p.code === "PREMIUM" || p.code === "PRO") || OFFICIAL_PLANS[1];
 
   const handlePlanAction = (planName: string) => {
     toast({
@@ -34,7 +34,7 @@ export default function PlanPage() {
         <div>
           <div className="flex items-center gap-2.5">
             <h2 className="text-2xl font-extrabold text-white tracking-tight">Meu Plano & Assinatura</h2>
-            <Badge variant="purple" size="md">Plano PRO Ativo</Badge>
+            <Badge variant="purple" size="md">Plano {currentPlan.name} Ativo</Badge>
           </div>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
             Gerencie sua assinatura, limites de uso mensal e histórico de faturamento.
@@ -139,45 +139,48 @@ export default function PlanPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {OFFICIAL_PLANS.map((plan) => (
-            <div
-              key={plan.id}
-              className={`rounded-3xl p-6 border flex flex-col justify-between ${
-                plan.code === "PRO"
-                  ? "border-primary/60 bg-slate-900/90 shadow-xl"
-                  : "border-slate-800 bg-slate-900/40"
-              }`}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-base font-bold text-white">{plan.name}</h4>
-                  {plan.code === "PRO" && <Badge variant="success">Plano Atual</Badge>}
+          {OFFICIAL_PLANS.map((plan) => {
+            const isCurrent = plan.id === currentPlan.id;
+            return (
+              <div
+                key={plan.id}
+                className={`rounded-3xl p-6 border flex flex-col justify-between ${
+                  isCurrent
+                    ? "border-primary/60 bg-slate-900/90 shadow-xl"
+                    : "border-slate-800 bg-slate-900/40"
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-base font-bold text-white">{plan.name}</h4>
+                    {isCurrent && <Badge variant="success">Plano Atual</Badge>}
+                  </div>
+                  <div className="text-2xl font-extrabold text-white mb-4">
+                    R$ {plan.price} <span className="text-xs text-slate-400 font-normal">/mês</span>
+                  </div>
+                  <ul className="space-y-2 text-xs text-slate-300">
+                    {plan.features.slice(0, 4).map((f, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="text-2xl font-extrabold text-white mb-4">
-                  R$ {plan.price} <span className="text-xs text-slate-400 font-normal">/mês</span>
-                </div>
-                <ul className="space-y-2 text-xs text-slate-300">
-                  {plan.features.slice(0, 4).map((f, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
 
-              <div className="pt-6">
-                <Button
-                  variant={plan.code === "PRO" ? "outline" : "glow"}
-                  size="sm"
-                  onClick={() => handlePlanAction(plan.name)}
-                  className="w-full justify-center text-xs"
-                >
-                  {plan.code === "PRO" ? "Plano Atual" : `Mudar para ${plan.name}`}
-                </Button>
+                <div className="pt-6">
+                  <Button
+                    variant={isCurrent ? "outline" : "glow"}
+                    size="sm"
+                    onClick={() => handlePlanAction(plan.name)}
+                    className="w-full justify-center text-xs"
+                  >
+                    {isCurrent ? "Plano Atual" : `Mudar para ${plan.name}`}
+                  </Button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
