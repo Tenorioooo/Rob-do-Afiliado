@@ -14,7 +14,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-foreground">
       <LandingHeader />
-      <main className="flex-1">
+      <main className="flex-1 pt-16">
         <LandingHero />
         <ProblemSolutionSection />
         <HowItWorksSection />
