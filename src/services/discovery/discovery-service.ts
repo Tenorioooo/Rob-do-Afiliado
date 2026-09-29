@@ -53,8 +53,10 @@ export class DiscoveryService {
       try {
         scannedPlatforms.push("SHOPEE");
         const items = await this.shopeeAdapter.getRawItems({
+          categories: params?.categories,
           category: params?.categories?.[0],
           query: params?.query,
+          limit: params?.maxPerPlatform || 50,
         });
         allRawItems.push(...items);
       } catch (err: unknown) {

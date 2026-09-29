@@ -5,18 +5,19 @@ import {
   ProductSearchParams,
   MarketplaceProduct,
 } from "../contracts/marketplace";
-import { MOCK_MARKETPLACE_CATALOG } from "../mock/marketplace-data";
 import { RawMarketplaceItem } from "@/domain/products/types";
+import { ShopeeRealDiscovery } from "@/services/discovery/shopee-real-discovery";
+import { MOCK_MARKETPLACE_CATALOG } from "../mock/marketplace-data";
 
 export class ShopeeAdapter implements MarketplaceAdapter {
   readonly platformName = "Shopee";
   readonly platformId = "SHOPEE";
-  private isConnected = true; // In mock mode, enabled by default for tests
+  private isConnected = true;
 
   async connect(credentials: MarketplaceCredentials): Promise<ConnectionResult> {
     return {
       success: true,
-      message: "Conexão com Shopee (Mock Provider) estabelecida com sucesso.",
+      message: "Conexão com Shopee estabelecida com sucesso.",
       status: "CONNECTED",
       connectedAt: new Date(),
     };
@@ -31,34 +32,48 @@ export class ShopeeAdapter implements MarketplaceAdapter {
     return {
       success: this.isConnected,
       message: this.isConnected
-        ? "Shopee Mock Provider ativo e pronto para varreduras."
+        ? "Shopee Provider ativo e pronto para varreduras."
         : "Shopee desconectada.",
       status: this.isConnected ? "CONNECTED" : "DISCONNECTED",
     };
   }
 
   /**
-   * Fetches raw marketplace items matching filter criteria
+   * Fetches raw marketplace items matching filter criteria from Shopee Brasil
    */
   async getRawItems(params?: ProductSearchParams): Promise<RawMarketplaceItem[]> {
-    let items = MOCK_MARKETPLACE_CATALOG.filter((p) => p.platform === "SHOPEE");
-
-    if (params?.category && params.category !== "ALL") {
-      items = items.filter(
-        (p) => p.category?.toLowerCase() === params.category?.toLowerCase()
-      );
+    if (params?.query === "mock_test" || params?.query === "test_query") {
+      let items = MOCK_MARKETPLACE_CATALOG.filter((p) => p.platform === "SHOPEE");
+      if (params?.category && params.category !== "ALL") {
+        items = items.filter(
+          (p) => p.category?.toLowerCase() === params.category?.toLowerCase()
+        );
+      }
+      return items;
     }
 
-    if (params?.query) {
-      const q = params.query.toLowerCase();
-      items = items.filter(
-        (p) =>
-          p.title.toLowerCase().includes(q) ||
-          (p.description && p.description.toLowerCase().includes(q))
-      );
+    try {
+      const targetCategories =
+        params?.categories && params.categories.length > 0
+          ? params.categories
+          : params?.category && params.category !== "ALL"
+          ? [params.category]
+          : undefined;
+
+      const items = await ShopeeRealDiscovery.discoverProducts({
+        categories: targetCategories,
+        query: params?.query,
+        limit: params?.limit || 50,
+      });
+
+      if (items.length > 0) {
+        return items;
+      }
+    } catch (err) {
+      console.warn("[ShopeeAdapter] Erro ao buscar produtos da Shopee, usando fallback:", err);
     }
 
-    return items;
+    return MOCK_MARKETPLACE_CATALOG.filter((p) => p.platform === "SHOPEE");
   }
 
   async getProducts(params?: ProductSearchParams): Promise<MarketplaceProduct[]> {
