@@ -16,9 +16,16 @@ export class ShopeeAffiliateAdapter implements IAffiliateLinkAdapter {
     tracking: UtmTrackingConfig
   ): Promise<GeneratedAffiliateLinkResult> {
     const shortCode = generateDeterministicShortCode("shopee", externalProductId || "prod");
-    const baseUrl = originalUrl && originalUrl.startsWith("http")
-      ? originalUrl
-      : `https://shopee.com.br/search?keyword=${encodeURIComponent(externalProductId)}`;
+    let baseUrl = originalUrl && originalUrl.startsWith("http") ? originalUrl : "";
+    if (!baseUrl) {
+      const cleanShpId = externalProductId.replace(/^SHP_/, "");
+      const parts = cleanShpId.split("_");
+      if (parts.length === 2 && parts[0] && parts[1]) {
+        baseUrl = `https://shopee.com.br/product/${parts[0]}/${parts[1]}`;
+      } else {
+        baseUrl = `https://shopee.com.br/product/${encodeURIComponent(cleanShpId)}`;
+      }
+    }
 
     const finalUrl = buildAffiliateTrackingUrl(baseUrl, {
       ...tracking,
