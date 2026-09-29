@@ -72,7 +72,18 @@ export class ProductAnalysisService {
       }
     }
 
-    // 5. Trend Strength (0 - 100 or null)
+    // 5. Sales Volume Comprovado (Bestseller verification)
+    if (product.salesCount && product.salesCount >= 1000) {
+      if (product.salesCount >= 50000) {
+        reasons.unshift(`Produto campeão com +${product.salesCount.toLocaleString("pt-BR")} vendidos`);
+      } else if (product.salesCount >= 10000) {
+        reasons.unshift(`Altíssimo volume comercial (+${product.salesCount.toLocaleString("pt-BR")} vendidos)`);
+      } else {
+        reasons.unshift(`Volume comprovado com +${product.salesCount.toLocaleString("pt-BR")} vendas`);
+      }
+    }
+
+    // 6. Trend Strength (0 - 100 or null)
     let trendStrength: number | null = null;
     if (product.trendScore !== null) {
       trendStrength = product.trendScore;

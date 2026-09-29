@@ -11,19 +11,18 @@ export class MercadoLivreRealDiscovery {
   /**
    * Catálogo oficial completo de URLs de Ofertas por Nicho no Mercado Livre Brasil
    */
+  /**
+   * Catálogo oficial completo de URLs de Ofertas por Nicho no Mercado Livre Brasil
+   */
   private static readonly CATEGORY_FEEDS: { name: string; url: string }[] = [
+    { name: "Celulares e Telefones", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1051" },
     { name: "Informática", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1648" },
     { name: "Eletrônicos", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1055" },
-    { name: "Celulares e Telefones", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1051" },
     { name: "Casa e Cozinha", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1574" },
-    { name: "Ferramentas", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1500" },
     { name: "Beleza e Saúde", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1246" },
-    { name: "Moda e Calçados", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1430" },
     { name: "Games", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1144" },
     { name: "Esportes e Fitness", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1276" },
-    { name: "Áudio e TV", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1000" },
-    { name: "Automotivo", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1743" },
-    { name: "Destaques Gerais", url: "https://www.mercadolivre.com.br/ofertas" },
+    { name: "Ferramentas", url: "https://www.mercadolivre.com.br/ofertas?category=MLB1500" },
   ];
 
   /**
@@ -70,6 +69,7 @@ export class MercadoLivreRealDiscovery {
 
   /**
    * Parses complete poly-card and promotion items from Mercado Livre HTML into RawMarketplaceItem.
+   * Enforces high-volume sales verification, exact cash pricing (excluding installments) and real WebP images.
    */
   static parseHtml(html: string, fallbackCategory: string = "Geral"): RawMarketplaceItem[] {
     const items: RawMarketplaceItem[] = [];
@@ -82,9 +82,8 @@ export class MercadoLivreRealDiscovery {
 
       // 1. Título e Link
       const titleMatch =
-        card.match(/class="poly-component__title"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i) ||
         card.match(/<a[^>]*class="poly-component__title"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i) ||
-        card.match(/<a[^>]*href="([^"]+)"[^>]*class="poly-component__title"[^>]*>([\s\S]*?)<\/a>/i);
+        card.match(/href="([^"]+)"[^>]*class="poly-component__title"[^>]*>([\s\S]*?)<\/a>/i);
 
       if (!titleMatch) continue;
 
@@ -102,78 +101,93 @@ export class MercadoLivreRealDiscovery {
       // 2. Extrair ID (MLB...)
       const idMatch =
         cleanUrl.match(/(MLB-?\d+)/i) ||
-        card.match(/wid=(MLB\d+)/i) ||
         cleanUrl.match(/p\/(MLB\d+)/i) ||
-        rawUrl.match(/(MLB-?\d+)/i);
+        card.match(/wid=(MLB\d+)/i);
       const externalId = idMatch ? idMatch[1].replace("-", "") : `MLB_${Date.now()}_${i}`;
 
-      // 3. Imagem Original em Alta Resolução
+      // 3. Imagem Original em Alta Resolução (CDN Oficial Mercado Livre)
       const imgMatch =
-        card.match(/<img[^>]*class="poly-component__picture"[^>]*src="([^"]+)"/i) ||
+        card.match(/class="poly-component__picture"[^>]*src="([^"]+)"/i) ||
         card.match(/src="([^"]+)"[^>]*class="poly-component__picture"/i) ||
         card.match(/data-src="([^"]+)"/i) ||
-        card.match(/(https:\/\/http2\.mlstatic\.com\/D_[^"\s\>]+\.(?:webp|jpg|png|jpeg))/i) ||
-        card.match(/(https:\/\/http2\.mlstatic\.com\/D_[^"\s\>]+)/i);
+        card.match(/(https:\/\/http2\.mlstatic\.com\/D_[^"\s\>]+\.(?:webp|jpg|png|jpeg))/i);
 
       let imageUrl = imgMatch ? imgMatch[1].replace("http://", "https://").replace(/&amp;/g, "&") : "";
-      
-      // Fallback seguro caso a imagem seja lazy loaded sem src
-      if (!imageUrl || imageUrl.includes("logo__large_plus")) {
-        const anyMlImg = card.match(/https:\/\/http2\.mlstatic\.com\/D_[^"\s\>]+/i);
-        if (anyMlImg) {
-          imageUrl = anyMlImg[0].replace("http://", "https://");
+      if (!imageUrl || imageUrl.includes("logo__large_plus")) continue;
+
+      // 4. Preço Atual Estrito (Isolado em poly-price__current para NUNCA capturar parcelamento)
+      const currentBlockMatch = card.match(/<div class="poly-price__current">([\s\S]*?)<\/div>/i);
+      if (!currentBlockMatch) continue;
+      const currentBlock = currentBlockMatch[1];
+
+      const fracMatch = currentBlock.match(/class="andes-money-amount__fraction"[^>]*>([^<]+)<\/span>/i);
+      if (!fracMatch) continue;
+      const centsMatch = currentBlock.match(/class="andes-money-amount__cents"[^>]*>([^<]+)<\/span>/i);
+      const currentPrice =
+        parseFloat(fracMatch[1].replace(/\./g, "").replace(",", ".")) +
+        (centsMatch ? parseFloat("0." + centsMatch[1]) : 0);
+
+      if (isNaN(currentPrice) || currentPrice <= 0) continue;
+
+      // 5. Preço Original (Antes)
+      let originalPrice = currentPrice;
+      const prevBlockMatch = card.match(/class="andes-money-amount--previous[\s\S]*?<\/s>/i);
+      if (prevBlockMatch) {
+        const prevFrac = prevBlockMatch[0].match(/class="andes-money-amount__fraction"[^>]*>([^<]+)<\/span>/i);
+        const prevCents = prevBlockMatch[0].match(/class="andes-money-amount__cents"[^>]*>([^<]+)<\/span>/i);
+        if (prevFrac) {
+          const parsedPrev =
+            parseFloat(prevFrac[1].replace(/\./g, "").replace(",", ".")) +
+            (prevCents ? parseFloat("0." + prevCents[1]) : 0);
+          if (parsedPrev > currentPrice) {
+            originalPrice = parsedPrev;
+          }
         }
       }
 
-      // 4. Preço Atual
-      const currentPriceMatch =
-        card.match(/class="poly-price__current"[\s\S]*?class="andes-money-amount__fraction"[^>]*>([^<]+)<\/span>/i) ||
-        card.match(/class="andes-money-amount__fraction"[^>]*>([^<]+)<\/span>/i);
-
-      if (!currentPriceMatch) continue;
-
-      const currentPrice = parseFloat(currentPriceMatch[1].replace(/\./g, "").replace(",", "."));
-      if (isNaN(currentPrice) || currentPrice <= 0) continue;
-
-      // 5. Desconto
+      // 6. Desconto
       const discountMatch =
         card.match(/class="polylabel-pill"[^>]*>(\d+)%\s*OFF<\/span>/i) ||
         card.match(/(\d+)%\s*OFF/i);
       let discountPercent = discountMatch ? parseInt(discountMatch[1], 10) : 0;
 
-      // 6. Preço Original (Antes)
-      const prevPriceMatch = card.match(
-        /class="andes-money-amount--previous[\s\S]*?class="andes-money-amount__fraction"[^>]*>([^<]+)<\/span>/i
-      );
-      let originalPrice = currentPrice;
-      if (prevPriceMatch) {
-        const parsedPrev = parseFloat(prevPriceMatch[1].replace(/\./g, "").replace(",", "."));
-        if (!isNaN(parsedPrev) && parsedPrev > currentPrice) {
-          originalPrice = parsedPrev;
-        }
-      }
       if (originalPrice === currentPrice && discountPercent > 0) {
         originalPrice = Number((currentPrice / (1 - discountPercent / 100)).toFixed(2));
       } else if (originalPrice > currentPrice && discountPercent === 0) {
         discountPercent = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
       }
 
-      // 7. Avaliação e Vendas
+      // 7. Avaliação
       const ratingMatch =
-        card.match(/class="polylabel-label polylabel-fs-xs polylabel-fw-regular">([\d\.]+)<\/span>/i) ||
+        card.match(/class="polylabel-label[^"]*">([\d\.]+)<\/span>/i) ||
         card.match(/aria-label="Classificação ([\d\.]+) de 5 estrelas"/i);
       const rating = ratingMatch ? parseFloat(ratingMatch[1]) : 4.8;
 
-      const salesMatch =
-        card.match(/\|\s*\+?([\d\.]+)mil?\s*vendidos/i) ||
-        card.match(/Mais de ([\d\.]+)mil produtos vendidos/i);
-      let salesCount = 100;
-      if (salesMatch) {
-        const val = parseFloat(salesMatch[1].replace(",", "."));
+      // 8. Volume Real de Vendas Comprovado
+      let salesCount = 0;
+      const salesMilMatch =
+        card.match(/Mais de ([\d\.,]+)mil produtos vendidos/i) ||
+        card.match(/\|\s*\+?([\d\.,]+)mil\s*vendidos/i) ||
+        card.match(/class="andes-visually-hidden">[^<]*Mais de ([\d\.,]+)mil/i);
+
+      if (salesMilMatch) {
+        const val = parseFloat(salesMilMatch[1].replace(",", "."));
         salesCount = Math.round(val * 1000);
+      } else {
+        const salesDirectMatch =
+          card.match(/Mais de ([\d\.]+) produtos vendidos/i) ||
+          card.match(/\|\s*\+?([\d\.]+)\s*vendidos/i);
+        if (salesDirectMatch) {
+          salesCount = parseInt(salesDirectMatch[1].replace(/\./g, ""), 10);
+        }
       }
 
-      // 8. Selos (FULL, Frete Grátis, Tag)
+      // FILTRO CRÍTICO: Excluir produtos sem alto volume comprovado de vendas (mínimo 1.000 vendas)
+      if (salesCount < 1000) {
+        continue;
+      }
+
+      // 9. Selos (FULL, Frete Grátis, Tag)
       const isFull = card.includes("poly_full") || card.includes("FULL");
       const freeShipping = card.includes("grátis") || card.includes("Gratis");
 

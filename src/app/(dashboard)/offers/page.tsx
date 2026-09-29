@@ -561,7 +561,7 @@ export default function OffersPage() {
                     alt={offer.product.title}
                     onError={(e) => {
                       (e.target as HTMLImageElement).src =
-                        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=60";
+                        "https://http2.mlstatic.com/D_Q_NP_2X_868127-MLA118013296557_092026-AB.webp";
                     }}
                     className="w-14 h-14 rounded-xl object-cover bg-slate-950 border border-slate-800 shrink-0"
                   />
@@ -729,7 +729,7 @@ export default function OffersPage() {
                   alt={selectedOffer.product.title}
                   onError={(e) => {
                     (e.target as HTMLImageElement).src =
-                      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=60";
+                      "https://http2.mlstatic.com/D_Q_NP_2X_868127-MLA118013296557_092026-AB.webp";
                   }}
                   className="w-12 h-12 rounded-xl object-cover border border-slate-800"
                 />

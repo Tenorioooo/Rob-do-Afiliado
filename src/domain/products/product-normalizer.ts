@@ -14,7 +14,7 @@ export class ProductNormalizer {
     const brand = raw.brand ? String(raw.brand).trim() : null;
     const imageUrl = String(
       raw.imageUrl ||
-        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=60"
+        "https://http2.mlstatic.com/D_Q_NP_2X_868127-MLA118013296557_092026-AB.webp"
     ).trim();
     const url = String(raw.productUrl || "").trim();
     const currency = String(raw.currency || "BRL").toUpperCase();

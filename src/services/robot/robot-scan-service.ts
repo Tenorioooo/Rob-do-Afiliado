@@ -121,6 +121,12 @@ export class RobotScanService {
       // 5. Process & Deduplicate each discovered product
       const productsToProcess = discoveryResult.products.slice(0, Math.max(maxResults, 120));
       for (const normalized of productsToProcess) {
+        // Trava rigorosa: Apenas produtos com alto volume de vendas comprovado (mínimo 1.000 vendas)
+        if (!normalized.salesCount || normalized.salesCount < 1000) {
+          totalRejected++;
+          continue;
+        }
+
         totalAnalyzed++;
 
         // 5a. Upsert Product (platform + externalId unique constraint)
