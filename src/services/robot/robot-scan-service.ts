@@ -119,7 +119,8 @@ export class RobotScanService {
       const qualifiedList: ScanExecutionResult["qualifiedOpportunities"] = [];
 
       // 5. Process & Deduplicate each discovered product
-      for (const normalized of discoveryResult.products.slice(0, maxResults)) {
+      const productsToProcess = discoveryResult.products.slice(0, Math.max(maxResults, 120));
+      for (const normalized of productsToProcess) {
         totalAnalyzed++;
 
         // 5a. Upsert Product (platform + externalId unique constraint)

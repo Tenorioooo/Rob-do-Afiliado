@@ -27,28 +27,13 @@ export class DiscoveryService {
    */
   async discoverAll(params?: DiscoveryParams): Promise<DiscoveryResult> {
     const targetPlatforms = params?.platforms || ["SHOPEE", "MERCADO_LIVRE", "AMAZON"];
-    const allRawItems: RawMarketplaceItem[] = [];
+    const mlItems: RawMarketplaceItem[] = [];
+    const shopeeItems: RawMarketplaceItem[] = [];
+    const amazonItems: RawMarketplaceItem[] = [];
     const errors: { platform: string; error: string }[] = [];
     const scannedPlatforms: string[] = [];
 
-    // 1. Mercado Livre Real
-    if (targetPlatforms.includes("MERCADO_LIVRE")) {
-      try {
-        scannedPlatforms.push("MERCADO_LIVRE");
-        const items = await this.mlAdapter.getRawItems({
-          categories: params?.categories,
-          category: params?.categories?.[0],
-          query: params?.query,
-          limit: params?.maxPerPlatform || 60,
-        });
-        allRawItems.push(...items);
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : "Erro desconhecido no Mercado Livre";
-        errors.push({ platform: "MERCADO_LIVRE", error: msg });
-      }
-    }
-
-    // 2. Shopee
+    // 1. Shopee Real Discovery
     if (targetPlatforms.includes("SHOPEE")) {
       try {
         scannedPlatforms.push("SHOPEE");
@@ -58,10 +43,27 @@ export class DiscoveryService {
           query: params?.query,
           limit: params?.maxPerPlatform || 50,
         });
-        allRawItems.push(...items);
+        shopeeItems.push(...items);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Erro desconhecido na Shopee";
         errors.push({ platform: "SHOPEE", error: msg });
+      }
+    }
+
+    // 2. Mercado Livre Real
+    if (targetPlatforms.includes("MERCADO_LIVRE")) {
+      try {
+        scannedPlatforms.push("MERCADO_LIVRE");
+        const items = await this.mlAdapter.getRawItems({
+          categories: params?.categories,
+          category: params?.categories?.[0],
+          query: params?.query,
+          limit: params?.maxPerPlatform || 60,
+        });
+        mlItems.push(...items);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "Erro desconhecido no Mercado Livre";
+        errors.push({ platform: "MERCADO_LIVRE", error: msg });
       }
     }
 
@@ -73,11 +75,20 @@ export class DiscoveryService {
           category: params?.categories?.[0],
           query: params?.query,
         });
-        allRawItems.push(...items);
+        amazonItems.push(...items);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Erro desconhecido na Amazon";
         errors.push({ platform: "AMAZON", error: msg });
       }
+    }
+
+    // Interleave items fairly across platforms
+    const maxPlatformLength = Math.max(shopeeItems.length, mlItems.length, amazonItems.length);
+    const allRawItems: RawMarketplaceItem[] = [];
+    for (let i = 0; i < maxPlatformLength; i++) {
+      if (shopeeItems[i]) allRawItems.push(shopeeItems[i]);
+      if (mlItems[i]) allRawItems.push(mlItems[i]);
+      if (amazonItems[i]) allRawItems.push(amazonItems[i]);
     }
 
     // Filter by categories only if specific strict categories are requested and "ALL" is not present
