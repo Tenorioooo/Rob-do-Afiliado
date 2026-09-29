@@ -108,6 +108,7 @@ export default function RobotPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          platforms: ["MERCADO_LIVRE", "SHOPEE", "AMAZON"],
           minOpportunityScore: 70,
           categories: ["ALL"],
         }),
@@ -309,16 +310,16 @@ export default function RobotPage() {
               {
                 name: "Shopee Afiliados",
                 plat: "SHOPEE",
-                badgeText: isShopeeConnected ? "Conectada" : "Aguardando Credenciais",
-                badgeVariant: isShopeeConnected ? ("success" as const) : ("outline" as const),
-                statusText: isShopeeConnected ? "100% Operacional (Open API)" : "Não Conectada",
-                statusColor: isShopeeConnected ? "text-emerald-400" : "text-slate-500",
+                badgeText: isShopeeConnected ? "Open API Conectada" : "Catálogo & Ofertas Reais",
+                badgeVariant: isShopeeConnected ? ("success" as const) : ("shopee" as const),
+                statusText: isShopeeConnected ? "100% Operacional (Open API)" : "Motor Shopee Brasil Ativo",
+                statusColor: "text-emerald-400",
                 desc: isShopeeConnected
                   ? "Credenciais da Shopee Open Platform ativas com geração automática de short links."
-                  : "Conecte seu App ID e Secret da Shopee para sincronizar short links oficiais e comissões.",
-                connected: isShopeeConnected,
+                  : "Varredura ativa em tempo real com garimpagem de ofertas, cálculo de comissão de 14% e links diretos.",
+                connected: true,
                 actionHref: isShopeeConnected ? `/integrations/${shopeeConn?.id}` : "/integrations",
-                actionLabel: isShopeeConnected ? "Gerenciar Conexão" : "Conectar Shopee",
+                actionLabel: isShopeeConnected ? "Gerenciar Conexão" : "Conectar Open API",
               },
               {
                 name: "Amazon Associados",

@@ -57,9 +57,12 @@ export class RobotScanService {
       });
     }
 
+    const parsedUserPlatforms: string[] = JSON.parse(userConfig.targetPlatforms || "[]");
     const platforms: MarketplacePlatform[] =
       (customConfig?.platforms as MarketplacePlatform[]) ||
-      JSON.parse(userConfig.targetPlatforms || "[]");
+      (parsedUserPlatforms.length > 0
+        ? (parsedUserPlatforms as MarketplacePlatform[])
+        : (["MERCADO_LIVRE", "SHOPEE", "AMAZON"] as MarketplacePlatform[]));
     const categories: string[] =
       customConfig?.categories || JSON.parse(userConfig.targetCategories || "[]");
     const minScore = customConfig?.minOpportunityScore ?? userConfig.minOpportunityScore;
