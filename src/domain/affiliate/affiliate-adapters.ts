@@ -18,7 +18,7 @@ export class ShopeeAffiliateAdapter implements IAffiliateLinkAdapter {
     const shortCode = generateDeterministicShortCode("shopee", externalProductId || "prod");
     const baseUrl = originalUrl && originalUrl.startsWith("http")
       ? originalUrl
-      : `https://shopee.com.br/product/${externalProductId}`;
+      : `https://shopee.com.br/search?keyword=${encodeURIComponent(externalProductId)}`;
 
     const finalUrl = buildAffiliateTrackingUrl(baseUrl, {
       ...tracking,
